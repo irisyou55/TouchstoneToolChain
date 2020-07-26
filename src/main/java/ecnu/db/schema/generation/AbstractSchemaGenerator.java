@@ -8,7 +8,6 @@ import ecnu.db.utils.TouchstoneToolChainException;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,14 +16,13 @@ import java.util.Map;
  * @author wangqingshuai
  */
 public abstract class AbstractSchemaGenerator {
+
     /**
      * format sql and return two sqls
      *
      * @param tableDDL 表的DDL
      * @return 1.column info sqls 2. keys info sql, including primary key and foreign keys
      */
-
-
     abstract Pair<String[], String> getColumnSqlAndKeySql(String tableDDL);
 
     /**
@@ -84,11 +82,10 @@ public abstract class AbstractSchemaGenerator {
     public abstract void setDataRangeBySqlResult(Collection<AbstractColumn> columns, String[] sqlResult) throws TouchstoneToolChainException;
 
     /**
-     * 从数据库的统计信息里提取schme里的col的cardinality和average length等信息
+     * 从数据库的统计信息里提取schema里的col的cardinality和average length等信息
      * @param schema 需要设置的schema
      * @param dbConnector 数据库连接
-     * @throws IOException
-     * @throws SQLException
+     * @throws IOException 读取URL的JSON失败
      */
-    public abstract void setDataRangeUnique(Schema schema, AbstractDbConnector dbConnector) throws IOException, SQLException;
+    public abstract void setDataRangeUnique(Schema schema, AbstractDbConnector dbConnector) throws IOException;
 }
