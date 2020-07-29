@@ -52,7 +52,7 @@ TouchstoneToolChain采集完成后，会生成3部分配置文件
 
 3. sqls/filename_index.sql
 
-   程序会在指定目录下创建sqls文件夹，输出模版化的查询语句，在[Touchstone](https://github.com/daseECNU/Touchstone)中提供了自动填充功能，可以将实例化后的新参数，填充到query模板中，query模版示例如下，[Touchstone](https://github.com/daseECNU/Touchstone)通过辨识`#num,num,num#`标志，用实例化后的参数进行替换。
+   程序会在指定目录下创建sqls文件夹，输出模版化的查询语句，在[Touchstone](https://github.com/daseECNU/Touchstone)中提供了自动填充功能，可以将实例化后的新参数，填充到query模板中，query模版示例如下，[Touchstone](https://github.com/daseECNU/Touchstone)通过辨识`id,isDate`标志，用实例化后的参数进行替换。
 
 ```sql
 select c_custkey, c_name
@@ -61,9 +61,9 @@ select c_custkey, c_name
 from customer, orders, lineitem, nation
 where c_custkey = o_custkey
 	and l_orderkey = o_orderkey
-	and o_orderdate >= '#25,0,1#'
-	and o_orderdate < '#25,1,1#'
-	and l_returnflag = '#26,0,0#'
+	and o_orderdate >= '0,1'
+	and o_orderdate < '1,1'
+	and l_returnflag = '2,0'
 	and c_nationkey = n_nationkey
 group by c_custkey, c_name, c_acctbal, c_phone, n_name, c_address, c_comment
 order by revenue desc
@@ -77,10 +77,11 @@ limit 20;
 请注意1.sql_0中有参数出现多次，无法智能替换，请查看该sql输出，手动替换
 ```
 
-​		示例如下，由于1.sql中存在两个n_name，而在查询计划中统一了这两个，因此分析时无法智能替换，手动替换这两个即可。
+​		示例如下，由于1.sql中存在两个n_name，而在查询计划中统一了这两个，因此分析时无法智能替换，手动替换这两个即可。id代表参数的id，data代表参数的数据，
+        needQuote代表参数在SQL中是否需要加上"'"符号(比如字符串类型和日期类型)，isDate表示是否为Date类型参数。
 
 ```sql
--- conflictArgs:n_name =:[#2,0,0#],
+-- cannotFindArgs:{id:0,data:MOZAMBIQUE,needQuote:1,isDate:0}
 select ps_partkey, sum(ps_supplycost * ps_availqty) as value
 from partsupp, supplier, nation
 where ps_suppkey = s_suppkey
