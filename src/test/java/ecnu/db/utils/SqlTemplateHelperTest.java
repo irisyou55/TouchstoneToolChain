@@ -49,7 +49,7 @@ class SqlTemplateHelperTest {
         parameters.add(new Parameter(0, "5", true, false));
         parameters.add(new Parameter(1, "5", true, false));
         String modified = SqlTemplateHelper.templatizeSql("q5", sql, JdbcConstants.MYSQL, parameters);
-        assertEquals("-- conflictArgs:{id:0,isDate:false},{id:1,isDate:false}\nselect * from test where a='5' or b='5'", modified);
+        assertEquals("-- conflictArgs:{id:0,data:5,needQuote:1,isDate:0},{id:1,data:5,needQuote:1,isDate:0}\nselect * from test where a='5' or b='5'", modified);
     }
     @Test
     public void testTemplatizeSqlCannotFind() throws TouchstoneToolChainException {
@@ -58,6 +58,6 @@ class SqlTemplateHelperTest {
         Parameter parameter = new Parameter(0, "6", true, false);
         parameters.add(parameter);
         String modified = SqlTemplateHelper.templatizeSql("q6", sql, JdbcConstants.MYSQL, parameters);
-        assertEquals("-- cannotFindArgs:{id:0,isDate:false}\nselect * from test where a='5' or b='5'", modified);
+        assertEquals("-- cannotFindArgs:{id:0,data:6,needQuote:1,isDate:0}\nselect * from test where a='5' or b='5'", modified);
     }
 }
