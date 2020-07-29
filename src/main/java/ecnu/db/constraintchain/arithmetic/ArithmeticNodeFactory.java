@@ -30,7 +30,7 @@ public class ArithmeticNodeFactory {
             case CONSTANT:
                 node = new NumericNode();
                 break;
-            case PARAMETER:
+            case COLUMN:
                 node = new ColumnNode();
                 break;
             default:

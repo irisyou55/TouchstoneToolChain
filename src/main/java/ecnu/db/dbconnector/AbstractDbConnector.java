@@ -1,5 +1,6 @@
 package ecnu.db.dbconnector;
 
+import com.alibaba.druid.util.JdbcConstants;
 import ecnu.db.analyzer.statical.QueryTableName;
 import ecnu.db.schema.Schema;
 import ecnu.db.schema.generation.AbstractSchemaGenerator;
@@ -7,6 +8,7 @@ import ecnu.db.utils.CommonUtils;
 import ecnu.db.utils.ReadQuery;
 import ecnu.db.utils.SystemConfig;
 import ecnu.db.utils.TouchstoneToolChainException;
+import ecnu.db.utils.exception.UnsupportedDBTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,25 +130,29 @@ public abstract class AbstractDbConnector implements DatabaseConnectorInterface 
      * @param isCrossMultiDatabase 是否跨多个数据库
      * @param databaseName         数据库名称，若isCrossMultiDatabase为false，则可以填写null
      * @param files                SQL文件
+     * @param dbType               数据库类型
      * @return 表名
      * @throws IOException                  从SQL文件中获取Query失败
-     * @throws TouchstoneToolChainException 从Query中获取tableNames失败
-     * @throws SQLException                 从数据库中获取tableNames失败
+     * @throws TouchstoneToolChainException 从Query中获取tableNames失败或不支持的数据库类型
      */
-    public List<String> fetchTableNames(boolean isCrossMultiDatabase, String databaseName, List<File> files) throws IOException, TouchstoneToolChainException, SQLException {
-        List<String> tableNames = new ArrayList<>();
-        for (File sqlFile : files) {
-            List<String> queries = ReadQuery.getQueriesFromFile(sqlFile.getPath(), "mysql");
-            for (String query : queries) {
-                Set<String> tableNameRefs = QueryTableName.getTableName(sqlFile.getAbsolutePath(), query, "mysql", isCrossMultiDatabase);
-                tableNames.addAll(tableNameRefs);
+    public List<String> fetchTableNames(boolean isCrossMultiDatabase, String databaseName, List<File> files, String dbType) throws IOException, TouchstoneToolChainException {
+        if (JdbcConstants.MYSQL.equals(dbType)) {
+            List<String> tableNames = new ArrayList<>();
+            for (File sqlFile : files) {
+                List<String> queries = ReadQuery.getQueriesFromFile(sqlFile.getPath(), JdbcConstants.MYSQL);
+                for (String query : queries) {
+                    Set<String> tableNameRefs = QueryTableName.getTableName(sqlFile.getAbsolutePath(), query, JdbcConstants.MYSQL, isCrossMultiDatabase);
+                    tableNames.addAll(tableNameRefs);
+                }
             }
+            tableNames = tableNames.stream().distinct().collect(Collectors.toList());
+            if (!isCrossMultiDatabase) {
+                tableNames = tableNames.stream().map((name) -> CommonUtils.addDBNamePrefix(databaseName, name)).collect(Collectors.toList());
+            }
+            return tableNames;
+        } else {
+            throw new UnsupportedDBTypeException(dbType);
         }
-        tableNames = tableNames.stream().distinct().collect(Collectors.toList());
-        if (!isCrossMultiDatabase) {
-            tableNames = tableNames.stream().map((name) -> CommonUtils.addDBNamePrefix(databaseName, name)).collect(Collectors.toList());
-        }
-        return tableNames;
     }
 
     /**

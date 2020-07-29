@@ -93,7 +93,6 @@ public class StorageManager {
         File schemaFile = new File(dumpDir, String.format("schemas.%s", DUMP_FILE_POSTFIX));
         for (Schema schema : schemas.values()) {
             schema.setJoinTag(1);
-            schema.setLastJoinTag(1);
         }
         String schemasContent = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(schemas);
         FileUtils.writeStringToFile(schemaFile, schemasContent, UTF_8);

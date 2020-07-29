@@ -3,6 +3,7 @@ package ecnu.db.schema;
 import ecnu.db.schema.column.AbstractColumn;
 import ecnu.db.schema.column.ColumnType;
 import ecnu.db.utils.TouchstoneToolChainException;
+import ecnu.db.utils.exception.CannotFindColumnException;
 import ecnu.db.utils.exception.CannotFindSchemaException;
 
 import java.sql.DatabaseMetaData;
@@ -17,25 +18,23 @@ import java.util.*;
 public class Schema {
     private final static int INIT_HASHMAP_SIZE = 16;
     private String tableName;
-    private HashMap<String, AbstractColumn> columns;
+    private Map<String, AbstractColumn> columns;
     private int tableSize;
     private String primaryKeys;
-    private HashMap<String, String> foreignKeys;
+    private Map<String, String> foreignKeys;
     /**
      * 根据Database的metadata获取的外键信息
      */
-    private HashMap<String, String> metaDataFks;
+    private Map<String, String> metaDataFks;
     private int joinTag;
-    private int lastJoinTag;
 
     public Schema() {
     }
 
-    public Schema(String tableName, HashMap<String, AbstractColumn> columns) {
+    public Schema(String tableName, Map<String, AbstractColumn> columns) {
         this.tableName = tableName;
         this.columns = columns;
         joinTag = 1;
-        lastJoinTag = 1;
     }
 
     /**
@@ -84,7 +83,7 @@ public class Schema {
 
         for (Map.Entry<String, Schema> entry : schemas.entrySet()) {
             Schema schema = entry.getValue();
-            HashMap<String, String> fks = Optional.ofNullable(schema.getForeignKeys()).orElse(new HashMap<>(INIT_HASHMAP_SIZE));
+            Map<String, String> fks = Optional.ofNullable(schema.getForeignKeys()).orElse(new HashMap<>(INIT_HASHMAP_SIZE));
             schema.setMetaDataFks(fks);
         }
     }
@@ -114,14 +113,6 @@ public class Schema {
 
     public void setJoinTag(int joinTag) {
         this.joinTag = joinTag;
-    }
-
-    public void keepJoinTag(boolean keep) {
-        if (keep) {
-            lastJoinTag = joinTag;
-        } else {
-            joinTag = lastJoinTag;
-        }
     }
 
     public void addForeignKey(String localColumnName, String referencingTable, String referencingInfo) throws TouchstoneToolChainException {
@@ -258,19 +249,19 @@ public class Schema {
         this.tableSize = tableSize;
     }
 
-    public HashMap<String, String> getMetaDataFks() {
+    public Map<String, String> getMetaDataFks() {
         return metaDataFks;
     }
 
-    public void setMetaDataFks(HashMap<String, String> metaDataFks) {
+    public void setMetaDataFks(Map<String, String> metaDataFks) {
         this.metaDataFks = metaDataFks;
     }
 
-    public HashMap<String, String> getForeignKeys() {
+    public Map<String, String> getForeignKeys() {
         return foreignKeys;
     }
 
-    public void setForeignKeys(HashMap<String, String> foreignKeys) {
+    public void setForeignKeys(Map<String, String> foreignKeys) {
         this.foreignKeys = foreignKeys;
     }
 
@@ -282,8 +273,8 @@ public class Schema {
         if (this.primaryKeys == null) {
             this.primaryKeys = primaryKeys;
         } else {
-            HashSet<String> newKeys = new HashSet<>(Arrays.asList(primaryKeys.split(",")));
-            HashSet<String> keys = new HashSet<>(Arrays.asList(this.primaryKeys.split(",")));
+            Set<String> newKeys = new HashSet<>(Arrays.asList(primaryKeys.split(",")));
+            Set<String> keys = new HashSet<>(Arrays.asList(this.primaryKeys.split(",")));
             if (keys.size() == newKeys.size()) {
                 keys.removeAll(newKeys);
                 if (keys.size() > 0) {
@@ -295,19 +286,19 @@ public class Schema {
         }
     }
 
-    public int getLastJoinTag() {
-        return lastJoinTag;
+    public AbstractColumn getColumn(String columnName) throws CannotFindColumnException {
+        AbstractColumn column = columns.get(columnName);
+        if (column == null) {
+            throw new CannotFindColumnException(tableName, columnName);
+        }
+        return column;
     }
 
-    public void setLastJoinTag(int lastJoinTag) {
-        this.lastJoinTag = lastJoinTag;
-    }
-
-    public HashMap<String, AbstractColumn> getColumns() {
+    public Map<String, AbstractColumn> getColumns() {
         return columns;
     }
 
-    public void setColumns(HashMap<String, AbstractColumn> columns) {
+    public void setColumns(Map<String, AbstractColumn> columns) {
         this.columns = columns;
     }
 

@@ -7,6 +7,15 @@ package ecnu.db.constraintchain.filter;
 public class Parameter {
     private Integer id;
     private String data;
+    private boolean needQuote;
+    private boolean isDate;
+
+    public Parameter(Integer id, String data, boolean needQuote, boolean isDate) {
+        this.id = id;
+        this.data = data;
+        this.needQuote = needQuote;
+        this.isDate = isDate;
+    }
 
     public Integer getId() {
         return id;
@@ -24,9 +33,20 @@ public class Parameter {
         this.data = data;
     }
 
-    public Parameter(Integer id, String data) {
-        this.id = id;
-        this.data = data;
+    public boolean isNeedQuote() {
+        return needQuote;
+    }
+
+    public void setNeedQuote(boolean needQuote) {
+        this.needQuote = needQuote;
+    }
+
+    public boolean isDate() {
+        return isDate;
+    }
+
+    public void setDate(boolean date) {
+        isDate = date;
     }
 
     @Override

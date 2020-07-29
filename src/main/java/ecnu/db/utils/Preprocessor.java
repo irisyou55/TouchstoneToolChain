@@ -23,7 +23,7 @@ public class Preprocessor {
 
         for(Schema schema : schemas.values()) {
             if (schema.getForeignKeys().size() != 0) {
-                HashMap<String, String> foreignKeys = schema.getForeignKeys();
+                Map<String, String> foreignKeys = schema.getForeignKeys();
                 ArrayList<String> referencedTables = new ArrayList<String>();
                 for (int j = 0; j < foreignKeys.size(); j++) {
                     referencedTables.add(foreignKeys.get(j).split("\\.")[0]);

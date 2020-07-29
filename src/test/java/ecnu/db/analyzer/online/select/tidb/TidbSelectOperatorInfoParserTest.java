@@ -1,12 +1,23 @@
 package ecnu.db.analyzer.online.select.tidb;
 
 import ecnu.db.analyzer.online.TidbAnalyzer;
+import ecnu.db.constraintchain.filter.SelectResult;
 import ecnu.db.constraintchain.filter.logical.AndNode;
+import ecnu.db.schema.Schema;
+import ecnu.db.schema.column.AbstractColumn;
+import ecnu.db.schema.column.DecimalColumn;
+import ecnu.db.schema.column.IntColumn;
+import ecnu.db.schema.column.StringColumn;
 import ecnu.db.utils.SystemConfig;
 import java_cup.runtime.ComplexSymbolFactory;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -19,29 +30,38 @@ public class TidbSelectOperatorInfoParserTest {
     @BeforeEach
     void setUp() {
         SystemConfig config = new SystemConfig();
-        parser.setAnalyzer(new TidbAnalyzer(config, null, null, null));
+        Map<String, Schema> schemas = new HashMap<>();
+        Schema schema = new Schema();
+        Map<String, AbstractColumn> columns = new HashMap<>();
+        columns.put("col1", new IntColumn("col1"));
+        columns.put("col2", new IntColumn("col2"));
+        columns.put("col3", new StringColumn("col3"));
+        columns.put("col4", new DecimalColumn("col4"));
+        schema.setColumns(columns);
+        schemas.put("db.table", schema);
+        parser.setAnalyzer(new TidbAnalyzer(config, null, schemas, null));
     }
 
     @DisplayName("test TidbSelectOperatorInfoParser.parse method")
     @Test
     void testParse() throws Exception {
-        String testCase = "ge(db.table.col, 2)";
-        AndNode node = parser.parseSelectOperatorInfo(testCase);
-        assertEquals( "and(ge(column(db.table.col), Parameter{id=0, data='2'}))", node.toString());
+        String testCase = "ge(db.table.col1, 2)";
+        AndNode node = parser.parseSelectOperatorInfo(testCase).getCondition();
+        assertEquals( "and(ge(column(db.table.col1), Parameter{id=0, data='2'}))", node.toString());
     }
     @DisplayName("test TidbSelectOperatorInfoParser.parse method with arithmetic ops")
     @Test
     void testParseWithArithmeticOps() throws Exception {
         String testCase = "ge(mul(db.table.col1, plus(db.table.col2, 3)), 2)";
-        AndNode node = parser.parseSelectOperatorInfo(testCase);
+        AndNode node = parser.parseSelectOperatorInfo(testCase).getCondition();
         assertEquals("and(ge(mul(column(db.table.col1), plus(column(db.table.col2), 3.0)), Parameter{id=0, data='2'}))", node.toString());
     }
     @DisplayName("test TidbSelectOperatorInfoParser.parse method with logical ops")
     @Test
     void testParseWithLogicalOps() throws Exception {
-        String testCase = "or(ge(db.table.col1, 2), lt(db.table.col2, 3.0))";
-        AndNode node = parser.parseSelectOperatorInfo(testCase);
-        assertEquals("and(or(ge(column(db.table.col1), Parameter{id=0, data='2'}), lt(column(db.table.col2), Parameter{id=1, data='3.0'})))", node.toString());
+        String testCase = "or(ge(db.table.col1, 2), lt(db.table.col4, 3.0))";
+        AndNode node = parser.parseSelectOperatorInfo(testCase).getCondition();
+        assertEquals("and(or(ge(column(db.table.col1), Parameter{id=0, data='2'}), lt(column(db.table.col4), Parameter{id=1, data='3.0'})))", node.toString());
     }
     @DisplayName("test TidbSelectOperatorInfoParser.parse method with erroneous grammar")
     @Test()
@@ -54,15 +74,16 @@ public class TidbSelectOperatorInfoParserTest {
     @DisplayName("test TidbSelectOperatorInfoParser.parse method with not")
     @Test()
     void testParseWithNot() throws Exception {
-        String testCase = "or(ge(db.table.col1, 2), not(in(db.table.col2, \"3\", \"2\")))";
-        AndNode node = parser.parseSelectOperatorInfo(testCase);
-        assertEquals("and(or(ge(column(db.table.col1), Parameter{id=0, data='2'}), not_in(column(db.table.col2), Parameter{id=1, data='3'}, Parameter{id=2, data='2'})))", node.toString());
+        String testCase = "or(ge(db.table.col1, 2), not(in(db.table.col3, \"3\", \"2\")))";
+        SelectResult result = parser.parseSelectOperatorInfo(testCase);
+        AndNode node = result.getCondition();
+        assertEquals("and(or(ge(column(db.table.col1), Parameter{id=0, data='2'}), not_in(column(db.table.col3), Parameter{id=1, data='3'}, Parameter{id=2, data='2'})))", node.toString());
     }
     @DisplayName("test TidbSelectOperatorInfoParser.parse method with isnull")
     @Test()
     void testParseWithIsnull() throws Exception {
         String testCase = "or(ge(db.table.col1, 2), not(isnull(db.table.col2)))";
-        AndNode node = parser.parseSelectOperatorInfo(testCase);
+        AndNode node = parser.parseSelectOperatorInfo(testCase).getCondition();
         assertEquals("and(or(ge(column(db.table.col1), Parameter{id=0, data='2'}), not_isnull(column(db.table.col2))))", node.toString());
     }
 }

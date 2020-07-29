@@ -1,11 +1,11 @@
 package ecnu.db.analyzer.statical;
 
 import com.alibaba.druid.sql.SQLUtils;
+import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.ast.statement.SQLExprTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
 import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlASTVisitorAdapter;
 import ecnu.db.utils.CommonUtils;
-import ecnu.db.utils.SystemConfig;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +19,12 @@ public class QueryAliasParser {
 
     public Map<String, String> getTableAlias(boolean isCrossMultiDatabase, String databaseName, String sql, String dbType) {
         ExportTableAliasVisitor statVisitor = new ExportTableAliasVisitor(isCrossMultiDatabase, databaseName);
-        SQLSelectStatement statement = (SQLSelectStatement) SQLUtils.parseStatements(sql, dbType).get(0);
+        SQLStatement sqlStatement = SQLUtils.parseStatements(sql, dbType).get(0);
+        // TODO
+        if (!(sqlStatement instanceof SQLSelectStatement)) {
+            throw new RuntimeException("Only support select statement");
+        }
+        SQLSelectStatement statement = (SQLSelectStatement) sqlStatement;
         statement.accept(statVisitor);
         return statVisitor.getAliasMap();
     }

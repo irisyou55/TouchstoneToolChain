@@ -1,11 +1,13 @@
 package ecnu.db;
 
 
+import com.alibaba.druid.util.JdbcConstants;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import ecnu.db.analyzer.online.AbstractAnalyzer;
 import ecnu.db.analyzer.online.TidbAnalyzer;
 import ecnu.db.analyzer.online.node.ExecutionNode;
+import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.dbconnector.AbstractDbConnector;
 import ecnu.db.dbconnector.DatabaseConnectorInterface;
 import ecnu.db.dbconnector.DumpFileConnector;
@@ -14,6 +16,8 @@ import ecnu.db.schema.Schema;
 import ecnu.db.schema.generation.AbstractSchemaGenerator;
 import ecnu.db.schema.generation.TidbSchemaGenerator;
 import ecnu.db.utils.*;
+import ecnu.db.utils.exception.UnsupportedDatabaseSourceException;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,9 +57,9 @@ public class Main {
             schemas = storageManager.loadSchemas();
             dbConnector = new DumpFileConnector(tableNames, queryPlanMap, multiColNdvMap);
             logger.info("数据加载完毕");
-        } else {
+        } else if ("tidb".equals(config.getDataSource())) {
             dbConnector = new TidbConnector(config);
-            tableNames = ((AbstractDbConnector) dbConnector).fetchTableNames(config.isCrossMultiDatabase(), config.getDatabaseName(), files);
+            tableNames = ((AbstractDbConnector) dbConnector).fetchTableNames(config.isCrossMultiDatabase(), config.getDatabaseName(), files, JdbcConstants.MYSQL);
             logger.info("获取表名成功，表名为:" + tableNames);
             AbstractSchemaGenerator dbSchemaGenerator = new TidbSchemaGenerator();
             for (String canonicalTableName : tableNames) {
@@ -64,6 +68,8 @@ public class Main {
             }
             Schema.initFks(((AbstractDbConnector) dbConnector).databaseMetaData, schemas);
             logger.info("获取表结构和数据分布成功");
+        } else {
+            throw new UnsupportedDatabaseSourceException(config.getDataSource());
         }
         AbstractAnalyzer queryAnalyzer = getAnalyzer(config, dbConnector, schemas);
         List<String> queryInfos = new LinkedList<>();
@@ -77,8 +83,6 @@ public class Main {
                 for (String query : queries) {
                     index++;
                     String queryCanonicalName = String.format("%s_%d", sqlFile.getName(), index);
-                    List<String> cannotFindArgs = new ArrayList<>();
-                    List<String> conflictArgs = new ArrayList<>();
                     try {
                         logger.info(String.format("%-15s Status:开始获取", queryCanonicalName));
                         queryInfos.add("## " + queryCanonicalName);
@@ -87,21 +91,13 @@ public class Main {
                             storageManager.dumpQueryPlan(queryPlan, queryCanonicalName);
                         }
                         ExecutionNode root = queryAnalyzer.getExecutionTree(queryPlan);
-                        queryInfos.addAll(queryAnalyzer.extractQueryInfos(queryCanonicalName, root));
+                        Pair<List<String>, List<Parameter>> pair = queryAnalyzer.extractQueryInfos(queryCanonicalName, root);
+                        queryInfos.addAll(pair.getLeft());
+                        List<Parameter> parameters = pair.getRight();
                         logger.info(String.format("%-15s Status:获取成功", queryCanonicalName));
-                        queryAnalyzer.outputSuccess(true);
-                        query = SqlTemplateHelper.templatizeSql(query, queryAnalyzer, cannotFindArgs, conflictArgs);
-                        if (cannotFindArgs.size() > 0) {
-                            logger.warn(String.format("请注意%s中有参数无法完成替换，请查看该sql输出，手动替换;", queryCanonicalName));
-                            query = SqlTemplateHelper.appendArgs(queryAnalyzer.getArgsAndIndex(), "cannotFindArgs", cannotFindArgs) + query;
-                        }
-                        if (conflictArgs.size() > 0) {
-                            logger.warn(String.format("请注意%s中有参数出现多次，无法智能，替换请查看该sql输出，手动替换;", queryCanonicalName));
-                            query = SqlTemplateHelper.appendArgs(queryAnalyzer.getArgsAndIndex(), "conflictArgs", conflictArgs) + query;
-                        }
+                        query = SqlTemplateHelper.templatizeSql(queryCanonicalName, query, queryAnalyzer.getDbType(), parameters);
                         storageManager.storeSqlResult(sqlFile, query, queryAnalyzer.getDbType());
                     } catch (TouchstoneToolChainException e) {
-                        queryAnalyzer.outputSuccess(false);
                         logger.error(String.format("%-15s Status:获取失败", queryCanonicalName), e);
                         needLog = true;
                         if (queryPlan != null && !queryPlan.isEmpty()) {
