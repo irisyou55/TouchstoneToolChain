@@ -5,9 +5,21 @@ package ecnu.db.constraintchain.filter;
  * 代表需要实例化的参数
  */
 public class Parameter {
+    /**
+     * parameter的id，用于后续实例化
+     */
     private Integer id;
+    /**
+     * parameter的data
+     */
     private String data;
+    /**
+     * 在SQL中是否需要加"'"符号，如字符串类型
+     */
     private boolean needQuote;
+    /**
+     * 是否是Date类型的参数
+     */
     private boolean isDate;
 
     public Parameter(Integer id, String data, boolean needQuote, boolean isDate) {
