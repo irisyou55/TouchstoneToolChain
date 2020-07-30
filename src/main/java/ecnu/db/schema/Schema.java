@@ -107,7 +107,7 @@ public class Schema {
 
     public int getJoinTag() {
         int temp = joinTag;
-        joinTag *= 4;
+        joinTag += 1;
         return temp;
     }
 
