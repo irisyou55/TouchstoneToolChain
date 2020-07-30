@@ -1,6 +1,5 @@
 package ecnu.db.constraintchain.chain;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 
 /**
@@ -9,13 +8,11 @@ import java.util.Arrays;
 public class ConstraintChainPkJoinNode extends ConstraintChainNode {
     private String[] pkColumns;
     private int pkTag;
-    private BigDecimal probability;
 
-    public ConstraintChainPkJoinNode(String tableName, int pkTag, String[] pkColumns, BigDecimal probability) {
+    public ConstraintChainPkJoinNode(String tableName, int pkTag, String[] pkColumns) {
         super(tableName, ConstraintChainNodeType.PK_JOIN);
         this.pkTag = pkTag;
         this.pkColumns = pkColumns;
-        this.probability = probability;
     }
 
     /**
@@ -30,6 +27,6 @@ public class ConstraintChainPkJoinNode extends ConstraintChainNode {
 
     @Override
     public String toString() {
-        return String.format("{pkTag:%d,probability:%s,pkColumns:%s}", pkTag, probability, Arrays.toString(pkColumns));
+        return String.format("{pkTag:%d,pkColumns:%s}", pkTag, Arrays.toString(pkColumns));
     }
 }

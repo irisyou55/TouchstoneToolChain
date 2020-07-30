@@ -262,8 +262,7 @@ public abstract class AbstractAnalyzer {
                 if (node.getJoinTag() < 0) {
                     node.setJoinTag(getSchema(pkTable).getJoinTag());
                 }
-                BigDecimal probability = BigDecimal.valueOf((double) node.getOutputRows() / lastNodeLineCount);
-                ConstraintChainPkJoinNode pkJoinNode = new ConstraintChainPkJoinNode(pkTable, node.getJoinTag(), pkCol.split(","), probability);
+                ConstraintChainPkJoinNode pkJoinNode = new ConstraintChainPkJoinNode(pkTable, node.getJoinTag(), pkCol.split(","));
                 constraintChain.addNode(pkJoinNode);
                 //设置主键
                 getSchema(pkTable).setPrimaryKeys(pkCol);
