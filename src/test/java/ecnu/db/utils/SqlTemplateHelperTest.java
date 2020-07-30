@@ -2,6 +2,7 @@ package ecnu.db.utils;
 
 import com.alibaba.druid.util.JdbcConstants;
 import ecnu.db.constraintchain.filter.Parameter;
+import ecnu.db.constraintchain.filter.operation.CompareOperator;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -46,18 +47,18 @@ class SqlTemplateHelperTest {
     public void testTemplatizeSqlConflicts() throws TouchstoneToolChainException {
         String sql = "select * from test where a='5' or b='5'";
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(new Parameter(0, "5", true, false));
-        parameters.add(new Parameter(1, "5", true, false));
+        parameters.add(new Parameter(0, "5", true, false, CompareOperator.EQ, "db.test.a"));
+        parameters.add(new Parameter(1, "5", true, false, CompareOperator.EQ, "db.test.b"));
         String modified = SqlTemplateHelper.templatizeSql("q5", sql, JdbcConstants.MYSQL, parameters);
-        assertEquals("-- conflictArgs:{id:0,data:5,needQuote:1,isDate:0},{id:1,data:5,needQuote:1,isDate:0}\nselect * from test where a='5' or b='5'", modified);
+        assertEquals("-- conflictArgs:{id:0,data:'5',operator:eq,operand:db.test.a},{id:1,data:'5',operator:eq,operand:db.test.b}\nselect * from test where a='5' or b='5'", modified);
     }
     @Test
     public void testTemplatizeSqlCannotFind() throws TouchstoneToolChainException {
         String sql = "select * from test where a='5' or b='5'";
         List<Parameter> parameters = new ArrayList<>();
-        Parameter parameter = new Parameter(0, "6", true, false);
+        Parameter parameter = new Parameter(0, "6", true, false, CompareOperator.EQ, "db.test.b");
         parameters.add(parameter);
         String modified = SqlTemplateHelper.templatizeSql("q6", sql, JdbcConstants.MYSQL, parameters);
-        assertEquals("-- cannotFindArgs:{id:0,data:6,needQuote:1,isDate:0}\nselect * from test where a='5' or b='5'", modified);
+        assertEquals("-- cannotFindArgs:{id:0,data:'6',operator:eq,operand:db.test.b}\nselect * from test where a='5' or b='5'", modified);
     }
 }

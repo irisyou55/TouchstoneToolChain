@@ -47,21 +47,21 @@ public class TidbSelectOperatorInfoParserTest {
     void testParse() throws Exception {
         String testCase = "ge(db.table.col1, 2)";
         AndNode node = parser.parseSelectOperatorInfo(testCase).getCondition();
-        assertEquals( "and(ge(column(db.table.col1), {id:0, data:2}))", node.toString());
+        assertEquals( "and(ge(db.table.col1, {id:0, data:2}))", node.toString());
     }
     @DisplayName("test TidbSelectOperatorInfoParser.parse method with arithmetic ops")
     @Test
     void testParseWithArithmeticOps() throws Exception {
         String testCase = "ge(mul(db.table.col1, plus(db.table.col2, 3)), 2)";
         AndNode node = parser.parseSelectOperatorInfo(testCase).getCondition();
-        assertEquals("and(ge(mul(column(db.table.col1), plus(column(db.table.col2), 3.0)), {id:0, data:2}))", node.toString());
+        assertEquals("and(ge(mul(db.table.col1, plus(db.table.col2, 3.0)), {id:0, data:2}))", node.toString());
     }
     @DisplayName("test TidbSelectOperatorInfoParser.parse method with logical ops")
     @Test
     void testParseWithLogicalOps() throws Exception {
         String testCase = "or(ge(db.table.col1, 2), lt(db.table.col4, 3.0))";
         AndNode node = parser.parseSelectOperatorInfo(testCase).getCondition();
-        assertEquals("and(or(ge(column(db.table.col1), {id:0, data:2}), lt(column(db.table.col4), {id:1, data:3.0})))", node.toString());
+        assertEquals("and(or(ge(db.table.col1, {id:0, data:2}), lt(db.table.col4, {id:1, data:3.0})))", node.toString());
     }
     @DisplayName("test TidbSelectOperatorInfoParser.parse method with erroneous grammar")
     @Test()
@@ -77,13 +77,13 @@ public class TidbSelectOperatorInfoParserTest {
         String testCase = "or(ge(db.table.col1, 2), not(in(db.table.col3, \"3\", \"2\")))";
         SelectResult result = parser.parseSelectOperatorInfo(testCase);
         AndNode node = result.getCondition();
-        assertEquals("and(or(ge(column(db.table.col1), {id:0, data:2}), not_in(column(db.table.col3), {id:1, data:'3'}, {id:2, data:'2'})))", node.toString());
+        assertEquals("and(or(ge(db.table.col1, {id:0, data:2}), not(in(db.table.col3, {id:1, data:'3'}, {id:2, data:'2'}))))", node.toString());
     }
     @DisplayName("test TidbSelectOperatorInfoParser.parse method with isnull")
     @Test()
     void testParseWithIsnull() throws Exception {
         String testCase = "or(ge(db.table.col1, 2), not(isnull(db.table.col2)))";
         AndNode node = parser.parseSelectOperatorInfo(testCase).getCondition();
-        assertEquals("and(or(ge(column(db.table.col1), {id:0, data:2}), not_isnull(column(db.table.col2))))", node.toString());
+        assertEquals("and(or(ge(db.table.col1, {id:0, data:2}), not(isnull(db.table.col2))))", node.toString());
     }
 }

@@ -21,9 +21,9 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
     @Override
     public String toString() {
         List<String> content = parameters.stream().map(Parameter::toString).collect(Collectors.toList());
-        content.add(0, String.format("column(%s)", columnName));
+        content.add(0, String.format("%s", columnName));
         if (hasNot) {
-            return String.format("not_%s(%s)", operator.toString().toLowerCase(), String.join(", ", content));
+            return String.format("not(%s(%s))", operator.toString().toLowerCase(), String.join(", ", content));
         }
         return String.format("%s(%s)", operator.toString().toLowerCase(), String.join(", ", content));
     }

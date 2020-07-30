@@ -102,7 +102,14 @@ public class SqlTemplateHelper {
      * @return 添加的参数部分
      */
     public static String appendArgs(String title, List<Parameter> params) {
-        String argsString = params.stream().map((parameter) -> String.format("{id:%s,data:%s,needQuote:%d,isDate:%d}", parameter.getId(), parameter.getData(), parameter.isNeedQuote() ? 1: 0, parameter.isDate() ? 1: 0)).collect(Collectors.joining(","));
+        String argsString = params.stream().map(
+                (parameter) ->
+                        String.format("{id:%s,data:%s,operator:%s,operand:%s}",
+                                parameter.getId(),
+                                parameter.isNeedQuote() ? "'"+parameter.getData()+"'": parameter.getData(),
+                                parameter.getOperator().toString().toLowerCase(),
+                                parameter.getOperand()))
+                .collect(Collectors.joining(","));
         return String.format("-- %s:%s%s", title, argsString, System.lineSeparator());
     }
 }

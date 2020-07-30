@@ -1,5 +1,7 @@
 package ecnu.db.constraintchain.filter;
 
+import ecnu.db.constraintchain.filter.operation.CompareOperator;
+
 /**
  * @author alan
  * 代表需要实例化的参数
@@ -21,6 +23,14 @@ public class Parameter {
      * 是否是Date类型的参数
      */
     private boolean isDate;
+    /**
+     * 操作符
+     */
+    private CompareOperator operator;
+    /**
+     * 操作数
+     */
+    private String operand;
 
     public Parameter(Integer id, String data, boolean needQuote, boolean isDate) {
         this.id = id;
@@ -28,6 +38,16 @@ public class Parameter {
         this.needQuote = needQuote;
         this.isDate = isDate;
     }
+
+    public Parameter(Integer id, String data, boolean needQuote, boolean isDate, CompareOperator operator, String operand) {
+        this.id = id;
+        this.data = data;
+        this.needQuote = needQuote;
+        this.isDate = isDate;
+        this.operator = operator;
+        this.operand = operand;
+    }
+
 
     public Integer getId() {
         return id;
@@ -59,6 +79,22 @@ public class Parameter {
 
     public void setDate(boolean date) {
         isDate = date;
+    }
+
+    public CompareOperator getOperator() {
+        return operator;
+    }
+
+    public void setOperator(CompareOperator operator) {
+        this.operator = operator;
+    }
+
+    public String getOperand() {
+        return operand;
+    }
+
+    public void setOperand(String operand) {
+        this.operand = operand;
     }
 
     @Override

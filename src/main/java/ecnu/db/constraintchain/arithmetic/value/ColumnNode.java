@@ -53,6 +53,6 @@ public class ColumnNode extends ArithmeticNode {
 
     @Override
     public String toString() {
-        return String.format("column(%s)", columnName);
+        return columnName;
     }
 }

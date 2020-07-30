@@ -25,9 +25,9 @@ public class IsNullFilterOperation extends AbstractFilterOperation {
     @Override
     public String toString() {
         if (hasNot) {
-            return String.format("not_isnull(column(%s))", this.columnName);
+            return String.format("not(isnull(%s))", this.columnName);
         }
-        return String.format("isnull(column(%s))", this.columnName);
+        return String.format("isnull(%s)", this.columnName);
     }
 
     public Boolean getHasNot() {
