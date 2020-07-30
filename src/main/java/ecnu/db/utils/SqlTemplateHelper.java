@@ -104,11 +104,13 @@ public class SqlTemplateHelper {
     public static String appendArgs(String title, List<Parameter> params) {
         String argsString = params.stream().map(
                 (parameter) ->
-                        String.format("{id:%s,data:%s,operator:%s,operand:%s}",
+                        String.format("{id:%s,data:%s,operator:%s,operand:%s,isDate:%d}",
                                 parameter.getId(),
                                 parameter.isNeedQuote() ? "'"+parameter.getData()+"'": parameter.getData(),
                                 parameter.getOperator().toString().toLowerCase(),
-                                parameter.getOperand()))
+                                parameter.getOperand(),
+                                parameter.isDate() ? 1: 0
+                        ))
                 .collect(Collectors.joining(","));
         return String.format("-- %s:%s%s", title, argsString, System.lineSeparator());
     }
