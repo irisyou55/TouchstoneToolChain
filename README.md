@@ -78,10 +78,10 @@ limit 20;
 ```
 
 ​		示例如下，由于1.sql中存在两个n_name，而在查询计划中统一了这两个，因此分析时无法智能替换，手动替换这两个即可。id代表参数的id，data代表参数的数据，
-        needQuote代表参数在SQL中是否需要加上"'"符号(比如字符串类型和日期类型)，isDate表示是否为Date类型参数。
+        operator代表参数参与运算的比较操作符，operand代表参数参与运算的操作数，isDate代表是否为Date类型。
 
 ```sql
--- cannotFindArgs:{id:0,data:MOZAMBIQUE,needQuote:1,isDate:0}
+-- conflictArgs:{id:0,data:'MOZAMBIQUE',operator:eq,operand:tpch.nation.n_name,isDate:0}
 select ps_partkey, sum(ps_supplycost * ps_availqty) as value
 from partsupp, supplier, nation
 where ps_suppkey = s_suppkey
