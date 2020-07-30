@@ -1,11 +1,15 @@
 package ecnu.db.constraintchain.arithmetic.operator;
 
 import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
+import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
 
 /**
  * @author wangqingshuai
  */
 public class PlusNode extends ArithmeticNode {
+    public PlusNode() {
+        super(ArithmeticNodeType.PLUS);
+    }
     @Override
     public float[] getVector() {
         float[] leftValue = leftNode.getVector(), rightValue = rightNode.getVector();

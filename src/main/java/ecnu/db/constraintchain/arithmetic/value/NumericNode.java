@@ -1,6 +1,7 @@
 package ecnu.db.constraintchain.arithmetic.value;
 
 import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
+import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
 
 import java.util.Arrays;
 
@@ -8,6 +9,9 @@ import java.util.Arrays;
  * @author wangqingshuai
  */
 public class NumericNode extends ArithmeticNode {
+    public NumericNode() {
+        super(ArithmeticNodeType.CONSTANT);
+    }
     private Float constant;
 
     public void setConstant(float constant) {

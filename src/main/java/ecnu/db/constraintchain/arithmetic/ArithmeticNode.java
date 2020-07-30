@@ -11,6 +11,10 @@ public abstract class ArithmeticNode {
     protected ArithmeticNodeType type;
     protected static int size = -1;
 
+    public ArithmeticNode(ArithmeticNodeType type) {
+        this.type = type;
+    }
+
     /**
      * 获取当前节点的计算结果
      *

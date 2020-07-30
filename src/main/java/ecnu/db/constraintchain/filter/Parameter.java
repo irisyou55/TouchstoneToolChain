@@ -63,9 +63,6 @@ public class Parameter {
 
     @Override
     public String toString() {
-        return "Parameter{" +
-                "id=" + id +
-                ", data='" + data + '\'' +
-                '}';
+        return String.format("{id:%d, data:%s}", id, needQuote ? String.format("'%s'", data): data);
     }
 }

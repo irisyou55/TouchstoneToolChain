@@ -5,18 +5,20 @@ import ecnu.db.analyzer.online.node.ExecutionNode;
 import ecnu.db.analyzer.online.node.NodeTypeRefFactory;
 import ecnu.db.analyzer.online.node.NodeTypeTool;
 import ecnu.db.analyzer.statical.QueryAliasParser;
-import ecnu.db.constraintchain.filter.Parameter;
+import ecnu.db.constraintchain.chain.ConstraintChain;
+import ecnu.db.constraintchain.chain.ConstraintChainFilterNode;
+import ecnu.db.constraintchain.chain.ConstraintChainFkJoinNode;
+import ecnu.db.constraintchain.chain.ConstraintChainPkJoinNode;
 import ecnu.db.constraintchain.filter.SelectResult;
 import ecnu.db.dbconnector.DatabaseConnectorInterface;
 import ecnu.db.schema.Schema;
 import ecnu.db.utils.SystemConfig;
 import ecnu.db.utils.TouchstoneToolChainException;
 import ecnu.db.utils.exception.CannotFindSchemaException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -109,27 +111,22 @@ public abstract class AbstractAnalyzer {
      * @param root 查询树
      * @return 该查询树结构出的约束链信息和表信息
      */
-    public Pair<List<String>, List<Parameter>> extractQueryInfos(String queryCanonicalName, ExecutionNode root) throws SQLException {
-
-        List<String> queryInfos = new ArrayList<>();
-        List<Parameter> parameters = new ArrayList<>();
+    public List<ConstraintChain> extractQueryInfos(String queryCanonicalName, ExecutionNode root) throws SQLException {
+        List<ConstraintChain> constraintChains = new ArrayList<>();
         List<List<ExecutionNode>> paths = getPaths(root);
         for (List<ExecutionNode> path : paths) {
-            QueryInfo queryInfo = null;
+            ConstraintChain constraintChain = null;
             try {
-                queryInfo = extractConstraintChain(path);
+                constraintChain = extractConstraintChain(path);
             } catch (TouchstoneToolChainException e) {
                 logger.error(String.format("提取'%s'的一个约束链失败", queryCanonicalName), e);
             }
-            if (queryInfo == null) {
+            if (constraintChain == null) {
                 break;
             }
-            if (StringUtils.isNotBlank(queryInfo.getData())) {
-                queryInfos.add(String.format("[%s];%s", queryInfo.getTableName(), queryInfo.getData()));
-                parameters.addAll(queryInfo.getParameters());
-            }
+            constraintChains.add(constraintChain);
         }
-        return Pair.of(queryInfos, parameters);
+        return constraintChains;
     }
 
     /**
@@ -177,32 +174,34 @@ public abstract class AbstractAnalyzer {
      * @throws TouchstoneToolChainException 无法处理路径
      * @throws SQLException                 无法处理路径
      */
-    private QueryInfo extractConstraintChain(List<ExecutionNode> path) throws TouchstoneToolChainException, SQLException {
+    private ConstraintChain extractConstraintChain(List<ExecutionNode> path) throws TouchstoneToolChainException, SQLException {
         if (path == null || path.size() == 0) {
             throw new TouchstoneToolChainException(String.format("非法的path输入 '%s'", path));
         }
         ExecutionNode node = path.get(0);
-        QueryInfo constraintChain;
+        ConstraintChain constraintChain;
         String tableName;
+        int lastNodeLineCount;
         if (node.getType() == ExecutionNode.ExecutionNodeType.filter) {
             SelectResult result = analyzeSelectInfo(node.getInfo());
             tableName = result.getTableName();
-            String selectInfo = "[0," + result.getCondition() + "," +
-                    (double) node.getOutputRows() / getSchema(tableName).getTableSize() + "];";
-            constraintChain = new QueryInfo(selectInfo, tableName, node.getOutputRows());
+            constraintChain = new ConstraintChain(tableName);
+            ConstraintChainFilterNode filterNode = new ConstraintChainFilterNode(tableName, BigDecimal.valueOf((double) node.getOutputRows() / getSchema(tableName).getTableSize()), result.getCondition());
+            constraintChain.addNode(filterNode);
             constraintChain.addParameters(result.getParameters());
+            lastNodeLineCount = node.getOutputRows();
         } else if (node.getType() == ExecutionNode.ExecutionNodeType.scan) {
             tableName = extractTableName(node.getInfo());
             Schema schema = getSchema(tableName);
-            constraintChain = new QueryInfo("", tableName, schema.getTableSize());
+            constraintChain = new ConstraintChain(tableName);
+            lastNodeLineCount = node.getOutputRows();
         } else {
             throw new TouchstoneToolChainException(String.format("底层节点'%s'不应该为join", node.getId()));
         }
         for (int i = 1; i < path.size(); i++) {
             node = path.get(i);
-            boolean isStop;
             try {
-                isStop = analyzeNode(node, constraintChain, tableName);
+                lastNodeLineCount = analyzeNode(node, constraintChain, tableName, lastNodeLineCount);
             } catch (TouchstoneToolChainException e) {
                 // 小于设置的阈值以后略去后续的节点
                 if (node.getOutputRows() * 1.0 / getSchema(tableName).getTableSize() < config.getSkipNodeThreshold()) {
@@ -212,7 +211,7 @@ public abstract class AbstractAnalyzer {
                 }
                 throw e;
             }
-            if (isStop) {
+            if (lastNodeLineCount < 0) {
                 break;
             }
         }
@@ -225,11 +224,11 @@ public abstract class AbstractAnalyzer {
      * @param node            需要分析的节点
      * @param constraintChain 约束链
      * @param tableName       表名
-     * @return 是否停止继续向上分析
+     * @return 节点行数，小于0代表停止继续向上分析
      * @throws TouchstoneToolChainException 节点分析出错
      * @throws SQLException                 节点分析出错
      */
-    private boolean analyzeNode(ExecutionNode node, QueryInfo constraintChain, String tableName) throws TouchstoneToolChainException, SQLException {
+    private int analyzeNode(ExecutionNode node, ConstraintChain constraintChain, String tableName, int lastNodeLineCount) throws TouchstoneToolChainException, SQLException {
         if (node.getType() == ExecutionNode.ExecutionNodeType.scan) {
             throw new TouchstoneToolChainException(String.format("中间节点'%s'不为scan", node.getId()));
         }
@@ -238,9 +237,9 @@ public abstract class AbstractAnalyzer {
             if (!tableName.equals(result.getTableName())) {
                 throw new TouchstoneToolChainException("select表名不匹配");
             }
-            constraintChain.addConstraint("[0," + result.getCondition() + "," +
-                    (double) node.getOutputRows() / constraintChain.getLastNodeLineCount() + "];");
-            constraintChain.setLastNodeLineCount(node.getOutputRows());
+            ConstraintChainFilterNode filterNode = new ConstraintChainFilterNode(tableName, BigDecimal.valueOf((double) node.getOutputRows() / lastNodeLineCount), result.getCondition());
+            lastNodeLineCount = node.getOutputRows();
+            constraintChain.addNode(filterNode);
             constraintChain.addParameters(result.getParameters());
         } else if (node.getType() == ExecutionNode.ExecutionNodeType.join) {
             String[] joinColumnInfos = analyzeJoinInfo(node.getInfo());
@@ -249,7 +248,7 @@ public abstract class AbstractAnalyzer {
             // 如果当前的join节点，不属于之前遍历的节点，则停止继续向上访问
             if (!pkTable.equals(constraintChain.getTableName())
                     && !fkTable.equals(constraintChain.getTableName())) {
-                return true;
+                return -1;
             }
             //将本表的信息放在前面，交换位置
             if (constraintChain.getTableName().equals(fkTable)) {
@@ -263,29 +262,26 @@ public abstract class AbstractAnalyzer {
                 if (node.getJoinTag() < 0) {
                     node.setJoinTag(getSchema(pkTable).getJoinTag());
                 }
-                constraintChain.addConstraint("[1," + pkCol.replace(',', '#') + "," +
-                        node.getJoinTag() + "," + 2 * node.getJoinTag() + "];");
+                BigDecimal probability = BigDecimal.valueOf((double) node.getOutputRows() / lastNodeLineCount);
+                ConstraintChainPkJoinNode pkJoinNode = new ConstraintChainPkJoinNode(pkTable, node.getJoinTag(), pkCol.split(","), probability);
+                constraintChain.addNode(pkJoinNode);
                 //设置主键
                 getSchema(pkTable).setPrimaryKeys(pkCol);
-                constraintChain.setLastNodeLineCount(node.getOutputRows());
-                return true;
+                return node.getOutputRows();
             } else {
                 if (node.getJoinTag() < 0) {
                     node.setJoinTag(getSchema(pkTable).getJoinTag());
                 }
-                String primaryKey = fkTable + "." + fkCol;
-                constraintChain.addConstraint("[2," + fkCol.replace(',', '#') + "," +
-                        (double) node.getOutputRows() / constraintChain.getLastNodeLineCount() + "," +
-                        primaryKey.replace(',', '#') + "," +
-                        node.getJoinTag() + "," + 2 * node.getJoinTag() + "];");
+                BigDecimal probability = BigDecimal.valueOf((double) node.getOutputRows() / lastNodeLineCount);
                 //设置外键
                 logger.info("table:" + pkTable + ".column:" + pkCol + " -ref- table:" +
                         fkCol + ".column:" + fkTable);
                 getSchema(pkTable).addForeignKey(pkCol, fkTable, fkCol);
-                constraintChain.setLastNodeLineCount(node.getOutputRows());
+                ConstraintChainFkJoinNode fkJoinNode = new ConstraintChainFkJoinNode(pkTable, fkTable, node.getJoinTag(), getSchema(pkTable).getForeignKeys(), probability);
+                constraintChain.addNode(fkJoinNode);
             }
         }
-        return false;
+        return lastNodeLineCount;
     }
 
     /**

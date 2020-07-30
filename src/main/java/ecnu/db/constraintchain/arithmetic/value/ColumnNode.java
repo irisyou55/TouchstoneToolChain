@@ -1,6 +1,7 @@
 package ecnu.db.constraintchain.arithmetic.value;
 
 import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
+import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
 import ecnu.db.utils.TouchstoneToolChainException;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -13,9 +14,12 @@ public class ColumnNode extends ArithmeticNode {
     private float min;
     private float max;
 
-    public ColumnNode() {}
+    public ColumnNode() {
+        super(ArithmeticNodeType.COLUMN);
+    }
 
     public ColumnNode(String columnName) {
+        super(ArithmeticNodeType.COLUMN);
         this.columnName = columnName;
     }
 

@@ -7,6 +7,7 @@ import com.google.common.collect.Multimap;
 import ecnu.db.analyzer.online.AbstractAnalyzer;
 import ecnu.db.analyzer.online.TidbAnalyzer;
 import ecnu.db.analyzer.online.node.ExecutionNode;
+import ecnu.db.constraintchain.chain.ConstraintChain;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.dbconnector.AbstractDbConnector;
 import ecnu.db.dbconnector.DatabaseConnectorInterface;
@@ -17,7 +18,6 @@ import ecnu.db.schema.generation.AbstractSchemaGenerator;
 import ecnu.db.schema.generation.TidbSchemaGenerator;
 import ecnu.db.utils.*;
 import ecnu.db.utils.exception.UnsupportedDatabaseSourceException;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,9 +91,9 @@ public class Main {
                             storageManager.dumpQueryPlan(queryPlan, queryCanonicalName);
                         }
                         ExecutionNode root = queryAnalyzer.getExecutionTree(queryPlan);
-                        Pair<List<String>, List<Parameter>> pair = queryAnalyzer.extractQueryInfos(queryCanonicalName, root);
-                        queryInfos.addAll(pair.getLeft());
-                        List<Parameter> parameters = pair.getRight();
+                        List<ConstraintChain> constraintChains = queryAnalyzer.extractQueryInfos(queryCanonicalName, root);
+                        queryInfos.addAll(constraintChains.stream().map(ConstraintChain::toString).collect(Collectors.toList()));
+                        List<Parameter> parameters = constraintChains.stream().flatMap((c -> c.getParameters().stream())).collect(Collectors.toList());
                         logger.info(String.format("%-15s Status:获取成功", queryCanonicalName));
                         query = SqlTemplateHelper.templatizeSql(queryCanonicalName, query, queryAnalyzer.getDbType(), parameters);
                         storageManager.storeSqlResult(sqlFile, query, queryAnalyzer.getDbType());

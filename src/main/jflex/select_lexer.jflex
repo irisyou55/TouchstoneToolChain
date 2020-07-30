@@ -35,8 +35,8 @@ ecnu.db.utils.TouchstoneToolChainException
 %column
 %state STRING_LITERAL
 %unicode
-%cup
 %cupsym TidbSelectSymbol
+%cup
 
 /* tokens */
 DIGIT=[0-9]
