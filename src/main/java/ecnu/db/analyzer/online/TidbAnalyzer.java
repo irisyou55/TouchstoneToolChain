@@ -42,8 +42,7 @@ public class TidbAnalyzer extends AbstractAnalyzer {
     private static final Pattern INNER_JOIN = Pattern.compile("inner join");
     private static final String TIDB_VERSION3 = "3.1.0";
     private static final String TIDB_VERSION4 = "4.0.0";
-    private final TidbSelectOperatorInfoLexer lexer = new TidbSelectOperatorInfoLexer(new StringReader(""));
-    private final TidbSelectOperatorInfoParser parser = new TidbSelectOperatorInfoParser(lexer, new ComplexSymbolFactory());
+    private final TidbSelectOperatorInfoParser parser = new TidbSelectOperatorInfoParser(new TidbSelectOperatorInfoLexer(new StringReader("")), new ComplexSymbolFactory());
     Map<String, String> tidbSelectArgs;
 
 
