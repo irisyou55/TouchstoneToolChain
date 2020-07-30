@@ -32,13 +32,6 @@ public class Parameter {
      */
     private String operand;
 
-    public Parameter(Integer id, String data, boolean needQuote, boolean isDate) {
-        this.id = id;
-        this.data = data;
-        this.needQuote = needQuote;
-        this.isDate = isDate;
-    }
-
     public Parameter(Integer id, String data, boolean needQuote, boolean isDate, CompareOperator operator, String operand) {
         this.id = id;
         this.data = data;

@@ -15,7 +15,7 @@ class SqlTemplateHelperTest {
     public void testTemplatizeSqlInt() throws TouchstoneToolChainException {
         String sql = "select * from test where a=5";
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(new Parameter(0, "5", false, false));
+        parameters.add(new Parameter(0, "5", false, false, null, null));
         String modified = SqlTemplateHelper.templatizeSql("q1", sql, JdbcConstants.MYSQL, parameters);
         assertEquals("select * from test where a='0,0'", modified);
     }
@@ -23,7 +23,7 @@ class SqlTemplateHelperTest {
     public void testTemplatizeSqlFloat() throws TouchstoneToolChainException {
         String sql = "select * from test where a=1.5";
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(new Parameter(0, "1.5", false, false));
+        parameters.add(new Parameter(0, "1.5", false, false, null, null));
         String modified = SqlTemplateHelper.templatizeSql("q2", sql, JdbcConstants.MYSQL, parameters);
         assertEquals("select * from test where a='0,0'", modified);
     }
@@ -31,7 +31,7 @@ class SqlTemplateHelperTest {
     public void testTemplatizeSqlStr() throws TouchstoneToolChainException {
         String sql = "select * from test where a='5'";
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(new Parameter(0, "5", true, false));
+        parameters.add(new Parameter(0, "5", true, false, null, null));
         String modified = SqlTemplateHelper.templatizeSql("q3", sql, JdbcConstants.MYSQL, parameters);
         assertEquals("select * from test where a='0,0'", modified);
     }
@@ -39,7 +39,7 @@ class SqlTemplateHelperTest {
     public void testTemplatizeSqlDate() throws TouchstoneToolChainException {
         String sql = "select * from test where a='1998-12-12 12:00:00.000000'";
         List<Parameter> parameters = new ArrayList<>();
-        parameters.add(new Parameter(0, "1998-12-12 12:00:00.000000", true, true));
+        parameters.add(new Parameter(0, "1998-12-12 12:00:00.000000", true, true, null, null));
         String modified = SqlTemplateHelper.templatizeSql("q4", sql, JdbcConstants.MYSQL, parameters);
         assertEquals("select * from test where a='0,1'", modified);
     }

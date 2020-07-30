@@ -164,9 +164,7 @@ uni_compare_expr ::=
                                                                                                     } else {
                                                                                                         operation = new MultiVarFilterOperation(op, e1);
                                                                                                     }
-                                                                                                    Parameter parameter = new Parameter(analyzer.getParameterId(), constant, needQuote, isDate);
-                                                                                                    parameter.setOperator(op);
-                                                                                                    parameter.setOperand(e1.toString());
+                                                                                                    Parameter parameter = new Parameter(analyzer.getParameterId(), constant, needQuote, isDate, op, e1.toString());
                                                                                                     operation.addParameter(parameter);
                                                                                                     parameters.add(parameter);
                                                                                                     RESULT = operation;
@@ -197,9 +195,7 @@ in_compare_expr ::=
                                                                                       UniVarFilterOperation operation = new UniVarFilterOperation(col, in);
                                                                                       boolean needQuote = isColumnNeedQuote(col), isDate = isColumnDate(col);
                                                                                       for (String argument: arguments) {
-                                                                                        Parameter parameter = new Parameter(analyzer.getParameterId(), argument, needQuote, isDate);
-                                                                                        parameter.setOperator(CompareOperator.IN);
-                                                                                        parameter.setOperand(col);
+                                                                                        Parameter parameter = new Parameter(analyzer.getParameterId(), argument, needQuote, isDate, CompareOperator.IN, col);
                                                                                         operation.addParameter(parameter);
                                                                                         parameters.add(parameter);
                                                                                       }
@@ -223,9 +219,7 @@ like_compare_expr ::=
                                                                                       String tableName = getCanonicalTableName(col);
                                                                                       verifyTableName(tableName);
                                                                                       UniVarFilterOperation operation = new UniVarFilterOperation(col, like);
-                                                                                      Parameter parameter = new Parameter(analyzer.getParameterId(), str, true, false);
-                                                                                      parameter.setOperator(CompareOperator.LIKE);
-                                                                                      parameter.setOperand(col);
+                                                                                      Parameter parameter = new Parameter(analyzer.getParameterId(), str, true, false, CompareOperator.LIKE, col);
                                                                                       operation.addParameter(parameter);
                                                                                       parameters.add(parameter);
                                                                                       RESULT = operation;
