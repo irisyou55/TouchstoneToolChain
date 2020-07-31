@@ -1,8 +1,9 @@
-package ecnu.db.analyzer.online;
+package ecnu.db.tidb;
 
 import com.alibaba.druid.util.JdbcConstants;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Multimap;
+import ecnu.db.analyzer.online.AbstractAnalyzer;
 import ecnu.db.analyzer.online.node.ExecutionNode;
 import ecnu.db.analyzer.online.node.ExecutionNode.ExecutionNodeType;
 import ecnu.db.analyzer.online.node.RawNode;
@@ -54,7 +55,7 @@ public class TidbAnalyzer extends AbstractAnalyzer {
     }
 
     @Override
-    String[] getSqlInfoColumns(String databaseVersion) throws TouchstoneToolChainException {
+    protected String[] getSqlInfoColumns(String databaseVersion) throws TouchstoneToolChainException {
         if (TIDB_VERSION3.equals(databaseVersion)) {
             return new String[]{"id", "operator info", "execution info"};
         } else if (TIDB_VERSION4.equals(databaseVersion)) {
@@ -355,7 +356,7 @@ public class TidbAnalyzer extends AbstractAnalyzer {
     }
 
     @Override
-    String extractTableName(String operatorInfo) {
+    protected String extractTableName(String operatorInfo) {
         String tableName = operatorInfo.split(",")[0].substring(6).toLowerCase();
         if (aliasDic.containsKey(tableName)) {
             tableName = aliasDic.get(tableName);

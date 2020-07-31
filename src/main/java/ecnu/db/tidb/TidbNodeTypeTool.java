@@ -1,10 +1,12 @@
-package ecnu.db.analyzer.online.node;
+package ecnu.db.tidb;
+
+import ecnu.db.analyzer.online.node.NodeTypeTool;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
-class TidbNodeTypeTool implements NodeTypeTool {
+public class TidbNodeTypeTool implements NodeTypeTool {
     private static final HashSet<String> READER_NODE_TYPES = new HashSet<>(Arrays.asList("TableReader", "IndexReader", "IndexLookUp"));
     private static final HashSet<String> PASS_NODE_TYPES = new HashSet<>(Arrays.asList("Projection", "TopN", "Sort", "HashAgg", "StreamAgg", "IndexScan", "IndexRangeScan", "IndexFullScan"));
     private static final HashSet<String> JOIN_NODE_TYPES = new HashSet<>(Arrays.asList("HashRightJoin", "HashLeftJoin", "IndexMergeJoin", "IndexHashJoin", "IndexJoin", "MergeJoin", "HashJoin"));

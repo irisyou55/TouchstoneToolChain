@@ -2,7 +2,7 @@ package ecnu.db.analyzer.online.select.tidb;
 
 import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.exception.IllegalCharacterException;
-import ecnu.db.analyzer.online.select.Token;
+import ecnu.db.tidb.Token;
 import java_cup.runtime.*;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
 import ecnu.db.constraintchain.filter.operation.CompareOperator;

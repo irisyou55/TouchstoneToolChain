@@ -1,5 +1,7 @@
 package ecnu.db.analyzer.online.node;
 
+import ecnu.db.tidb.TidbNodeTypeTool;
+
 /**
  * @author lianxuechao
  */

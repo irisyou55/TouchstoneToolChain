@@ -37,10 +37,10 @@ public abstract class AbstractAnalyzer {
     protected SystemConfig config;
     protected Multimap<String, String> tblName2CanonicalTblName;
 
-    AbstractAnalyzer(SystemConfig config, 
-                     DatabaseConnectorInterface dbConnector, 
-                     Map<String, Schema> schemas, 
-                     Multimap<String, String> tblName2CanonicalTblName) {
+    protected AbstractAnalyzer(SystemConfig config,
+                               DatabaseConnectorInterface dbConnector,
+                               Map<String, Schema> schemas,
+                               Multimap<String, String> tblName2CanonicalTblName) {
         this.nodeTypeRef = NodeTypeRefFactory.getNodeTypeRef(config.getDatabaseVersion());
         this.dbConnector = dbConnector;
         this.schemas = schemas;
@@ -55,7 +55,7 @@ public abstract class AbstractAnalyzer {
      * @return
      * @throws TouchstoneToolChainException
      */
-    abstract String[] getSqlInfoColumns(String databaseVersion) throws TouchstoneToolChainException;
+    protected abstract String[] getSqlInfoColumns(String databaseVersion) throws TouchstoneToolChainException;
 
     /**
      * 获取数据库使用的静态解析器的数据类型
@@ -70,7 +70,7 @@ public abstract class AbstractAnalyzer {
      * @param operatorInfo 需要处理的operator_info
      * @return 提取的表名
      */
-    abstract String extractTableName(String operatorInfo);
+    protected abstract String extractTableName(String operatorInfo);
 
     /**
      * 查询树的解析
@@ -88,7 +88,7 @@ public abstract class AbstractAnalyzer {
      * @return 长度为4的字符串数组，0，1为join info左侧的表名和列名，2，3为join右侧的表明和列名
      * @throws TouchstoneToolChainException 无法分析的join条件
      */
-    abstract String[] analyzeJoinInfo(String joinInfo) throws TouchstoneToolChainException;
+    protected abstract String[] analyzeJoinInfo(String joinInfo) throws TouchstoneToolChainException;
 
     /**
      * 分析select信息
@@ -97,7 +97,7 @@ public abstract class AbstractAnalyzer {
      * @return SelectResult
      * @throws TouchstoneToolChainException 分析失败
      */
-    abstract SelectResult analyzeSelectInfo(String operatorInfo) throws TouchstoneToolChainException;
+    protected abstract SelectResult analyzeSelectInfo(String operatorInfo) throws TouchstoneToolChainException;
 
     public List<String[]> getQueryPlan(String queryCanonicalName, String sql) throws SQLException, TouchstoneToolChainException {
         aliasDic = queryAliasParser.getTableAlias(config.isCrossMultiDatabase(), config.getDatabaseName(), sql, getDbType());

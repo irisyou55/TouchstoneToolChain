@@ -1,7 +1,6 @@
-package ecnu.db.tidb;
+package ecnu.db.tidb.stats;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonSetter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -50,50 +49,8 @@ public class TidbStatsJsonObject {
     }
 }
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-class Distribution {
-    int nullCount;
-    Histogram histogram;
-    int totalColSize;
 
-    public int getTotalColSize() {
-        return totalColSize;
-    }
 
-    @JsonSetter("tot_col_size")
-    public void setTotalColSize(int totalColSize) {
-        this.totalColSize = totalColSize;
-    }
 
-    public Histogram getHistogram() {
-        return histogram;
-    }
-
-    public void setHistogram(Histogram histogram) {
-        this.histogram = histogram;
-    }
-
-    @JsonSetter("null_count")
-    public int getNullCount() {
-        return nullCount;
-    }
-
-    public void setNullCount(int nullCount) {
-        this.nullCount = nullCount;
-    }
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-class Histogram {
-    int ndv;
-
-    public int getNdv() {
-        return ndv;
-    }
-
-    public void setNdv(int ndv) {
-        this.ndv = ndv;
-    }
-}
 
 

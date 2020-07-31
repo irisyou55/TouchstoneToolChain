@@ -3,7 +3,7 @@ package ecnu.db.dbconnector;
 import com.alibaba.druid.util.JdbcConstants;
 import ecnu.db.analyzer.statical.QueryTableName;
 import ecnu.db.schema.Schema;
-import ecnu.db.schema.generation.AbstractSchemaGenerator;
+import ecnu.db.schema.AbstractSchemaGenerator;
 import ecnu.db.utils.CommonUtils;
 import ecnu.db.utils.ReadQuery;
 import ecnu.db.utils.SystemConfig;
@@ -34,7 +34,7 @@ public abstract class AbstractDbConnector implements DatabaseConnectorInterface 
      */
     protected Statement stmt;
 
-    AbstractDbConnector(SystemConfig config) throws TouchstoneToolChainException {
+    protected AbstractDbConnector(SystemConfig config) throws TouchstoneToolChainException {
         // 数据库的用户名与密码
         String user = config.getDatabaseUser();
         String pass = config.getDatabasePwd();
@@ -51,21 +51,21 @@ public abstract class AbstractDbConnector implements DatabaseConnectorInterface 
      * @param config 配置信息
      * @return 数据库连接的URL
      */
-    abstract String dbUrl(SystemConfig config);
+    protected abstract String dbUrl(SystemConfig config);
 
     /**
      * 获取在数据库中出现的表名
      *
      * @return 所有表名
      */
-    abstract String abstractGetTableNames();
+    protected abstract String abstractGetTableNames();
 
     /**
      * 获取数据库表DDL所需要使用的SQL
      * @param tableName 需要获取的表名
      * @return SQL
      */
-    abstract String abstractGetCreateTableSql(String tableName);
+    protected abstract String abstractGetCreateTableSql(String tableName);
 
     @Override
     public List<String> getTableNames() throws SQLException {

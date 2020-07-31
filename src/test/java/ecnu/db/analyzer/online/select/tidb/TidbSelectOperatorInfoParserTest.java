@@ -1,6 +1,6 @@
 package ecnu.db.analyzer.online.select.tidb;
 
-import ecnu.db.analyzer.online.TidbAnalyzer;
+import ecnu.db.tidb.TidbAnalyzer;
 import ecnu.db.constraintchain.filter.SelectResult;
 import ecnu.db.constraintchain.filter.logical.AndNode;
 import ecnu.db.schema.Schema;

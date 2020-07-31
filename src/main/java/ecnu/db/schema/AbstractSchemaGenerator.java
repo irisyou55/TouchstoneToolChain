@@ -1,4 +1,4 @@
-package ecnu.db.schema.generation;
+package ecnu.db.schema;
 
 import ecnu.db.dbconnector.AbstractDbConnector;
 import ecnu.db.schema.Schema;
@@ -23,14 +23,14 @@ public abstract class AbstractSchemaGenerator {
      * @param tableDDL 表的DDL
      * @return 1.column info sqls 2. keys info sql, including primary key and foreign keys
      */
-    abstract Pair<String[], String> getColumnSqlAndKeySql(String tableDDL);
+    protected abstract Pair<String[], String> getColumnSqlAndKeySql(String tableDDL);
 
     /**
      * 获取table DDL结果中的col的名称到类型的map
      * @param columnSqls 需要的col
      * @return col的名称到类型的map
      */
-    abstract HashMap<String, String> getColumnInfo(String[] columnSqls);
+    protected abstract HashMap<String, String> getColumnInfo(String[] columnSqls);
 
     public Schema generateSchemaNoKeys(String tableName, String sql) throws TouchstoneToolChainException {
         Pair<String[], String> columnSqlAndKeySql = getColumnSqlAndKeySql(sql);

@@ -1,12 +1,12 @@
-package ecnu.db.schema.generation;
+package ecnu.db.tidb;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ecnu.db.dbconnector.AbstractDbConnector;
-import ecnu.db.dbconnector.TidbConnector;
 import ecnu.db.schema.Schema;
 import ecnu.db.schema.column.*;
-import ecnu.db.tidb.TidbStatsJsonObject;
+import ecnu.db.schema.AbstractSchemaGenerator;
 import ecnu.db.exception.TouchstoneToolChainException;
+import ecnu.db.tidb.stats.TidbStatsJsonObject;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -22,7 +22,7 @@ public class TidbSchemaGenerator extends AbstractSchemaGenerator {
 
 
     @Override
-    Pair<String[], String> getColumnSqlAndKeySql(String tableDDL) {
+    protected Pair<String[], String> getColumnSqlAndKeySql(String tableDDL) {
         tableDDL = tableDDL.toLowerCase();
         tableDDL = tableDDL.substring(tableDDL.indexOf(System.lineSeparator()) + 1, tableDDL.lastIndexOf(")"));
         tableDDL = tableDDL.replaceAll("`", "");
@@ -38,7 +38,7 @@ public class TidbSchemaGenerator extends AbstractSchemaGenerator {
     }
 
     @Override
-    HashMap<String, String> getColumnInfo(String[] columnSqls) {
+    protected HashMap<String, String> getColumnInfo(String[] columnSqls) {
         HashMap<String, String> columnInfos = new HashMap<>(columnSqls.length);
         for (String columnSql : columnSqls) {
             String[] attributes = columnSql.trim().split(" ");

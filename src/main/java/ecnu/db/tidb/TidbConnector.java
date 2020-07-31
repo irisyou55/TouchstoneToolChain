@@ -1,5 +1,6 @@
-package ecnu.db.dbconnector;
+package ecnu.db.tidb;
 
+import ecnu.db.dbconnector.AbstractDbConnector;
 import ecnu.db.utils.SystemConfig;
 import ecnu.db.exception.TouchstoneToolChainException;
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ public class TidbConnector extends AbstractDbConnector {
     }
 
     @Override
-    String dbUrl(SystemConfig config) {
+    protected String dbUrl(SystemConfig config) {
         if (!config.isCrossMultiDatabase()) {
             return "jdbc:mysql://" +
                     config.getDatabaseIp() + ":" +
@@ -42,12 +43,12 @@ public class TidbConnector extends AbstractDbConnector {
     }
 
     @Override
-    String abstractGetTableNames() {
+    protected String abstractGetTableNames() {
         return "show tables;";
     }
 
     @Override
-    String abstractGetCreateTableSql(String tableName) {
+    protected String abstractGetCreateTableSql(String tableName) {
         return "show create table " + tableName;
     }
 
