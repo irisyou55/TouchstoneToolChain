@@ -1,7 +1,7 @@
 package ecnu.db.dbconnector;
 
 import ecnu.db.utils.SystemConfig;
-import ecnu.db.utils.TouchstoneToolChainException;
+import ecnu.db.exception.TouchstoneToolChainException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

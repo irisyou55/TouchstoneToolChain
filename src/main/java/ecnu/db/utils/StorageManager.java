@@ -12,6 +12,7 @@ import ecnu.db.constraintchain.chain.ConstraintChain;
 import ecnu.db.schema.Schema;
 import ecnu.db.schema.column.AbstractColumn;
 import ecnu.db.schema.column.ColumnDeserializer;
+import ecnu.db.exception.TouchstoneToolChainException;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;

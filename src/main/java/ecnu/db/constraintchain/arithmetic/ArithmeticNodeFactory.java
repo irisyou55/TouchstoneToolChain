@@ -6,7 +6,7 @@ import ecnu.db.constraintchain.arithmetic.operator.MulNode;
 import ecnu.db.constraintchain.arithmetic.operator.PlusNode;
 import ecnu.db.constraintchain.arithmetic.value.ColumnNode;
 import ecnu.db.constraintchain.arithmetic.value.NumericNode;
-import ecnu.db.utils.TouchstoneToolChainException;
+import ecnu.db.exception.TouchstoneToolChainException;
 
 /**
  * @author alan

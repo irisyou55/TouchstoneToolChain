@@ -11,7 +11,7 @@ import ecnu.db.constraintchain.filter.*;
 import ecnu.db.analyzer.online.AbstractAnalyzer;
 import java.io.StringReader;
 import ecnu.db.schema.Schema;
-import ecnu.db.utils.TouchstoneToolChainException;
+import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.schema.column.ColumnType;
 
 

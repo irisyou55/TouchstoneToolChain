@@ -1,4 +1,4 @@
-package ecnu.db.utils;
+package ecnu.db.tidb;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;

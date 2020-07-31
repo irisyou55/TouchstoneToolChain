@@ -1,6 +1,7 @@
 package ecnu.db.utils;
 
 import ecnu.db.schema.Schema;
+import ecnu.db.exception.TouchstoneToolChainException;
 
 import java.util.*;
 

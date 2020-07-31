@@ -7,8 +7,8 @@ import ecnu.db.schema.generation.AbstractSchemaGenerator;
 import ecnu.db.utils.CommonUtils;
 import ecnu.db.utils.ReadQuery;
 import ecnu.db.utils.SystemConfig;
-import ecnu.db.utils.TouchstoneToolChainException;
-import ecnu.db.utils.exception.UnsupportedDBTypeException;
+import ecnu.db.exception.TouchstoneToolChainException;
+import ecnu.db.exception.UnsupportedDBTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

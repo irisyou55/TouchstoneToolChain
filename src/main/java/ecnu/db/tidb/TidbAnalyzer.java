@@ -13,9 +13,9 @@ import ecnu.db.dbconnector.DatabaseConnectorInterface;
 import ecnu.db.schema.Schema;
 import ecnu.db.utils.CommonUtils;
 import ecnu.db.utils.SystemConfig;
-import ecnu.db.utils.TouchstoneToolChainException;
-import ecnu.db.utils.exception.UnsupportedJoin;
-import ecnu.db.utils.exception.UnsupportedSelect;
+import ecnu.db.exception.TouchstoneToolChainException;
+import ecnu.db.exception.UnsupportedJoin;
+import ecnu.db.exception.UnsupportedSelect;
 import java_cup.runtime.ComplexSymbolFactory;
 import org.apache.commons.lang3.tuple.Pair;
 

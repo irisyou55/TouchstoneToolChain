@@ -1,6 +1,6 @@
 package ecnu.db.dbconnector;
 
-import ecnu.db.utils.TouchstoneToolChainException;
+import ecnu.db.exception.TouchstoneToolChainException;
 
 import java.util.List;
 import java.util.Map;

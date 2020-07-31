@@ -1,6 +1,4 @@
-package ecnu.db.utils.exception;
-
-import ecnu.db.utils.TouchstoneToolChainException;
+package ecnu.db.exception;
 
 /**
  * @author alan

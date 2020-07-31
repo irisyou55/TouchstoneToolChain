@@ -13,8 +13,8 @@ import ecnu.db.constraintchain.filter.SelectResult;
 import ecnu.db.dbconnector.DatabaseConnectorInterface;
 import ecnu.db.schema.Schema;
 import ecnu.db.utils.SystemConfig;
-import ecnu.db.utils.TouchstoneToolChainException;
-import ecnu.db.utils.exception.CannotFindSchemaException;
+import ecnu.db.exception.TouchstoneToolChainException;
+import ecnu.db.exception.CannotFindSchemaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

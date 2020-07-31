@@ -6,7 +6,7 @@ import com.alibaba.druid.sql.ast.statement.SQLExprTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
 import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlASTVisitorAdapter;
 import ecnu.db.utils.CommonUtils;
-import ecnu.db.utils.TouchstoneToolChainException;
+import ecnu.db.exception.TouchstoneToolChainException;
 
 import java.util.HashMap;
 import java.util.Map;

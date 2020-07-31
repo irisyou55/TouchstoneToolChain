@@ -2,7 +2,7 @@ package ecnu.db.constraintchain.arithmetic.value;
 
 import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
-import ecnu.db.utils.TouchstoneToolChainException;
+import ecnu.db.exception.TouchstoneToolChainException;
 
 import java.util.concurrent.ThreadLocalRandom;
 

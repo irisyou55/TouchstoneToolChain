@@ -2,9 +2,9 @@ package ecnu.db.schema;
 
 import ecnu.db.schema.column.AbstractColumn;
 import ecnu.db.schema.column.ColumnType;
-import ecnu.db.utils.TouchstoneToolChainException;
-import ecnu.db.utils.exception.CannotFindColumnException;
-import ecnu.db.utils.exception.CannotFindSchemaException;
+import ecnu.db.exception.TouchstoneToolChainException;
+import ecnu.db.exception.CannotFindColumnException;
+import ecnu.db.exception.CannotFindSchemaException;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;

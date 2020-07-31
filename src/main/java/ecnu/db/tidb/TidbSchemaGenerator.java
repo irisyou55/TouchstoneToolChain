@@ -5,8 +5,8 @@ import ecnu.db.dbconnector.AbstractDbConnector;
 import ecnu.db.dbconnector.TidbConnector;
 import ecnu.db.schema.Schema;
 import ecnu.db.schema.column.*;
-import ecnu.db.utils.TidbStatsJsonObject;
-import ecnu.db.utils.TouchstoneToolChainException;
+import ecnu.db.tidb.TidbStatsJsonObject;
+import ecnu.db.exception.TouchstoneToolChainException;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 

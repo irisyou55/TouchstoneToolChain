@@ -1,6 +1,6 @@
 package ecnu.db.constraintchain.arithmetic;
 
-import ecnu.db.utils.TouchstoneToolChainException;
+import ecnu.db.exception.TouchstoneToolChainException;
 
 /**
  * @author wangqingshuai

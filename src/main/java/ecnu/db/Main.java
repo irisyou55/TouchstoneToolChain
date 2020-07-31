@@ -17,7 +17,8 @@ import ecnu.db.schema.Schema;
 import ecnu.db.schema.generation.AbstractSchemaGenerator;
 import ecnu.db.schema.generation.TidbSchemaGenerator;
 import ecnu.db.utils.*;
-import ecnu.db.utils.exception.UnsupportedDatabaseSourceException;
+import ecnu.db.exception.TouchstoneToolChainException;
+import ecnu.db.exception.UnsupportedDatabaseSourceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
