@@ -22,6 +22,10 @@ public abstract class ArithmeticNode {
      */
     public abstract float[] getVector();
 
+    public void setType(ArithmeticNodeType type) {
+        this.type = type;
+    }
+
     public ArithmeticNodeType getType() {
         return this.type;
     }

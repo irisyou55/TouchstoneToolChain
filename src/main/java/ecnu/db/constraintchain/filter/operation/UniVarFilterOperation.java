@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
  * @author wangqingshuai
  */
 public class UniVarFilterOperation extends AbstractFilterOperation {
-    private final String columnName;
+    private String columnName;
     private Boolean hasNot = false;
 
     public UniVarFilterOperation(String columnName, CompareOperator operator) {
@@ -47,5 +47,13 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
 
     public void setHasNot(Boolean hasNot) {
         this.hasNot = hasNot;
+    }
+
+    public String getColumnName() {
+        return columnName;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
     }
 }

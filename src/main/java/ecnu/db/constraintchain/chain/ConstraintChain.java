@@ -1,5 +1,6 @@
 package ecnu.db.constraintchain.chain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import ecnu.db.constraintchain.filter.Parameter;
 
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class ConstraintChain {
         this.parameters = parameters;
     }
 
+    @JsonIgnore
     public List<Parameter> getParameters() {
         return parameters;
     }

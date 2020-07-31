@@ -6,7 +6,7 @@ import ecnu.db.constraintchain.filter.BoolExprType;
  * @author alan
  */
 public class IsNullFilterOperation extends AbstractFilterOperation {
-    private final String columnName;
+    private String columnName;
     private Boolean hasNot = false;
 
     public IsNullFilterOperation(String columnName) {
@@ -36,5 +36,13 @@ public class IsNullFilterOperation extends AbstractFilterOperation {
 
     public void setHasNot(Boolean hasNot) {
         this.hasNot = hasNot;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
+    }
+
+    public String getColumnName() {
+        return columnName;
     }
 }

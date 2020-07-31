@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
  * @author wangqingshuai
  */
 public class MultiVarFilterOperation extends AbstractFilterOperation {
-    private final ArithmeticNode arithmeticTree;
+    private ArithmeticNode arithmeticTree;
 
     public MultiVarFilterOperation(CompareOperator operator, ArithmeticNode arithmeticTree) {
         super(operator);
@@ -33,5 +33,13 @@ public class MultiVarFilterOperation extends AbstractFilterOperation {
         return String.format("%s(%s, %s)", operator.toString().toLowerCase(),
                 arithmeticTree.toString(),
                 parameters.stream().map(Parameter::toString).collect(Collectors.joining(", ")));
+    }
+
+    public void setArithmeticTree(ArithmeticNode arithmeticTree) {
+        this.arithmeticTree = arithmeticTree;
+    }
+
+    public ArithmeticNode getArithmeticTree() {
+        return arithmeticTree;
     }
 }

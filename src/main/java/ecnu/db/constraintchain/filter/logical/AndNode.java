@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
  * @author wangqingshuai
  */
 public class AndNode implements BoolExprNode {
-    private final BoolExprType type = BoolExprType.AND;
-    private final LinkedList<BoolExprNode> children;
+    private BoolExprType type = BoolExprType.AND;
+    private LinkedList<BoolExprNode> children;
 
     public AndNode() {
         this.children = new LinkedList<>();
@@ -35,6 +35,18 @@ public class AndNode implements BoolExprNode {
     @Override
     public BoolExprType getType() {
         return type;
+    }
+
+    public void setType(BoolExprType type) {
+        this.type = type;
+    }
+
+    public LinkedList<BoolExprNode> getChildren() {
+        return children;
+    }
+
+    public void setChildren(LinkedList<BoolExprNode> children) {
+        this.children = children;
     }
 
     @Override

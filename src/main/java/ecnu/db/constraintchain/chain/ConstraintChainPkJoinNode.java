@@ -29,4 +29,12 @@ public class ConstraintChainPkJoinNode extends ConstraintChainNode {
     public String toString() {
         return String.format("{pkTag:%d,pkColumns:%s}", pkTag, Arrays.toString(pkColumns));
     }
+
+    public String[] getPkColumns() {
+        return pkColumns;
+    }
+
+    public int getPkTag() {
+        return pkTag;
+    }
 }

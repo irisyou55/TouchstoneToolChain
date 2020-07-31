@@ -78,7 +78,7 @@ public class SqlTemplateHelper {
             Parameter parameter = pair.getKey();
             int startPos = pair.getValue().getLeft(), endPos = pair.getValue().getRight();
             fragments.add(query.substring(currentPos, startPos));
-            fragments.add(String.format("'%s,%d'", parameter.getId(), parameter.isDate() ? 1: 0));
+            fragments.add(String.format("'%s,%d'", parameter.getId(), parameter.getIsDate() ? 1: 0));
             currentPos = endPos;
         }
         fragments.add(query.substring(currentPos));
@@ -109,7 +109,7 @@ public class SqlTemplateHelper {
                                 parameter.isNeedQuote() ? "'"+parameter.getData()+"'": parameter.getData(),
                                 parameter.getOperator().toString().toLowerCase(),
                                 parameter.getOperand(),
-                                parameter.isDate() ? 1: 0
+                                parameter.getIsDate() ? 1: 0
                         ))
                 .collect(Collectors.joining(","));
         return String.format("-- %s:%s%s", title, argsString, System.lineSeparator());

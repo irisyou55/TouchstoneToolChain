@@ -33,4 +33,16 @@ public class ConstraintChainFkJoinNode extends ConstraintChainNode {
     public String toString() {
         return String.format("{pkTag:%d,refTable:%s,probability:%s}", pkTag, refTable, probability);
     }
+
+    public String getRefTable() {
+        return refTable;
+    }
+
+    public int getPkTag() {
+        return pkTag;
+    }
+
+    public BigDecimal getProbability() {
+        return probability;
+    }
 }

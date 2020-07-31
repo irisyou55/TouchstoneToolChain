@@ -1,5 +1,6 @@
 package ecnu.db.constraintchain.filter;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import ecnu.db.constraintchain.filter.operation.CompareOperator;
 
 /**
@@ -50,6 +51,7 @@ public class Parameter {
         this.id = id;
     }
 
+    @JsonIgnore
     public String getData() {
         return data;
     }
@@ -62,18 +64,20 @@ public class Parameter {
         return needQuote;
     }
 
+    @JsonIgnore
     public void setNeedQuote(boolean needQuote) {
         this.needQuote = needQuote;
     }
 
-    public boolean isDate() {
+    public boolean getIsDate() {
         return isDate;
     }
 
-    public void setDate(boolean date) {
+    public void setIsDate(boolean date) {
         isDate = date;
     }
 
+    @JsonIgnore
     public CompareOperator getOperator() {
         return operator;
     }
@@ -82,6 +86,7 @@ public class Parameter {
         this.operator = operator;
     }
 
+    @JsonIgnore
     public String getOperand() {
         return operand;
     }

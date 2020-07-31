@@ -8,6 +8,7 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
+import ecnu.db.constraintchain.chain.ConstraintChain;
 import ecnu.db.schema.Schema;
 import ecnu.db.schema.column.AbstractColumn;
 import ecnu.db.schema.column.ColumnDeserializer;
@@ -16,7 +17,6 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,23 +51,14 @@ public class StorageManager {
         FileUtils.writeStringToFile(new File(retSqlDir.getPath(), sqlFile.getName()), content, UTF_8);
     }
 
-    public void storeSchemaResult(Map<String, Schema> schemas) throws ParseException, IOException {
-        StringBuilder sb = new StringBuilder();
-        for (Schema schema : schemas.values()) {
-            String schemaInfo = schema.formatSchemaInfo(), dataDistributionInfo = schema.formatDataDistributionInfo();
-            if (schemaInfo != null) {
-                sb.append(schemaInfo).append(System.lineSeparator());
-            }
-            if (dataDistributionInfo != null) {
-                sb.append(dataDistributionInfo).append(System.lineSeparator());
-            }
-        }
-        FileUtils.writeStringToFile(new File(retDir.getPath(), "schema.conf"), sb.toString(), UTF_8);
+    public void storeSchemaResult(Map<String, Schema> schemas) throws IOException {
+        String content = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(schemas);
+        FileUtils.writeStringToFile(new File(retDir.getPath(), "schema.json"), content, UTF_8);
     }
 
-    public void storeConstrainChainResult(List<String> queryInfos) throws IOException {
-        String content = queryInfos.stream().collect(Collectors.joining(System.lineSeparator()));
-        FileUtils.writeStringToFile(new File(retDir.getPath(), "constraintChain.conf"), content, UTF_8);
+    public void storeConstrainChainResult(Map<String, List<ConstraintChain>> queryInfos) throws IOException {
+        String content = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(queryInfos);
+        FileUtils.writeStringToFile(new File(retDir.getPath(), "constraintChain.json"), content, UTF_8);
     }
 
     public void dumpStaticInfo(Map<String, Integer> multiColNdvMap, Map<String, Schema> schemas, List<String> tableNames) throws IOException {

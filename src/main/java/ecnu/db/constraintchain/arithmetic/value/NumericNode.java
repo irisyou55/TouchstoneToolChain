@@ -22,6 +22,10 @@ public class NumericNode extends ArithmeticNode {
         this.constant = (float) constant;
     }
 
+    public Float getConstant() {
+        return constant;
+    }
+
     @Override
     public float[] getVector() {
         int size = ArithmeticNode.size;

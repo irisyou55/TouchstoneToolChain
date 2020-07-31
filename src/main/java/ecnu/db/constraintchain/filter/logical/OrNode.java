@@ -13,8 +13,16 @@ public class OrNode implements BoolExprNode {
     private BoolExprNode rightNode;
     private final BoolExprType type = BoolExprType.OR;
 
+    public BoolExprNode getLeftNode() {
+        return leftNode;
+    }
+
     public void setLeftNode(BoolExprNode leftNode) {
         this.leftNode = leftNode;
+    }
+
+    public BoolExprNode getRightNode() {
+        return rightNode;
     }
 
     public void setRightNode(BoolExprNode rightNode) {

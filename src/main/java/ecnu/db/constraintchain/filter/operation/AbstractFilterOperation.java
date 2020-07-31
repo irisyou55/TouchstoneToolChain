@@ -18,7 +18,7 @@ public abstract class AbstractFilterOperation implements BoolExprNode {
     /**
      * 此filter operation的操作符
      */
-    protected final CompareOperator operator;
+    protected CompareOperator operator;
     /**
      * 此filter operation的过滤比
      */
@@ -42,7 +42,27 @@ public abstract class AbstractFilterOperation implements BoolExprNode {
         parameters.add(parameter);
     }
 
+    public void setParameters(List<Parameter> parameters) {
+        this.parameters = parameters;
+    }
+
     public List<Parameter> getParameters() {
         return this.parameters;
+    }
+
+    public CompareOperator getOperator() {
+        return operator;
+    }
+
+    public void setOperator(CompareOperator operator) {
+        this.operator = operator;
+    }
+
+    public void setProbability(BigDecimal probability) {
+        this.probability = probability;
+    }
+
+    public BigDecimal getProbability() {
+        return probability;
     }
 }

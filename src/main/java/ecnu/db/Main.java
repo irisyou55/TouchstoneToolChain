@@ -72,7 +72,7 @@ public class Main {
             throw new UnsupportedDatabaseSourceException(config.getDataSource());
         }
         AbstractAnalyzer queryAnalyzer = getAnalyzer(config, dbConnector, schemas);
-        List<String> queryInfos = new LinkedList<>();
+        Map<String, List<ConstraintChain>> queryInfos = new HashMap<>();
         boolean needLog = false;
         logger.info("开始获取查询计划");
         for (File sqlFile : files) {
@@ -85,14 +85,13 @@ public class Main {
                     String queryCanonicalName = String.format("%s_%d", sqlFile.getName(), index);
                     try {
                         logger.info(String.format("%-15s Status:开始获取", queryCanonicalName));
-                        queryInfos.add("## " + queryCanonicalName);
                         queryPlan = queryAnalyzer.getQueryPlan(queryCanonicalName, query);
                         if (storageManager.isDump()) {
                             storageManager.dumpQueryPlan(queryPlan, queryCanonicalName);
                         }
                         ExecutionNode root = queryAnalyzer.getExecutionTree(queryPlan);
                         List<ConstraintChain> constraintChains = queryAnalyzer.extractQueryInfos(queryCanonicalName, root);
-                        queryInfos.addAll(constraintChains.stream().map(ConstraintChain::toString).collect(Collectors.toList()));
+                        queryInfos.put(queryCanonicalName, constraintChains);
                         List<Parameter> parameters = constraintChains.stream().flatMap((c -> c.getParameters().stream())).collect(Collectors.toList());
                         logger.info(String.format("%-15s Status:获取成功", queryCanonicalName));
                         query = SqlTemplateHelper.templatizeSql(queryCanonicalName, query, queryAnalyzer.getDbType(), parameters);

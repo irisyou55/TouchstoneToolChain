@@ -11,4 +11,8 @@ public class ConstraintChainNode {
         this.tableName = tableName;
         this.constraintChainNodeType = constraintChainNodeType;
     }
+
+    public ConstraintChainNodeType getConstraintChainNodeType() {
+        return constraintChainNodeType;
+    }
 }
