@@ -8,6 +8,8 @@ import ecnu.db.schema.column.AbstractColumn;
 import ecnu.db.schema.column.DecimalColumn;
 import ecnu.db.schema.column.IntColumn;
 import ecnu.db.schema.column.StringColumn;
+import ecnu.db.tidb.parser.TidbSelectOperatorInfoLexer;
+import ecnu.db.tidb.parser.TidbSelectOperatorInfoParser;
 import ecnu.db.utils.SystemConfig;
 import java_cup.runtime.ComplexSymbolFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TidbSelectOperatorInfoParserTest {
-    private TidbSelectOperatorInfoLexer lexer = new TidbSelectOperatorInfoLexer(new StringReader(""));
-    private TidbSelectOperatorInfoParser parser = new TidbSelectOperatorInfoParser(lexer, new ComplexSymbolFactory());
+    private final TidbSelectOperatorInfoLexer lexer = new TidbSelectOperatorInfoLexer(new StringReader(""));
+    private final TidbSelectOperatorInfoParser parser = new TidbSelectOperatorInfoParser(lexer, new ComplexSymbolFactory());
 
     @BeforeEach
     void setUp() {

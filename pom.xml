@@ -110,6 +110,9 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
+                            <lexDefinitions>
+                                <definition>src/main/resources/tidb/select_lexer.jflex</definition>
+                            </lexDefinitions>
                             <outputDirectory>src/main/java</outputDirectory>
                         </configuration>
                     </execution>
@@ -128,8 +131,8 @@
                         <configuration>
                             <className>TidbSelectOperatorInfoParser</className>
                             <symbolsName>TidbSelectSymbol</symbolsName>
-                            <packageName>ecnu.db.analyzer.online.select.tidb</packageName>
-                            <cupDefinition>src/main/cup/select_parser.cup</cupDefinition>
+                            <packageName>ecnu.db.tidb.parser</packageName>
+                            <cupDefinition>src/main/resources/tidb/select_parser.cup</cupDefinition>
                             <outputDirectory>src/main/java</outputDirectory>
                         </configuration>
                     </execution>

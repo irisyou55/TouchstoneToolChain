@@ -1,6 +1,6 @@
 package ecnu.db.tidb;
 
-import ecnu.db.analyzer.online.select.tidb.TidbSelectSymbol;
+import ecnu.db.tidb.parser.TidbSelectSymbol;
 import java_cup.runtime.ComplexSymbolFactory;
 
 /**

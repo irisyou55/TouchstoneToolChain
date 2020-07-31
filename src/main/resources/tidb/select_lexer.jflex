@@ -1,4 +1,4 @@
-package ecnu.db.analyzer.online.select.tidb;
+package ecnu.db.tidb.parser;
 
 import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.exception.IllegalCharacterException;
