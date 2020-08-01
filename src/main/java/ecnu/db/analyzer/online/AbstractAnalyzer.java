@@ -29,7 +29,7 @@ public abstract class AbstractAnalyzer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractAnalyzer.class);
     protected DatabaseConnectorInterface dbConnector;
     protected Map<String, String> aliasDic = new HashMap<>();
-    protected QueryAliasParser queryAliasParser = new QueryAliasParser();
+    protected final QueryAliasParser queryAliasParser = new QueryAliasParser();
     protected Map<String, Schema> schemas;
     protected int parameterId = 0;
     protected NodeTypeTool nodeTypeRef;
@@ -59,12 +59,12 @@ public abstract class AbstractAnalyzer {
 
 
     /**
-     * sql的查询计划中，需要使用查询计划的列名
+     * 获取sql的查询计划中，需要使用查询计划的列名
      *
-     * @return
-     * @throws TouchstoneToolChainException
+     * @return sql的查询计划中，需要使用查询计划的列名
+     * @throws UnsupportedDBTypeException 为对当前analyzer实例化的数据库版本实现该方法
      */
-    protected abstract String[] getSqlInfoColumns() throws TouchstoneToolChainException;
+    protected abstract String[] getSqlInfoColumns() throws UnsupportedDBTypeException;
 
     /**
      * 获取数据库使用的静态解析器的数据类型
@@ -201,7 +201,6 @@ public abstract class AbstractAnalyzer {
             lastNodeLineCount = node.getOutputRows();
         } else if (node.getType() == ExecutionNode.ExecutionNodeType.scan) {
             tableName = extractTableName(node.getInfo());
-            Schema schema = getSchema(tableName);
             constraintChain = new ConstraintChain(tableName);
             lastNodeLineCount = node.getOutputRows();
         } else {
@@ -300,8 +299,8 @@ public abstract class AbstractAnalyzer {
      * @param fkTable 外表
      * @param fkCol   外键
      * @return 该列是否为主键
-     * @throws TouchstoneToolChainException
-     * @throws SQLException
+     * @throws TouchstoneToolChainException 由于逻辑错误无法判断是否为主键的异常
+     * @throws SQLException                 无法通过数据库SQL查询获得多列属性的ndv
      */
     private boolean isPrimaryKey(String pkTable, String pkCol, String fkTable, String fkCol) throws TouchstoneToolChainException, SQLException {
         if (String.format("%s.%s", pkTable, pkCol).equals(getSchema(fkTable).getMetaDataFks().get(fkCol))) {

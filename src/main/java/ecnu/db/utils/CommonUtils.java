@@ -19,8 +19,8 @@ public class CommonUtils {
     /**
      * 获取正则表达式的匹配
      *
-     * @param pattern
-     * @param str
+     * @param pattern 正则表达式
+     * @param str     传入的字符串
      * @return 成功的所有匹配，一个{@code List<String>}对应一个匹配的所有group
      */
     public static List<List<String>> matchPattern(Pattern pattern, String str) {
@@ -41,7 +41,7 @@ public class CommonUtils {
      * 检查是否是SQL语句里where_condition的边界token
      *
      * @param token 需要检查的token
-     * @return
+     * @return 是否为SQL语句里where_condition的边界token
      */
     public static boolean isEndOfConditionExpr(String token) {
         return WHERE_DELIMITERS.contains(token);
@@ -49,8 +49,9 @@ public class CommonUtils {
 
     /**
      * 单个数据库时把表转换为<database>.<table>的形式
+     *
      * @param databaseName 未跨数据库情况下数据库名称
-     * @param name 表名
+     * @param name         表名
      * @return 转换后的表名
      */
     public static String addDBNamePrefix(String databaseName, String name) {
@@ -62,6 +63,7 @@ public class CommonUtils {
 
     /**
      * 是否为<database>.<table>的形式的表名
+     *
      * @param tableName 表名
      * @return true or false
      */

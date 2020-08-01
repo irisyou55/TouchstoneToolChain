@@ -60,7 +60,7 @@ public class TidbAnalyzer extends AbstractAnalyzer {
     }
 
     @Override
-    protected String[] getSqlInfoColumns() throws TouchstoneToolChainException {
+    protected String[] getSqlInfoColumns() throws UnsupportedDBTypeException {
         switch (analyzerSupportedDatabaseVersion) {
             case TiDB3:
                 return new String[]{"id", "operator info", "execution info"};

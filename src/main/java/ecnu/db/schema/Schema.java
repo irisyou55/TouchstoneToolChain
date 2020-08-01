@@ -1,10 +1,10 @@
 package ecnu.db.schema;
 
-import ecnu.db.schema.column.AbstractColumn;
-import ecnu.db.schema.column.ColumnType;
-import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.exception.CannotFindColumnException;
 import ecnu.db.exception.CannotFindSchemaException;
+import ecnu.db.exception.TouchstoneToolChainException;
+import ecnu.db.schema.column.AbstractColumn;
+import ecnu.db.schema.column.ColumnType;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -64,8 +64,8 @@ public class Schema {
      *
      * @param metaData 数据库的元信息
      * @param schemas  需要初始化的表
-     * @throws SQLException
-     * @throws TouchstoneToolChainException
+     * @throws SQLException 无法从数据库的metadata中获取信息
+     * @throws TouchstoneToolChainException 没有找到主键/外键表，或者外键关系冲突
      */
     public static void initFks(DatabaseMetaData metaData, Map<String, Schema> schemas) throws SQLException, TouchstoneToolChainException {
         for (Map.Entry<String, Schema> entry : schemas.entrySet()) {
@@ -134,9 +134,9 @@ public class Schema {
 
     }
 
-    public int getNdv(String columnName) throws TouchstoneToolChainException {
+    public int getNdv(String columnName) throws CannotFindColumnException {
         if (!columns.containsKey(columnName)) {
-            throw new TouchstoneToolChainException("不存在的列" + columnName);
+            throw new CannotFindColumnException(tableName, columnName);
         }
         return columns.get(columnName).getNdv();
     }
