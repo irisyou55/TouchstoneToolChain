@@ -1,6 +1,5 @@
 package ecnu.db.constraintchain.chain;
 
-import java.io.IOException;
 import java.util.List;
 
 /**

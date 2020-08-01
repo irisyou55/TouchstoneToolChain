@@ -137,7 +137,7 @@ public class DbConnector implements DatabaseConnectorInterface {
      * @throws IOException                  获取col的cardinality和average length等信息失败
      */
     public Schema fetchSchema(SchemaGenerator dbSchemaGenerator, String canonicalTableName) throws TouchstoneToolChainException, SQLException, IOException {
-        Schema schema = dbSchemaGenerator.generateSchemaNoKeys(canonicalTableName, getTableMetadata(canonicalTableName));
+        Schema schema = dbSchemaGenerator.generateSchemas(canonicalTableName, getTableMetadata(canonicalTableName));
         dbSchemaGenerator.setDataRangeBySqlResult(schema.getColumns().values(), getDataRange(canonicalTableName,
                 dbSchemaGenerator.getColumnDistributionSql(schema.getTableName(), schema.getColumns().values())));
         logger.info(String.format("获取'%s'表结构和表数据分布成功", canonicalTableName));

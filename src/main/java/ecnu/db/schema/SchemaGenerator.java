@@ -51,7 +51,7 @@ public class SchemaGenerator {
         return columnInfos;
     }
 
-    public Schema generateSchemaNoKeys(String tableName, String sql) throws TouchstoneToolChainException {
+    public Schema generateSchemas(String tableName, String sql) throws TouchstoneToolChainException {
         return new Schema(tableName, getColumns(getColumnInfo(getColumnSql(sql))));
     }
 

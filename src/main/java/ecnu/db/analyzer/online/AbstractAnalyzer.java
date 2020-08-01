@@ -18,7 +18,6 @@ import ecnu.db.utils.TouchstoneSupportedDatabaseVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;

@@ -1,9 +1,7 @@
 package ecnu.db.utils;
 
 import ecnu.db.exception.UnsupportedDBTypeException;
-import ecnu.db.schema.Schema;
 
-import java.io.IOException;
 import java.util.Set;
 
 /**

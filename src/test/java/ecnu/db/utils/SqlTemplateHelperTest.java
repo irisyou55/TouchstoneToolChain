@@ -3,7 +3,6 @@ package ecnu.db.utils;
 import com.alibaba.druid.util.JdbcConstants;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.constraintchain.filter.operation.CompareOperator;
-import ecnu.db.exception.TouchstoneToolChainException;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

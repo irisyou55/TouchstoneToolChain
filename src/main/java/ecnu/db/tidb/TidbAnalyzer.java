@@ -1,6 +1,5 @@
 package ecnu.db.tidb;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Multimap;
 import ecnu.db.analyzer.online.AbstractAnalyzer;
@@ -14,13 +13,8 @@ import ecnu.db.exception.UnsupportedDBTypeException;
 import ecnu.db.exception.UnsupportedJoin;
 import ecnu.db.exception.UnsupportedSelect;
 import ecnu.db.schema.Schema;
-import ecnu.db.schema.column.AbstractColumn;
-import ecnu.db.schema.column.ColumnType;
-import ecnu.db.schema.column.IntColumn;
-import ecnu.db.schema.column.StringColumn;
 import ecnu.db.tidb.parser.TidbSelectOperatorInfoLexer;
 import ecnu.db.tidb.parser.TidbSelectOperatorInfoParser;
-import ecnu.db.tidb.stats.TidbStatsJsonObject;
 import ecnu.db.utils.AbstractDatabaseInfo;
 import ecnu.db.utils.CommonUtils;
 import ecnu.db.utils.SystemConfig;
@@ -28,8 +22,6 @@ import java_cup.runtime.ComplexSymbolFactory;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.*;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
