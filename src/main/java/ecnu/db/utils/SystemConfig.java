@@ -30,7 +30,6 @@ public class SystemConfig {
     private String logDirectory;
 
     private HashMap<ColumnType, HashSet<String>> typeConvert;
-    private HashMap<String, String> tidbSelectArgs;
     private Double skipNodeThreshold;
 
     public SystemConfig() {
@@ -91,14 +90,6 @@ public class SystemConfig {
 
     public void setDumpDirectory(String dumpDirectory) {
         this.dumpDirectory = dumpDirectory;
-    }
-
-    public HashMap<String, String> getTidbSelectArgs() {
-        return tidbSelectArgs;
-    }
-
-    public void setTidbSelectArgs(HashMap<String, String> tidbSelectArgs) {
-        this.tidbSelectArgs = tidbSelectArgs;
     }
 
     public String getTidbHttpPort() {

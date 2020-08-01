@@ -67,16 +67,6 @@ public abstract class AbstractDbConnector implements DatabaseConnectorInterface 
      */
     protected abstract String abstractGetCreateTableSql(String tableName);
 
-    @Override
-    public List<String> getTableNames() throws SQLException {
-        ResultSet rs = stmt.executeQuery(abstractGetTableNames());
-        ArrayList<String> tables = new ArrayList<>();
-        while (rs.next()) {
-            tables.add(rs.getString(1).trim().toLowerCase());
-        }
-        return tables;
-    }
-
     public String getTableDdl(String tableName) throws SQLException {
         ResultSet rs = stmt.executeQuery(abstractGetCreateTableSql(tableName));
         rs.next();
@@ -147,7 +137,7 @@ public abstract class AbstractDbConnector implements DatabaseConnectorInterface 
         }
         tableNames = tableNames.stream().distinct().collect(Collectors.toList());
         if (!isCrossMultiDatabase) {
-            tableNames = tableNames.stream().map((name) -> CommonUtils.addDBNamePrefix(databaseName, name)).collect(Collectors.toList());
+            tableNames = tableNames.stream().map((name) -> CommonUtils.addDatabaseNamePrefix(databaseName, name)).collect(Collectors.toList());
         }
         return tableNames;
     }

@@ -28,11 +28,7 @@ public class ExecutionNode {
     /**
      * 节点输出的数据量
      */
-    private int outputRows;
-    /**
-     * 节点是否已经被访问过
-     */
-    private boolean visited;
+    private final int outputRows;
     /**
      * 记录主键的join tag，第一次访问该节点后设置join tag，后续的访问可以找到之前对应的join tag
      */
@@ -45,22 +41,7 @@ public class ExecutionNode {
         this.outputRows = outputRows;
     }
 
-    public ExecutionNode(ExecutionNodeType type, int outputRows, String info) {
-        this.type = type;
-        this.outputRows = outputRows;
-        this.info = info;
-    }
 
-    public ExecutionNode(String id, ExecutionNodeType type, String info) {
-        this.id = id;
-        this.type = type;
-        this.info = info;
-    }
-
-    public ExecutionNode(ExecutionNodeType type, String info) {
-        this.type = type;
-        this.info = info;
-    }
 
     public String getId() {
         return id;
@@ -83,18 +64,6 @@ public class ExecutionNode {
 
     public String getInfo() {
         return info;
-    }
-
-    public ExecutionNode getRightNode() {
-        return rightNode;
-    }
-
-    public void setRightNode(ExecutionNode rightNode) {
-        this.rightNode = rightNode;
-    }
-
-    public ExecutionNode getLeftNode() {
-        return leftNode;
     }
 
     public void setLeftNode(ExecutionNode leftNode) {

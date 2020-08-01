@@ -2,7 +2,6 @@ package ecnu.db.analyzer.statical;
 
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLStatement;
-import ecnu.db.utils.TouchstoneSupportedDatabaseVersion;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

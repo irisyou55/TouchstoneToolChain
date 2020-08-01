@@ -17,15 +17,15 @@ public class Preprocessor {
      */
     public static List<Schema> getTableOrder(Map<String, Schema> schemas) throws TouchstoneToolChainException {
 
-        List<Schema> tableOrder = new ArrayList<Schema>();
+        List<Schema> tableOrder = new ArrayList<>();
 
         // map: tables -> referenced tables
-        HashMap<Schema, ArrayList<String>> tableDependencyInfo = new HashMap<Schema, ArrayList<String>>();
+        HashMap<Schema, ArrayList<String>> tableDependencyInfo = new HashMap<>();
 
         for(Schema schema : schemas.values()) {
             if (schema.getForeignKeys().size() != 0) {
                 Map<String, String> foreignKeys = schema.getForeignKeys();
-                ArrayList<String> referencedTables = new ArrayList<String>();
+                ArrayList<String> referencedTables = new ArrayList<>();
                 for (int j = 0; j < foreignKeys.size(); j++) {
                     referencedTables.add(foreignKeys.get(j).split("\\.")[0]);
                 }

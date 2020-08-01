@@ -14,7 +14,7 @@ public class ConstraintChainReader {
      *
      * @return 加载成功的约束链
      */
-    public static List<ConstraintChain> readConstraintChain(String fileName) throws IOException {
+    public static List<ConstraintChain> readConstraintChain(String fileName) {
         throw new UnsupportedOperationException();
     }
 

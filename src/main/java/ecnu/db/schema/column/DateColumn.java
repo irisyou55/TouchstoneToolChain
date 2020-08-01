@@ -1,9 +1,6 @@
 package ecnu.db.schema.column;
 
 
-import org.apache.commons.lang3.time.DateUtils;
-
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.regex.Pattern;
 
@@ -41,25 +38,5 @@ public class DateColumn extends AbstractColumn {
     @Override
     public int getNdv() {
         return -1;
-    }
-
-    @Override
-    public String formatDataDistribution() throws ParseException {
-
-        if (isNumeric(begin)) {
-            return columnName + ";" + nullPercentage + ';' + TOUCHSTONE_FMT.format(Long.parseLong(begin)) + ";" +
-                    TOUCHSTONE_FMT.format(Long.parseLong(end));
-        } else {
-            return columnName + ";" + nullPercentage + ';' +
-                    TOUCHSTONE_FMT.format(DateUtils.parseDate(begin, DATA_TIME_PATTERN)) + ";" +
-                    TOUCHSTONE_FMT.format(DateUtils.parseDate(end, DATA_TIME_PATTERN).getTime());
-        }
-    }
-
-    private boolean isNumeric(String strNum) {
-        if (strNum == null) {
-            return false;
-        }
-        return DATE_FORMAT_PATTERN.matcher(strNum).matches();
     }
 }

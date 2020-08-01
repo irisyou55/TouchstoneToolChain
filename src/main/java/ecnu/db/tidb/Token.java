@@ -11,7 +11,7 @@ public class Token extends ComplexSymbolFactory.ComplexSymbol {
     /**
      * token所在的第一个字符的位置，从当前行开始计数
      */
-    private int column;
+    private final int column;
 
     public Token(int type, int column) {
         this(type, column, null);

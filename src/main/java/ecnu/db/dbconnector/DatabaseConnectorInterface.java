@@ -11,14 +11,6 @@ import java.util.Map;
  */
 public interface DatabaseConnectorInterface {
     /**
-     * 获取数据库的全部表名
-     *
-     * @return 全部表名
-     * @throws SQLException 无法从数据库连接中获取表名
-     */
-    List<String> getTableNames() throws SQLException;
-
-    /**
      * explain analyze一个query
      *
      * @param queryCanonicalName 对应query的标准名称

@@ -19,9 +19,4 @@ public class BoolColumn extends AbstractColumn {
     public int getNdv() {
         return -1;
     }
-
-    @Override
-    public String formatDataDistribution() {
-        return columnName + ";" + nullPercentage + "," + trueProbability;
-    }
 }

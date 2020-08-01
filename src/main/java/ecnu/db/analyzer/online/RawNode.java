@@ -6,10 +6,10 @@ package ecnu.db.analyzer.online;
 public class RawNode {
     public RawNode left;
     public RawNode right;
-    public String nodeType;
-    public String operatorInfo;
-    public int rowCount;
-    public String id;
+    public final String nodeType;
+    public final String operatorInfo;
+    public final int rowCount;
+    public final String id;
 
     public RawNode(String id, RawNode left, RawNode right, String nodeType, String operatorInfo, int rowCount) {
         this.id = id;

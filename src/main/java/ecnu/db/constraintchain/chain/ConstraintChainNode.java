@@ -4,8 +4,8 @@ package ecnu.db.constraintchain.chain;
  * @author wangqingshuai
  */
 public class ConstraintChainNode {
-    protected String tableName;
-    protected ConstraintChainNodeType constraintChainNodeType;
+    protected final String tableName;
+    protected final ConstraintChainNodeType constraintChainNodeType;
 
     public ConstraintChainNode(String tableName, ConstraintChainNodeType constraintChainNodeType) {
         this.tableName = tableName;

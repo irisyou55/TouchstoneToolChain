@@ -32,8 +32,4 @@ public class DecimalColumn extends AbstractColumn {
         return -1;
     }
 
-    @Override
-    public String formatDataDistribution() {
-        return columnName + ";" + nullPercentage + ';' + min + ';' + max;
-    }
 }

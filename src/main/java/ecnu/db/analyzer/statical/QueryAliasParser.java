@@ -44,7 +44,7 @@ public class QueryAliasParser {
             if (x.getAlias() != null) {
                 String tableName = x.getName().toString().toLowerCase();
                 if (!isCrossMultiDatabase) {
-                    aliasMap.put(x.getAlias().toLowerCase(), CommonUtils.addDBNamePrefix(databaseName, tableName));
+                    aliasMap.put(x.getAlias().toLowerCase(), CommonUtils.addDatabaseNamePrefix(databaseName, tableName));
                 } else {
                     aliasMap.put(x.getAlias().toLowerCase(), tableName);
                 }

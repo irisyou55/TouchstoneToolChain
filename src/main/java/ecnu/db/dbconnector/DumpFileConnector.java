@@ -9,22 +9,15 @@ import static ecnu.db.utils.CommonUtils.DUMP_FILE_POSTFIX;
 
 public class DumpFileConnector implements DatabaseConnectorInterface {
 
-    private final List<String> tableNames;
-
     private final Map<String, List<String[]>> queryPlanMap;
 
     private final Map<String, Integer> multiColumnsNdvMap;
 
-    public DumpFileConnector(List<String> tableNames, Map<String, List<String[]>> queryPlanMap, Map<String, Integer> multiColumnsNdvMap) {
-        this.tableNames = tableNames;
+    public DumpFileConnector(Map<String, List<String[]>> queryPlanMap, Map<String, Integer> multiColumnsNdvMap) {
         this.queryPlanMap = queryPlanMap;
         this.multiColumnsNdvMap = multiColumnsNdvMap;
     }
 
-    @Override
-    public List<String> getTableNames() {
-        return tableNames;
-    }
 
     @Override
     public List<String[]> explainQuery(String queryCanonicalName, String sql, String[] sqlInfoColumns) throws TouchstoneToolChainException {

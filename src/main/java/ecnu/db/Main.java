@@ -54,12 +54,13 @@ public class Main {
         Map<String, Schema> schemas = new HashMap<>(INIT_HASHMAP_SIZE);
         List<String> tableNames;
         if (storageManager.isLoad()) {
+            // todo 从文件中正确加载表信息
             tableNames = storageManager.loadTableNames();
             logger.info("加载表名成功，表名为:" + tableNames);
             Map<String, List<String[]>> queryPlanMap = storageManager.loadQueryPlans();
             Map<String, Integer> multiColNdvMap = storageManager.loadMultiColMap();
             schemas = storageManager.loadSchemas();
-            dbConnector = new DumpFileConnector(tableNames, queryPlanMap, multiColNdvMap);
+            dbConnector = new DumpFileConnector(queryPlanMap, multiColNdvMap);
             logger.info("数据加载完毕");
         } else {
             switch (config.getDatabaseVersion()) {

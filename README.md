@@ -146,19 +146,7 @@ java -jar ./target/TouchstoneToolchain-${version}.jar CONFIG_PATH/config.conf
             "bool"
         ]
     },
-    "tidbHttpPort": "10080",
-    "tidbSelectArgs": {
-        "LT": "<",
-        "GT": ">",
-        "LE": "<=",
-        "GE": ">=",
-        "EQ": "=",
-        "NE": "<>",
-        "LIKE": "like",
-        "IN": "in",
-        "ISNULL": "isnull",
-        "OR": "or"
-    }
+    "tidbHttpPort": "10080"
 }
 ```
 
@@ -185,10 +173,6 @@ java -jar ./target/TouchstoneToolchain-${version}.jar CONFIG_PATH/config.conf
 
   用于从http端口采集tidb的schema统计信息
 
-+ select参数配置
-
-  由于在查询计划中，tidb会把condition条件做映射转换，而touchstone使用常见的参数作为输入，因此这个配置文件中定义了如何找到对应的select参数，一般不需更改
-
 ## 特殊情况下的行为
 
 1. 跨库信息采集
@@ -205,7 +189,7 @@ java -jar ./target/TouchstoneToolchain-${version}.jar CONFIG_PATH/config.conf
 
 4. 数据库中未显式配置主外键
 
-   由于在一些生产环境中，并未在表上显式配置外键依赖，因此TouchstoneToolChain会尝试从query中推测主外键，推测依据基于基数和表大小。基数大的表会作为主键表，基数相同时，表小的表会作为主键表。
+   由于在一些生产环境中，并未在表上显式配置外键依赖，因此TouchstoneToolChain会尝试从query中推测主外键，推测依据基于基数和表大小。基数大的表会作为主键表，基数相同时，数据量小的表会作为主键表。
 
 ## 已知问题
 

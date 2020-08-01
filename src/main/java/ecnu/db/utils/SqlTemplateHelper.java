@@ -5,7 +5,6 @@ import com.alibaba.druid.sql.parser.Token;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import ecnu.db.constraintchain.filter.Parameter;
-import ecnu.db.exception.UnsupportedDBTypeException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

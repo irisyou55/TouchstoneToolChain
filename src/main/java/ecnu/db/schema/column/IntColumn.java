@@ -36,9 +36,4 @@ public class IntColumn extends AbstractColumn {
     public void setNdv(int ndv) {
         this.ndv = ndv;
     }
-
-    @Override
-    public String formatDataDistribution() {
-        return columnName + ";" + nullPercentage + ';' + ndv + ';' + min + ';' + max;
-    }
 }

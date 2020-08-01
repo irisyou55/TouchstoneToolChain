@@ -44,13 +44,11 @@ public class TidbAnalyzer extends AbstractAnalyzer {
     private static final Pattern EQ_OPERATOR = Pattern.compile("eq\\(([a-zA-Z0-9_$]+\\.[a-zA-Z0-9_$]+\\.[a-zA-Z0-9_$]+), ([a-zA-Z0-9_$]+\\.[a-zA-Z0-9_$]+\\.[a-zA-Z0-9_$]+)\\)");
     private static final Pattern INNER_JOIN = Pattern.compile("inner join");
     private final TidbSelectOperatorInfoParser parser = new TidbSelectOperatorInfoParser(new TidbSelectOperatorInfoLexer(new StringReader("")), new ComplexSymbolFactory());
-    Map<String, String> tidbSelectArgs;
 
 
     public TidbAnalyzer(SystemConfig config, DatabaseConnectorInterface dbConnector,
                         Map<String, Schema> schemas, Multimap<String, String> tblName2CanonicalTblName) throws UnsupportedDBTypeException {
         super(config, dbConnector, schemas, tblName2CanonicalTblName);
-        this.tidbSelectArgs = config.getTidbSelectArgs();
         parser.setAnalyzer(this);
     }
 

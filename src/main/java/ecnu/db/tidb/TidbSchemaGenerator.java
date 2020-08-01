@@ -33,8 +33,7 @@ public class TidbSchemaGenerator extends AbstractSchemaGenerator {
                 break;
             }
         }
-        String keysInfo = null;
-        return new MutablePair<>(Arrays.copyOfRange(sqls, 0, index + 1), keysInfo);
+        return new MutablePair<>(Arrays.copyOfRange(sqls, 0, index + 1), null);
     }
 
     @Override

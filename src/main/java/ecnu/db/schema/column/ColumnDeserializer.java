@@ -1,7 +1,6 @@
 package ecnu.db.schema.column;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -22,7 +21,7 @@ public class ColumnDeserializer extends StdDeserializer<AbstractColumn> {
     }
 
     @Override
-    public AbstractColumn deserialize(JsonParser parser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+    public AbstractColumn deserialize(JsonParser parser, DeserializationContext deserializationContext) throws IOException {
         JsonNode node = parser.getCodec().readTree(parser);
         switch (ColumnType.valueOf(node.get("columnType").asText())) {
             case INTEGER:

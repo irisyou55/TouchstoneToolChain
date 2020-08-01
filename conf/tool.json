@@ -27,17 +27,5 @@
       "bool"
     ]
   },
-  "tidbHttpPort": "10080",
-  "tidbSelectArgs": {
-    "LT": "<",
-    "GT": ">",
-    "LE": "<=",
-    "GE": ">=",
-    "EQ": "=",
-    "NE": "<>",
-    "LIKE": "like",
-    "IN": "in",
-    "ISNULL": "isnull",
-    "OR": "or"
-  }
+  "tidbHttpPort": "10080"
 }

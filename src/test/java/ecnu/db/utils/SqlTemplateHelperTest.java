@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SqlTemplateHelperTest {
     @Test
-    public void testTemplatizeSqlInt() throws TouchstoneToolChainException {
+    public void testTemplatizeSqlInt() {
         String sql = "select * from test where a=5";
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(new Parameter(0, "5", false, false, null, null));
@@ -21,7 +21,7 @@ class SqlTemplateHelperTest {
         assertEquals("select * from test where a='0,0'", modified);
     }
     @Test
-    public void testTemplatizeSqlFloat() throws TouchstoneToolChainException {
+    public void testTemplatizeSqlFloat() {
         String sql = "select * from test where a=1.5";
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(new Parameter(0, "1.5", false, false, null, null));
@@ -29,7 +29,7 @@ class SqlTemplateHelperTest {
         assertEquals("select * from test where a='0,0'", modified);
     }
     @Test
-    public void testTemplatizeSqlStr() throws TouchstoneToolChainException {
+    public void testTemplatizeSqlStr() {
         String sql = "select * from test where a='5'";
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(new Parameter(0, "5", true, false, null, null));
@@ -37,7 +37,7 @@ class SqlTemplateHelperTest {
         assertEquals("select * from test where a='0,0'", modified);
     }
     @Test
-    public void testTemplatizeSqlDate() throws TouchstoneToolChainException {
+    public void testTemplatizeSqlDate() {
         String sql = "select * from test where a='1998-12-12 12:00:00.000000'";
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(new Parameter(0, "1998-12-12 12:00:00.000000", true, true, null, null));
@@ -45,7 +45,7 @@ class SqlTemplateHelperTest {
         assertEquals("select * from test where a='0,1'", modified);
     }
     @Test
-    public void testTemplatizeSqlConflicts() throws TouchstoneToolChainException {
+    public void testTemplatizeSqlConflicts() {
         String sql = "select * from test where a='5' or b='5'";
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(new Parameter(0, "5", true, false, CompareOperator.EQ, "db.test.a"));
@@ -54,7 +54,7 @@ class SqlTemplateHelperTest {
         assertEquals("-- conflictArgs:{id:0,data:'5',operator:eq,operand:db.test.a,isDate:0},{id:1,data:'5',operator:eq,operand:db.test.b,isDate:0}\nselect * from test where a='5' or b='5'", modified);
     }
     @Test
-    public void testTemplatizeSqlCannotFind() throws TouchstoneToolChainException {
+    public void testTemplatizeSqlCannotFind() {
         String sql = "select * from test where a='5' or b='5'";
         List<Parameter> parameters = new ArrayList<>();
         Parameter parameter = new Parameter(0, "6", true, false, CompareOperator.EQ, "db.test.b");

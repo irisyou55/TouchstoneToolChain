@@ -1,6 +1,5 @@
 package ecnu.db.tidb.parser;
 
-import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.exception.IllegalCharacterException;
 import ecnu.db.tidb.Token;
 import java_cup.runtime.*;

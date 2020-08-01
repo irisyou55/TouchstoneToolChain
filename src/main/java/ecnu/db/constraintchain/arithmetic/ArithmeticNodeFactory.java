@@ -13,7 +13,7 @@ import ecnu.db.exception.TouchstoneToolChainException;
  */
 public class ArithmeticNodeFactory {
     public static ArithmeticNode create(ArithmeticNodeType type) throws TouchstoneToolChainException {
-        ArithmeticNode node = null;
+        ArithmeticNode node;
         switch (type) {
             case DIV:
                 node = new DivNode();
