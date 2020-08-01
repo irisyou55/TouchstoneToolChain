@@ -2,6 +2,7 @@ package ecnu.db.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ecnu.db.schema.column.ColumnType;
+import ecnu.db.utils.convert.ColumnConvert;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -22,8 +23,7 @@ public class SystemConfig {
     private boolean crossMultiDatabase;
     private String resultDirectory;
     private String tidbHttpPort;
-    private String dataSource;
-    private String databaseVersion;
+    private TouchstoneSupportedDatabaseVersion databaseVersion;
     private String sqlsDirectory;
     private String loadDirectory;
     private String dumpDirectory;
@@ -49,7 +49,7 @@ public class SystemConfig {
             configJson.append(line);
         }
         SystemConfig systemConfig = new ObjectMapper().readValue(configJson.toString(), SystemConfig.class);
-        ConfigConvert.setTypeConvert(systemConfig.getTypeConvert());
+        ColumnConvert.setColumnTypeConvert(systemConfig.getTypeConvert());
         return systemConfig;
     }
 
@@ -99,14 +99,6 @@ public class SystemConfig {
 
     public void setTidbSelectArgs(HashMap<String, String> tidbSelectArgs) {
         this.tidbSelectArgs = tidbSelectArgs;
-    }
-
-    public String getDataSource() {
-        return dataSource;
-    }
-
-    public void setDataSource(String dataSource) {
-        this.dataSource = dataSource;
     }
 
     public String getTidbHttpPort() {
@@ -169,11 +161,11 @@ public class SystemConfig {
         this.databaseName = databaseName;
     }
 
-    public String getDatabaseVersion() {
+    public TouchstoneSupportedDatabaseVersion getDatabaseVersion() {
         return databaseVersion;
     }
 
-    public void setDatabaseVersion(String databaseVersion) {
+    public void setDatabaseVersion(TouchstoneSupportedDatabaseVersion databaseVersion) {
         this.databaseVersion = databaseVersion;
     }
 

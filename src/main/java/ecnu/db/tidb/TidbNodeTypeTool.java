@@ -1,6 +1,6 @@
 package ecnu.db.tidb;
 
-import ecnu.db.analyzer.online.node.NodeTypeTool;
+import ecnu.db.analyzer.online.NodeTypeTool;
 
 import java.util.Arrays;
 import java.util.Collections;

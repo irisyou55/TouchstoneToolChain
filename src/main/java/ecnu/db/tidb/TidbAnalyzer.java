@@ -4,19 +4,21 @@ import com.alibaba.druid.util.JdbcConstants;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Multimap;
 import ecnu.db.analyzer.online.AbstractAnalyzer;
-import ecnu.db.analyzer.online.node.ExecutionNode;
-import ecnu.db.analyzer.online.node.ExecutionNode.ExecutionNodeType;
-import ecnu.db.analyzer.online.node.RawNode;
-import ecnu.db.tidb.parser.TidbSelectOperatorInfoLexer;
-import ecnu.db.tidb.parser.TidbSelectOperatorInfoParser;
+import ecnu.db.analyzer.online.ExecutionNode;
+import ecnu.db.analyzer.online.ExecutionNode.ExecutionNodeType;
+import ecnu.db.analyzer.online.RawNode;
 import ecnu.db.constraintchain.filter.SelectResult;
 import ecnu.db.dbconnector.DatabaseConnectorInterface;
-import ecnu.db.schema.Schema;
-import ecnu.db.utils.CommonUtils;
-import ecnu.db.utils.SystemConfig;
 import ecnu.db.exception.TouchstoneToolChainException;
+import ecnu.db.exception.UnsupportedDBTypeException;
 import ecnu.db.exception.UnsupportedJoin;
 import ecnu.db.exception.UnsupportedSelect;
+import ecnu.db.schema.Schema;
+import ecnu.db.tidb.parser.TidbSelectOperatorInfoLexer;
+import ecnu.db.tidb.parser.TidbSelectOperatorInfoParser;
+import ecnu.db.utils.CommonUtils;
+import ecnu.db.utils.SystemConfig;
+import ecnu.db.utils.TouchstoneSupportedDatabaseVersion;
 import java_cup.runtime.ComplexSymbolFactory;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -41,33 +43,32 @@ public class TidbAnalyzer extends AbstractAnalyzer {
     private static final Pattern PLAN_ID = Pattern.compile("([a-zA-Z]+_[0-9]+)");
     private static final Pattern EQ_OPERATOR = Pattern.compile("eq\\(([a-zA-Z0-9_$]+\\.[a-zA-Z0-9_$]+\\.[a-zA-Z0-9_$]+), ([a-zA-Z0-9_$]+\\.[a-zA-Z0-9_$]+\\.[a-zA-Z0-9_$]+)\\)");
     private static final Pattern INNER_JOIN = Pattern.compile("inner join");
-    private static final String TIDB_VERSION3 = "3.1.0";
-    private static final String TIDB_VERSION4 = "4.0.0";
     private final TidbSelectOperatorInfoParser parser = new TidbSelectOperatorInfoParser(new TidbSelectOperatorInfoLexer(new StringReader("")), new ComplexSymbolFactory());
     Map<String, String> tidbSelectArgs;
 
 
     public TidbAnalyzer(SystemConfig config, DatabaseConnectorInterface dbConnector,
-                        Map<String, Schema> schemas, Multimap<String, String> tblName2CanonicalTblName) {
+                        Map<String, Schema> schemas, Multimap<String, String> tblName2CanonicalTblName) throws UnsupportedDBTypeException {
         super(config, dbConnector, schemas, tblName2CanonicalTblName);
         this.tidbSelectArgs = config.getTidbSelectArgs();
         parser.setAnalyzer(this);
     }
 
     @Override
-    protected String[] getSqlInfoColumns(String databaseVersion) throws TouchstoneToolChainException {
-        if (TIDB_VERSION3.equals(databaseVersion)) {
-            return new String[]{"id", "operator info", "execution info"};
-        } else if (TIDB_VERSION4.equals(databaseVersion)) {
-            return new String[]{"id", "operator info", "actRows", "access object"};
-        } else {
-            throw new TouchstoneToolChainException(String.format("unsupported tidb version %s", databaseVersion));
-        }
+    public String getStaticalDbVersion() {
+        return JdbcConstants.MYSQL;
     }
 
     @Override
-    public String getDbType() {
-        return JdbcConstants.MYSQL;
+    protected String[] getSqlInfoColumns() throws TouchstoneToolChainException {
+        switch (analyzerSupportedDatabaseVersion) {
+            case TiDB3:
+                return new String[]{"id", "operator info", "execution info"};
+            case TiDB4:
+                return new String[]{"id", "operator info", "actRows", "access object"};
+            default:
+                throw new UnsupportedDBTypeException(analyzerSupportedDatabaseVersion);
+        }
     }
 
     @Override
@@ -81,27 +82,27 @@ public class TidbAnalyzer extends AbstractAnalyzer {
      * 合并节点，删除query plan中不需要或者不支持的节点，并根据节点类型提取对应信息
      * 关于join下推到tikv节点的处理:
      * 1. 有selection的下推
-     *                IndexJoin                                         Filter
-     *                /       \                                          /
-     *         leftNode      IndexLookup              ===>>>          Join
-     *                      /         \                              /   \
-     *             IndexRangeScan     Selection                leftNode  Scan
-     *                                 /
-     *                              Scan
+     * IndexJoin                                         Filter
+     * /       \                                          /
+     * leftNode      IndexLookup              ===>>>          Join
+     * /         \                              /   \
+     * IndexRangeScan     Selection                leftNode  Scan
+     * /
+     * Scan
      * <p>
      * 2. 没有selection的下推(leftNode中有Selection节点)
-     *                IndexJoin                                         Join
-     *               /       \                                         /    \
-     *         leftNode    IndexLookup               ===>>>     leftNode   Scan
-     *                      /        \
-     *              IndexRangeScan  Scan
+     * IndexJoin                                         Join
+     * /       \                                         /    \
+     * leftNode    IndexLookup               ===>>>     leftNode   Scan
+     * /        \
+     * IndexRangeScan  Scan
      * <p>
      * 3. 没有selection的下推(leftNode中没有Selection节点，但右边扫描节点上有索引)
-     *               IndexJoin                                         Join
-     *              /       \                                         /    \
-     *        leftNode      IndexReader              ===>>>     leftNode   Scan
-     *                      /
-     *               IndexRangeScan
+     * IndexJoin                                         Join
+     * /       \                                         /    \
+     * leftNode      IndexReader              ===>>>     leftNode   Scan
+     * /
+     * IndexRangeScan
      *
      * @param rawNode 需要处理的query plan树
      * @return 处理好的树
@@ -112,7 +113,6 @@ public class TidbAnalyzer extends AbstractAnalyzer {
         if (rawNode == null) {
             return null;
         }
-        Matcher matcher;
         String nodeType = rawNode.nodeType;
         if (nodeTypeRef.isPassNode(nodeType)) {
             return rawNode.left == null ? null : buildExecutionTree(rawNode.left);
@@ -190,9 +190,9 @@ public class TidbAnalyzer extends AbstractAnalyzer {
         if (canonicalTblNames.size() > 1) {
             throw new TouchstoneToolChainException(String.format("'%s'的表名有冲突，请使用别名",
                     canonicalTblNames
-                    .stream()
-                    .map((name) -> String.format("%s", name))
-                    .collect(Collectors.joining(","))));
+                            .stream()
+                            .map((name) -> String.format("%s", name))
+                            .collect(Collectors.joining(","))));
         }
         return canonicalTblNames.get(0);
     }
@@ -207,7 +207,7 @@ public class TidbAnalyzer extends AbstractAnalyzer {
         Deque<Pair<Integer, RawNode>> pStack = new ArrayDeque<>();
         List<List<String>> matches = matchPattern(PLAN_ID, queryPlan.get(0)[0]);
         String nodeType = matches.get(0).get(0).split("_")[0];
-        String[] subQueryPlanInfo = extractSubQueryPlanInfo(config.getDatabaseVersion(), queryPlan.get(0));
+        String[] subQueryPlanInfo = extractSubQueryPlanInfo(queryPlan.get(0));
         String planId = matches.get(0).get(0), operatorInfo = subQueryPlanInfo[1], executionInfo = subQueryPlanInfo[2];
         Matcher matcher;
         int rowCount = (matcher = ROW_COUNTS.matcher(executionInfo)).find() ?
@@ -215,7 +215,7 @@ public class TidbAnalyzer extends AbstractAnalyzer {
         RawNode rawNodeRoot = new RawNode(planId, null, null, nodeType, operatorInfo, rowCount), rawNode;
         pStack.push(Pair.of(0, rawNodeRoot));
         for (String[] subQueryPlan : queryPlan.subList(1, queryPlan.size())) {
-            subQueryPlanInfo = extractSubQueryPlanInfo(config.getDatabaseVersion(), subQueryPlan);
+            subQueryPlanInfo = extractSubQueryPlanInfo(subQueryPlan);
             matches = matchPattern(PLAN_ID, subQueryPlanInfo[0]);
             planId = matches.get(0).get(0);
             operatorInfo = subQueryPlanInfo[1];
@@ -252,22 +252,22 @@ public class TidbAnalyzer extends AbstractAnalyzer {
     /**
      * 获取节点上查询计划的信息
      *
-     * @param databaseVersion 数据库版本
-     * @param data            需要处理的数据
+     * @param data 需要处理的数据
      * @return 返回plan_id, operator_info, execution_info
      * @throws TouchstoneToolChainException 不支持的版本
      */
-    private String[] extractSubQueryPlanInfo(String databaseVersion, String[] data) throws TouchstoneToolChainException {
-        if (TIDB_VERSION3.equals(databaseVersion)) {
-            return data;
-        } else if (TIDB_VERSION4.equals(databaseVersion)) {
-            String[] ret = new String[3];
-            ret[0] = data[0];
-            ret[1] = data[3].isEmpty() ? data[1] : String.format("%s,%s", data[3], data[1]);
-            ret[2] = "rows:" + data[2];
-            return ret;
-        } else {
-            throw new TouchstoneToolChainException(String.format("unsupported tidb version %s", databaseVersion));
+    private String[] extractSubQueryPlanInfo(String[] data) throws TouchstoneToolChainException {
+        switch (analyzerSupportedDatabaseVersion) {
+            case TiDB3:
+                return data;
+            case TiDB4:
+                String[] ret = new String[3];
+                ret[0] = data[0];
+                ret[1] = data[3].isEmpty() ? data[1] : String.format("%s,%s", data[3], data[1]);
+                ret[2] = "rows:" + data[2];
+                return ret;
+            default:
+                throw new UnsupportedDBTypeException(analyzerSupportedDatabaseVersion);
         }
     }
 
@@ -374,5 +374,16 @@ public class TidbAnalyzer extends AbstractAnalyzer {
             String stackTrace = Throwables.getStackTraceAsString(e);
             throw new UnsupportedSelect(operatorInfo, stackTrace);
         }
+    }
+
+    @Override
+    protected Set<TouchstoneSupportedDatabaseVersion> getSupportedDatabaseVersions() {
+        return new HashSet<>(Arrays.asList(TouchstoneSupportedDatabaseVersion.TiDB3,
+                TouchstoneSupportedDatabaseVersion.TiDB4));
+    }
+
+    @Override
+    public void initNodeTypeRef() {
+        this.nodeTypeRef = new TidbNodeTypeTool();
     }
 }

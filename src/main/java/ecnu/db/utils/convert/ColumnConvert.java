@@ -1,4 +1,4 @@
-package ecnu.db.utils;
+package ecnu.db.utils.convert;
 
 import ecnu.db.schema.column.ColumnType;
 import ecnu.db.exception.TouchstoneToolChainException;
@@ -10,14 +10,14 @@ import java.util.Map;
 /**
  * @author qingshuai.wang
  */
-public class ConfigConvert {
+public class ColumnConvert {
 
     private static HashMap<HashSet<String>, ColumnType> typeConvert;
 
-    public static void setTypeConvert(HashMap<ColumnType, HashSet<String>> typeConvert) {
-        ConfigConvert.typeConvert = new HashMap<>(typeConvert.size());
+    public static void setColumnTypeConvert(HashMap<ColumnType, HashSet<String>> typeConvert) {
+        ColumnConvert.typeConvert = new HashMap<>(typeConvert.size());
         for (Map.Entry<ColumnType, HashSet<String>> columnTypeHashSetEntry : typeConvert.entrySet()) {
-            ConfigConvert.typeConvert.put(columnTypeHashSetEntry.getValue(), columnTypeHashSetEntry.getKey());
+            ColumnConvert.typeConvert.put(columnTypeHashSetEntry.getValue(), columnTypeHashSetEntry.getKey());
         }
     }
 

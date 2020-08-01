@@ -1,7 +1,8 @@
-package ecnu.db.utils;
+package ecnu.db.analyzer.statical;
 
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLStatement;
+import ecnu.db.utils.TouchstoneSupportedDatabaseVersion;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -12,7 +13,7 @@ import java.util.List;
 /**
  * @author qingshuai.wang
  */
-public class ReadQuery {
+public class QueryReader {
     public static List<String> getQueriesFromFile(String file, String dbType) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(file));
         StringBuilder fileContents = new StringBuilder();

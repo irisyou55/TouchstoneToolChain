@@ -1,4 +1,4 @@
-package ecnu.db.analyzer.online.node;
+package ecnu.db.analyzer.online;
 
 /**
  * @author lianxuechao

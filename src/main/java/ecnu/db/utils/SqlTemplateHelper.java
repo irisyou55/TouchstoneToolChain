@@ -1,9 +1,7 @@
 package ecnu.db.utils;
 
-import com.alibaba.druid.sql.dialect.mysql.parser.MySqlLexer;
 import com.alibaba.druid.sql.parser.Lexer;
 import com.alibaba.druid.sql.parser.Token;
-import com.alibaba.druid.util.JdbcConstants;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import ecnu.db.constraintchain.filter.Parameter;
@@ -25,22 +23,16 @@ public class SqlTemplateHelper {
      * 模板化SQL语句
      *
      * @param queryCanonicalName query标准名
-     * @param query            需要处理的SQL语句
-     * @param dbType           数据库类型
-     * @param parameters       需要模板化的参数
+     * @param query              需要处理的SQL语句
+     * @param dbType             数据库类型
+     * @param parameters         需要模板化的参数
      * @return 模板化的SQL语句
-     * @throws UnsupportedDBTypeException 暂未支持的数据库连接类型
      */
-    public static String templatizeSql(String queryCanonicalName, String query, String dbType, List<Parameter> parameters) throws UnsupportedDBTypeException {
-        Lexer lexer;
-        if (JdbcConstants.MYSQL.equals(dbType)) {
-            lexer = new MySqlLexer(query);
-        } else {
-            throw new UnsupportedDBTypeException(dbType);
-        }
+    public static String templatizeSql(String queryCanonicalName, String query, String dbType, List<Parameter> parameters) {
+        Lexer lexer = new Lexer(query, null, dbType);
         Multimap<String, Pair<Integer, Integer>> literalMap = ArrayListMultimap.create();
         int lastPos = 0, pos;
-        while(!lexer.isEOF()) {
+        while (!lexer.isEOF()) {
             lexer.nextToken();
             Token token = lexer.token();
             pos = lexer.pos();
@@ -54,7 +46,7 @@ public class SqlTemplateHelper {
         // replacement
         List<Parameter> cannotFindArgs = new ArrayList<>(), conflictArgs = new ArrayList<>();
         TreeMap<Integer, Pair<Parameter, Pair<Integer, Integer>>> replaceParams = new TreeMap<>();
-        for (Parameter parameter: parameters) {
+        for (Parameter parameter : parameters) {
             String data = parameter.getData();
             if (parameter.isNeedQuote()) {
                 data = String.format("'%s'", data);
@@ -78,7 +70,7 @@ public class SqlTemplateHelper {
             Parameter parameter = pair.getKey();
             int startPos = pair.getValue().getLeft(), endPos = pair.getValue().getRight();
             fragments.add(query.substring(currentPos, startPos));
-            fragments.add(String.format("'%s,%d'", parameter.getId(), parameter.getIsDate() ? 1: 0));
+            fragments.add(String.format("'%s,%d'", parameter.getId(), parameter.getIsDate() ? 1 : 0));
             currentPos = endPos;
         }
         fragments.add(query.substring(currentPos));
@@ -97,7 +89,8 @@ public class SqlTemplateHelper {
 
     /**
      * 为模板化后的SQL语句添加conflictArgs和cannotFindArgs参数
-     * @param title 标题
+     *
+     * @param title  标题
      * @param params 需要添加的
      * @return 添加的参数部分
      */
@@ -106,10 +99,10 @@ public class SqlTemplateHelper {
                 (parameter) ->
                         String.format("{id:%s,data:%s,operator:%s,operand:%s,isDate:%d}",
                                 parameter.getId(),
-                                parameter.isNeedQuote() ? "'"+parameter.getData()+"'": parameter.getData(),
+                                parameter.isNeedQuote() ? "'" + parameter.getData() + "'" : parameter.getData(),
                                 parameter.getOperator().toString().toLowerCase(),
                                 parameter.getOperand(),
-                                parameter.getIsDate() ? 1: 0
+                                parameter.getIsDate() ? 1 : 0
                         ))
                 .collect(Collectors.joining(","));
         return String.format("-- %s:%s%s", title, argsString, System.lineSeparator());

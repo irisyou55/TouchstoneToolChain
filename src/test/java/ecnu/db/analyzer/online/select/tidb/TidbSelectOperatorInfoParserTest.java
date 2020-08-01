@@ -1,5 +1,6 @@
 package ecnu.db.analyzer.online.select.tidb;
 
+import ecnu.db.exception.UnsupportedDBTypeException;
 import ecnu.db.tidb.TidbAnalyzer;
 import ecnu.db.constraintchain.filter.SelectResult;
 import ecnu.db.constraintchain.filter.logical.AndNode;
@@ -11,6 +12,7 @@ import ecnu.db.schema.column.StringColumn;
 import ecnu.db.tidb.parser.TidbSelectOperatorInfoLexer;
 import ecnu.db.tidb.parser.TidbSelectOperatorInfoParser;
 import ecnu.db.utils.SystemConfig;
+import ecnu.db.utils.TouchstoneSupportedDatabaseVersion;
 import java_cup.runtime.ComplexSymbolFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,8 +32,9 @@ public class TidbSelectOperatorInfoParserTest {
     private final TidbSelectOperatorInfoParser parser = new TidbSelectOperatorInfoParser(lexer, new ComplexSymbolFactory());
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws UnsupportedDBTypeException {
         SystemConfig config = new SystemConfig();
+        config.setDatabaseVersion(TouchstoneSupportedDatabaseVersion.TiDB4);
         Map<String, Schema> schemas = new HashMap<>();
         Schema schema = new Schema();
         Map<String, AbstractColumn> columns = new HashMap<>();

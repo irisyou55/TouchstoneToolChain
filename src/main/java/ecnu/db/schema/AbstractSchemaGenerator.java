@@ -1,9 +1,8 @@
 package ecnu.db.schema;
 
 import ecnu.db.dbconnector.AbstractDbConnector;
-import ecnu.db.schema.Schema;
 import ecnu.db.schema.column.*;
-import ecnu.db.utils.ConfigConvert;
+import ecnu.db.utils.convert.ColumnConvert;
 import ecnu.db.exception.TouchstoneToolChainException;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -41,7 +40,7 @@ public abstract class AbstractSchemaGenerator {
     private HashMap<String, AbstractColumn> getColumns(HashMap<String, String> columnNameAndTypes) throws TouchstoneToolChainException {
         HashMap<String, AbstractColumn> columns = new HashMap<>(columnNameAndTypes.size());
         for (Map.Entry<String, String> columnNameAndType : columnNameAndTypes.entrySet()) {
-            switch (ConfigConvert.getColumnType(columnNameAndType.getValue())) {
+            switch (ColumnConvert.getColumnType(columnNameAndType.getValue())) {
                 case INTEGER:
                     columns.put(columnNameAndType.getKey(), new IntColumn(columnNameAndType.getKey()));
                     break;
