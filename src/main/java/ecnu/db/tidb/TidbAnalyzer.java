@@ -1,6 +1,6 @@
 package ecnu.db.tidb;
 
-import com.alibaba.druid.util.JdbcConstants;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Multimap;
 import ecnu.db.analyzer.online.AbstractAnalyzer;
@@ -14,15 +14,22 @@ import ecnu.db.exception.UnsupportedDBTypeException;
 import ecnu.db.exception.UnsupportedJoin;
 import ecnu.db.exception.UnsupportedSelect;
 import ecnu.db.schema.Schema;
+import ecnu.db.schema.column.AbstractColumn;
+import ecnu.db.schema.column.ColumnType;
+import ecnu.db.schema.column.IntColumn;
+import ecnu.db.schema.column.StringColumn;
 import ecnu.db.tidb.parser.TidbSelectOperatorInfoLexer;
 import ecnu.db.tidb.parser.TidbSelectOperatorInfoParser;
+import ecnu.db.tidb.stats.TidbStatsJsonObject;
+import ecnu.db.utils.AbstractDatabaseInfo;
 import ecnu.db.utils.CommonUtils;
 import ecnu.db.utils.SystemConfig;
-import ecnu.db.utils.TouchstoneSupportedDatabaseVersion;
 import java_cup.runtime.ComplexSymbolFactory;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.StringReader;
+import java.io.*;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,27 +53,11 @@ public class TidbAnalyzer extends AbstractAnalyzer {
     private final TidbSelectOperatorInfoParser parser = new TidbSelectOperatorInfoParser(new TidbSelectOperatorInfoLexer(new StringReader("")), new ComplexSymbolFactory());
 
 
-    public TidbAnalyzer(SystemConfig config, DatabaseConnectorInterface dbConnector,
-                        Map<String, Schema> schemas, Multimap<String, String> tblName2CanonicalTblName) throws UnsupportedDBTypeException {
-        super(config, dbConnector, schemas, tblName2CanonicalTblName);
+    public TidbAnalyzer(SystemConfig config, DatabaseConnectorInterface dbConnector, AbstractDatabaseInfo databaseInfo,
+                        Map<String, Schema> schemas, Multimap<String, String> tblName2CanonicalTblName) {
+        super(config, dbConnector, databaseInfo, schemas, tblName2CanonicalTblName);
+        this.nodeTypeRef = new TidbNodeTypeTool();
         parser.setAnalyzer(this);
-    }
-
-    @Override
-    public String getStaticalDbVersion() {
-        return JdbcConstants.MYSQL;
-    }
-
-    @Override
-    protected String[] getSqlInfoColumns() throws UnsupportedDBTypeException {
-        switch (analyzerSupportedDatabaseVersion) {
-            case TiDB3:
-                return new String[]{"id", "operator info", "execution info"};
-            case TiDB4:
-                return new String[]{"id", "operator info", "actRows", "access object"};
-            default:
-                throw new UnsupportedDBTypeException(analyzerSupportedDatabaseVersion);
-        }
     }
 
     @Override
@@ -378,16 +369,5 @@ public class TidbAnalyzer extends AbstractAnalyzer {
             String stackTrace = Throwables.getStackTraceAsString(e);
             throw new UnsupportedSelect(operatorInfo, stackTrace);
         }
-    }
-
-    @Override
-    protected Set<TouchstoneSupportedDatabaseVersion> getSupportedDatabaseVersions() {
-        return new HashSet<>(Arrays.asList(TouchstoneSupportedDatabaseVersion.TiDB3,
-                TouchstoneSupportedDatabaseVersion.TiDB4));
-    }
-
-    @Override
-    public void initNodeTypeRef() {
-        this.nodeTypeRef = new TidbNodeTypeTool();
     }
 }

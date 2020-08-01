@@ -1,27 +1,25 @@
-package ecnu.db.tidb;
+package ecnu.db.schema;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import ecnu.db.dbconnector.AbstractDbConnector;
+import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.schema.Schema;
 import ecnu.db.schema.column.*;
-import ecnu.db.schema.AbstractSchemaGenerator;
-import ecnu.db.exception.TouchstoneToolChainException;
-import ecnu.db.tidb.stats.TidbStatsJsonObject;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import ecnu.db.utils.ColumnConvert;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author wangqingshuai
+ * todo 实现非特异性的数据采集器
  */
-public class TidbSchemaGenerator extends AbstractSchemaGenerator {
-
-
-    @Override
+public class SchemaGenerator {
+    /**
+     * format sql and return two sqls
+     *
+     * @param tableMetadata 表的DDL
+     * @return 1.column info sqls 2. keys info sql, including primary key and foreign keys
+     */
     protected String[] getColumnSql(String tableMetadata) {
         tableMetadata = tableMetadata.toLowerCase();
         tableMetadata = tableMetadata.substring(tableMetadata.indexOf(System.lineSeparator()) + 1, tableMetadata.lastIndexOf(")"));
@@ -36,20 +34,61 @@ public class TidbSchemaGenerator extends AbstractSchemaGenerator {
         return sqls;
     }
 
-    @Override
+    /**
+     * 获取table DDL结果中的col的名称到类型的map
+     *
+     * @param columnSqls 需要的col
+     * @return col的名称到类型的map
+     */
     protected HashMap<String, String> getColumnInfo(String[] columnSqls) {
         HashMap<String, String> columnInfos = new HashMap<>(columnSqls.length);
         for (String columnSql : columnSqls) {
             String[] attributes = columnSql.trim().split(" ");
             String columnName = attributes[0];
             int indexOfBrackets = attributes[1].indexOf('(');
-            columnInfos.put(columnName, (indexOfBrackets > 0) ?
-                    attributes[1].substring(0, indexOfBrackets) : attributes[1]);
+            columnInfos.put(columnName, (indexOfBrackets > 0) ? attributes[1].substring(0, indexOfBrackets) : attributes[1]);
         }
         return columnInfos;
     }
 
-    @Override
+    public Schema generateSchemaNoKeys(String tableName, String sql) throws TouchstoneToolChainException {
+        return new Schema(tableName, getColumns(getColumnInfo(getColumnSql(sql))));
+    }
+
+    private HashMap<String, AbstractColumn> getColumns(HashMap<String, String> columnNameAndTypes) throws TouchstoneToolChainException {
+        HashMap<String, AbstractColumn> columns = new HashMap<>(columnNameAndTypes.size());
+        for (Map.Entry<String, String> columnNameAndType : columnNameAndTypes.entrySet()) {
+            switch (ColumnConvert.getColumnType(columnNameAndType.getValue())) {
+                case INTEGER:
+                    columns.put(columnNameAndType.getKey(), new IntColumn(columnNameAndType.getKey()));
+                    break;
+                case BOOL:
+                    columns.put(columnNameAndType.getKey(), new BoolColumn(columnNameAndType.getKey()));
+                    break;
+                case DECIMAL:
+                    columns.put(columnNameAndType.getKey(), new DecimalColumn(columnNameAndType.getKey()));
+                    break;
+                case VARCHAR:
+                    columns.put(columnNameAndType.getKey(), new StringColumn(columnNameAndType.getKey()));
+                    break;
+                case DATETIME:
+                    columns.put(columnNameAndType.getKey(), new DateColumn(columnNameAndType.getKey()));
+                    break;
+                default:
+                    throw new TouchstoneToolChainException("没有实现的类型转换");
+            }
+        }
+        return columns;
+    }
+
+    /**
+     * 获取col分布所需的查询SQL语句
+     *
+     * @param tableName 需要查询的表名
+     * @param columns   需要查询的col
+     * @return SQL
+     * @throws TouchstoneToolChainException 获取失败
+     */
     public String getColumnDistributionSql(String tableName, Collection<AbstractColumn> columns) throws TouchstoneToolChainException {
         StringBuilder sql = new StringBuilder();
         for (AbstractColumn column : columns) {
@@ -72,7 +111,13 @@ public class TidbSchemaGenerator extends AbstractSchemaGenerator {
         return sql.substring(0, sql.length() - 1);
     }
 
-    @Override
+    /**
+     * 提取col的range信息(最大值，最小值)
+     *
+     * @param columns   需要设置的col
+     * @param sqlResult 有关的SQL结果(由AbstractDbConnector.getDataRange返回)
+     * @throws TouchstoneToolChainException 设置失败
+     */
     public void setDataRangeBySqlResult(Collection<AbstractColumn> columns, String[] sqlResult) throws TouchstoneToolChainException {
         int index = 0;
         for (AbstractColumn column : columns) {
@@ -100,19 +145,4 @@ public class TidbSchemaGenerator extends AbstractSchemaGenerator {
         }
     }
 
-    @Override
-    public void setDataRangeUnique(Schema schema, AbstractDbConnector dbConnector) throws IOException {
-        TidbStatsJsonObject tidbStatsJsonObject = new ObjectMapper().readValue(((TidbConnector) dbConnector).
-                tableInfoJson(schema.getTableName()).replace(" ", ""), TidbStatsJsonObject.class);
-        schema.setTableSize(tidbStatsJsonObject.getCount());
-        for (AbstractColumn column : schema.getColumns().values()) {
-            column.setNullPercentage(tidbStatsJsonObject.getNullProbability(column.getColumnName()));
-            if (column.getColumnType() == ColumnType.INTEGER) {
-                ((IntColumn) column).setNdv(tidbStatsJsonObject.getNdv(column.getColumnName()));
-            } else if (column.getColumnType() == ColumnType.VARCHAR) {
-                ((StringColumn) column).setNdv(tidbStatsJsonObject.getNdv(column.getColumnName()));
-                ((StringColumn) column).setAvgLength(tidbStatsJsonObject.getAvgLength(column.getColumnName()));
-            }
-        }
-    }
 }

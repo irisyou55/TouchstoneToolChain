@@ -12,11 +12,13 @@ import ecnu.db.exception.CannotFindSchemaException;
 import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.exception.UnsupportedDBTypeException;
 import ecnu.db.schema.Schema;
+import ecnu.db.utils.AbstractDatabaseInfo;
 import ecnu.db.utils.SystemConfig;
 import ecnu.db.utils.TouchstoneSupportedDatabaseVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
@@ -26,7 +28,7 @@ import java.util.*;
  */
 public abstract class AbstractAnalyzer {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractAnalyzer.class);
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractAnalyzer.class);
     protected DatabaseConnectorInterface dbConnector;
     protected Map<String, String> aliasDic = new HashMap<>();
     protected final QueryAliasParser queryAliasParser = new QueryAliasParser();
@@ -36,42 +38,32 @@ public abstract class AbstractAnalyzer {
     protected SystemConfig config;
     protected Multimap<String, String> tblName2CanonicalTblName;
     protected TouchstoneSupportedDatabaseVersion analyzerSupportedDatabaseVersion;
+    protected AbstractDatabaseInfo databaseInfo;
 
-    protected AbstractAnalyzer(SystemConfig config,
-                               DatabaseConnectorInterface dbConnector,
-                               Map<String, Schema> schemas,
-                               Multimap<String, String> tblName2CanonicalTblName) throws UnsupportedDBTypeException {
-        Set<TouchstoneSupportedDatabaseVersion> supportedDatabaseVersions = getSupportedDatabaseVersions();
-        if (supportedDatabaseVersions == null || supportedDatabaseVersions.size() == 0) {
-            throw new UnsupportedOperationException();
-        } else if (!supportedDatabaseVersions.contains(config.getDatabaseVersion())) {
+    protected AbstractAnalyzer(SystemConfig config, DatabaseConnectorInterface dbConnector,
+                               AbstractDatabaseInfo databaseInfo, Map<String, Schema> schemas,
+                               Multimap<String, String> tblName2CanonicalTblName) {
+        analyzerSupportedDatabaseVersion = config.getDatabaseVersion();
+        this.dbConnector = dbConnector;
+        this.schemas = schemas;
+        this.config = config;
+        this.tblName2CanonicalTblName = tblName2CanonicalTblName;
+        this.databaseInfo = databaseInfo;
+    }
+
+    public AbstractAnalyzer check() throws TouchstoneToolChainException {
+        if (databaseInfo == null || databaseInfo.getSupportedDatabaseVersions() == null || databaseInfo.getSupportedDatabaseVersions().size() == 0) {
+            throw new TouchstoneToolChainException("未制定分析器配置信息");
+        } else if (!databaseInfo.getSupportedDatabaseVersions().contains(analyzerSupportedDatabaseVersion)) {
             throw new UnsupportedDBTypeException(config.getDatabaseVersion());
+        } else if (nodeTypeRef==null) {
+            throw new TouchstoneToolChainException("未初始化node映射");
         } else {
-            analyzerSupportedDatabaseVersion = config.getDatabaseVersion();
-            this.dbConnector = dbConnector;
-            this.schemas = schemas;
-            this.config = config;
-            this.tblName2CanonicalTblName = tblName2CanonicalTblName;
-            initNodeTypeRef();
+            return this;
         }
-
     }
 
 
-    /**
-     * 获取sql的查询计划中，需要使用查询计划的列名
-     *
-     * @return sql的查询计划中，需要使用查询计划的列名
-     * @throws UnsupportedDBTypeException 为对当前analyzer实例化的数据库版本实现该方法
-     */
-    protected abstract String[] getSqlInfoColumns() throws UnsupportedDBTypeException;
-
-    /**
-     * 获取数据库使用的静态解析器的数据类型
-     *
-     * @return 静态解析器使用的数据库类型
-     */
-    public abstract String getStaticalDbVersion();
 
     /**
      * 从operator_info里提取tableName
@@ -108,9 +100,9 @@ public abstract class AbstractAnalyzer {
      */
     protected abstract SelectResult analyzeSelectInfo(String operatorInfo) throws TouchstoneToolChainException;
 
-    public List<String[]> getQueryPlan(String queryCanonicalName, String sql) throws SQLException, TouchstoneToolChainException {
-        aliasDic = queryAliasParser.getTableAlias(config.isCrossMultiDatabase(), config.getDatabaseName(), sql, getStaticalDbVersion());
-        return dbConnector.explainQuery(queryCanonicalName, sql, getSqlInfoColumns());
+    public List<String[]> getQueryPlan(String queryCanonicalName, String sql, AbstractDatabaseInfo databaseInfo) throws SQLException, TouchstoneToolChainException {
+        aliasDic = queryAliasParser.getTableAlias(config.isCrossMultiDatabase(), config.getDatabaseName(), sql, databaseInfo.getStaticalDbVersion());
+        return dbConnector.explainQuery(queryCanonicalName, sql, databaseInfo.getSqlInfoColumns());
     }
 
     /**
@@ -325,16 +317,6 @@ public abstract class AbstractAnalyzer {
             }
         }
     }
-
-    /**
-     * 该Analyzer支持的数据库版本
-     */
-    protected abstract Set<TouchstoneSupportedDatabaseVersion> getSupportedDatabaseVersions();
-
-    /**
-     * 初始化查询计划中节点定义和Touchstone中对于节点定义的映射
-     */
-    public abstract void initNodeTypeRef();
 
     public int getParameterId() {
         return parameterId++;

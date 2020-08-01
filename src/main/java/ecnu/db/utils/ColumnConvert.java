@@ -1,4 +1,4 @@
-package ecnu.db.utils.convert;
+package ecnu.db.utils;
 
 import ecnu.db.schema.column.ColumnType;
 import ecnu.db.exception.TouchstoneToolChainException;

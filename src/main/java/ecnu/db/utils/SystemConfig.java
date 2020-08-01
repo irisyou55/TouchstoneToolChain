@@ -2,7 +2,6 @@ package ecnu.db.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ecnu.db.schema.column.ColumnType;
-import ecnu.db.utils.convert.ColumnConvert;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

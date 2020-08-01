@@ -3,7 +3,7 @@ package ecnu.db.dbconnector;
 import ecnu.db.analyzer.statical.QueryReader;
 import ecnu.db.analyzer.statical.QueryTableName;
 import ecnu.db.exception.TouchstoneToolChainException;
-import ecnu.db.schema.AbstractSchemaGenerator;
+import ecnu.db.schema.SchemaGenerator;
 import ecnu.db.schema.Schema;
 import ecnu.db.utils.CommonUtils;
 import ecnu.db.utils.SystemConfig;
@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
  * @author wangqingshuai
  * 数据库驱动连接器
  */
-public abstract class AbstractDbConnector implements DatabaseConnectorInterface {
+public class DbConnector implements DatabaseConnectorInterface {
 
-    private final static Logger logger = LoggerFactory.getLogger(AbstractDbConnector.class);
+    private final static Logger logger = LoggerFactory.getLogger(DbConnector.class);
 
     private final HashMap<String, Integer> multiColNdvMap = new HashMap<>();
 
@@ -32,43 +32,27 @@ public abstract class AbstractDbConnector implements DatabaseConnectorInterface 
      */
     protected Statement stmt;
 
-    protected AbstractDbConnector(SystemConfig config) throws TouchstoneToolChainException {
+    public DbConnector(SystemConfig config, String dbType, String databaseConnectionConfig) throws TouchstoneToolChainException {
+        String url;
+        if (config.isCrossMultiDatabase()) {
+            url = String.format("jdbc:%s://%s:%s/%s?%s", dbType, config.getDatabaseIp(), config.getDatabasePort(), config.getDatabaseName(), databaseConnectionConfig);
+        } else {
+            url = String.format("jdbc:%s://%s:%s?%s", dbType, config.getDatabaseIp(), config.getDatabasePort(), databaseConnectionConfig);
+        }
         // 数据库的用户名与密码
         String user = config.getDatabaseUser();
         String pass = config.getDatabasePwd();
         try {
-            stmt = DriverManager.getConnection(dbUrl(config), user, pass).createStatement();
-            databaseMetaData = DriverManager.getConnection(dbUrl(config), user, pass).getMetaData();
+            stmt = DriverManager.getConnection(url, user, pass).createStatement();
+            databaseMetaData = DriverManager.getConnection(url, user, pass).getMetaData();
         } catch (SQLException e) {
-            throw new TouchstoneToolChainException(String.format("无法建立数据库连接,连接信息为: '%s'", dbUrl(config)));
+            throw new TouchstoneToolChainException(String.format("无法建立数据库连接,连接信息为: '%s'", url));
         }
     }
 
-    /**
-     * 获取数据库连接的URL
-     *
-     * @param config 配置信息
-     * @return 数据库连接的URL
-     */
-    protected abstract String dbUrl(SystemConfig config);
 
-    /**
-     * 获取在数据库中出现的表名
-     *
-     * @return 所有表名
-     */
-    protected abstract String abstractGetTableNames();
-
-    /**
-     * 获取数据库表DDL所需要使用的SQL
-     *
-     * @param tableName 需要获取的表名
-     * @return SQL
-     */
-    protected abstract String abstractGetCreateTableSql(String tableName);
-
-    public String getTableDdl(String tableName) throws SQLException {
-        ResultSet rs = stmt.executeQuery(abstractGetCreateTableSql(tableName));
+    public String getTableMetadata(String tableName) throws SQLException {
+        ResultSet rs = stmt.executeQuery("show create table " + tableName);
         rs.next();
         return rs.getString(2).trim().toLowerCase();
     }
@@ -152,11 +136,10 @@ public abstract class AbstractDbConnector implements DatabaseConnectorInterface 
      * @throws SQLException                 获取表的DDL失败或者获取col分布失败
      * @throws IOException                  获取col的cardinality和average length等信息失败
      */
-    public Schema fetchSchema(AbstractSchemaGenerator dbSchemaGenerator, String canonicalTableName) throws TouchstoneToolChainException, SQLException, IOException {
-        Schema schema = dbSchemaGenerator.generateSchemaNoKeys(canonicalTableName, getTableDdl(canonicalTableName));
+    public Schema fetchSchema(SchemaGenerator dbSchemaGenerator, String canonicalTableName) throws TouchstoneToolChainException, SQLException, IOException {
+        Schema schema = dbSchemaGenerator.generateSchemaNoKeys(canonicalTableName, getTableMetadata(canonicalTableName));
         dbSchemaGenerator.setDataRangeBySqlResult(schema.getColumns().values(), getDataRange(canonicalTableName,
                 dbSchemaGenerator.getColumnDistributionSql(schema.getTableName(), schema.getColumns().values())));
-        dbSchemaGenerator.setDataRangeUnique(schema, this);
         logger.info(String.format("获取'%s'表结构和表数据分布成功", canonicalTableName));
         return schema;
     }
