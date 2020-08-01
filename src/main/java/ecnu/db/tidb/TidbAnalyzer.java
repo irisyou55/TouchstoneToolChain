@@ -82,27 +82,33 @@ public class TidbAnalyzer extends AbstractAnalyzer {
      * 合并节点，删除query plan中不需要或者不支持的节点，并根据节点类型提取对应信息
      * 关于join下推到tikv节点的处理:
      * 1. 有selection的下推
-     * IndexJoin                                         Filter
-     * /       \                                          /
-     * leftNode      IndexLookup              ===>>>          Join
-     * /         \                              /   \
-     * IndexRangeScan     Selection                leftNode  Scan
-     * /
-     * Scan
+     * ***********************************************************************
+     * *         IndexJoin                                       Filter      *
+     * *         /       \                                         /         *
+     * *    leftNode    IndexLookup              ===>>>          Join        *
+     * *                  /         \                           /   \        *
+     * *        IndexRangeScan     Selection              leftNode  Scan     *
+     * *                            /                                        *
+     * *                          Scan                                       *
+     * ***********************************************************************
      * <p>
      * 2. 没有selection的下推(leftNode中有Selection节点)
-     * IndexJoin                                         Join
-     * /       \                                         /    \
-     * leftNode    IndexLookup               ===>>>     leftNode   Scan
-     * /        \
-     * IndexRangeScan  Scan
+     * ***********************************************************************
+     * *         IndexJoin                                       Join        *
+     * *         /       \                                      /    \       *
+     * *    leftNode    IndexLookup              ===>>>   leftNode   Scan    *
+     * *                /        \                                           *
+     * *        IndexRangeScan  Scan                                         *
+     * ***********************************************************************
      * <p>
      * 3. 没有selection的下推(leftNode中没有Selection节点，但右边扫描节点上有索引)
-     * IndexJoin                                         Join
-     * /       \                                         /    \
-     * leftNode      IndexReader              ===>>>     leftNode   Scan
-     * /
-     * IndexRangeScan
+     * ***********************************************************************
+     * *        IndexJoin                                        Join        *
+     * *        /       \                                       /    \       *
+     * *    leftNode   IndexReader              ===>>>    leftNode   Scan    *
+     * *                /                                                    *
+     * *          IndexRangeScan                                             *
+     * ***********************************************************************
      *
      * @param rawNode 需要处理的query plan树
      * @return 处理好的树
