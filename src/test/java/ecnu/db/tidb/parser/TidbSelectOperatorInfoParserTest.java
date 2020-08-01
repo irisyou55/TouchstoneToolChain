@@ -1,4 +1,4 @@
-package ecnu.db.analyzer.online.select.tidb;
+package ecnu.db.tidb.parser;
 
 import ecnu.db.constraintchain.filter.SelectResult;
 import ecnu.db.constraintchain.filter.logical.AndNode;
