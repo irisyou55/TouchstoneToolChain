@@ -1,5 +1,7 @@
 package ecnu.db.schema;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import ecnu.db.exception.CannotFindColumnException;
 import ecnu.db.exception.CannotFindSchemaException;
 import ecnu.db.exception.TouchstoneToolChainException;
@@ -123,6 +125,24 @@ public class Schema {
 
     public Map<String, String> getForeignKeys() {
         return foreignKeys;
+    }
+
+    @JsonGetter
+    @SuppressWarnings("unused")
+    public String getPrimaryKeys() {
+        return primaryKeys;
+    }
+
+    @JsonSetter
+    @SuppressWarnings("unused")
+    public void setForeignKeys(Map<String, String> foreignKeys) {
+        this.foreignKeys = foreignKeys;
+    }
+
+    @JsonSetter
+    @SuppressWarnings("unused")
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
 
     public void setPrimaryKeys(String primaryKeys) throws TouchstoneToolChainException {

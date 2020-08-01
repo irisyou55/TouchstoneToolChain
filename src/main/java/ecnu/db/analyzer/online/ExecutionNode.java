@@ -66,10 +66,6 @@ public class ExecutionNode {
         return info;
     }
 
-    public void setLeftNode(ExecutionNode leftNode) {
-        this.leftNode = leftNode;
-    }
-
     public int getOutputRows() {
         return outputRows;
     }

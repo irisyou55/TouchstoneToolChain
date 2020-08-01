@@ -22,18 +22,18 @@ public class TidbSchemaGenerator extends AbstractSchemaGenerator {
 
 
     @Override
-    protected Pair<String[], String> getColumnSqlAndKeySql(String tableDDL) {
-        tableDDL = tableDDL.toLowerCase();
-        tableDDL = tableDDL.substring(tableDDL.indexOf(System.lineSeparator()) + 1, tableDDL.lastIndexOf(")"));
-        tableDDL = tableDDL.replaceAll("`", "");
-        String[] sqls = tableDDL.split(System.lineSeparator());
+    protected String[] getColumnSql(String tableMetadata) {
+        tableMetadata = tableMetadata.toLowerCase();
+        tableMetadata = tableMetadata.substring(tableMetadata.indexOf(System.lineSeparator()) + 1, tableMetadata.lastIndexOf(")"));
+        tableMetadata = tableMetadata.replaceAll("`", "");
+        String[] sqls = tableMetadata.split(System.lineSeparator());
         int index = sqls.length - 1;
         for (; index >= 0; index--) {
             if (!sqls[index].contains("key ")) {
                 break;
             }
         }
-        return new MutablePair<>(Arrays.copyOfRange(sqls, 0, index + 1), null);
+        return sqls;
     }
 
     @Override

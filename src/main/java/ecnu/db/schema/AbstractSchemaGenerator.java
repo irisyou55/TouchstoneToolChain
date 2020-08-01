@@ -19,10 +19,10 @@ public abstract class AbstractSchemaGenerator {
     /**
      * format sql and return two sqls
      *
-     * @param tableDDL 表的DDL
+     * @param tableMetadata 表的DDL
      * @return 1.column info sqls 2. keys info sql, including primary key and foreign keys
      */
-    protected abstract Pair<String[], String> getColumnSqlAndKeySql(String tableDDL);
+    protected abstract String[] getColumnSql(String tableMetadata);
 
     /**
      * 获取table DDL结果中的col的名称到类型的map
@@ -32,9 +32,7 @@ public abstract class AbstractSchemaGenerator {
     protected abstract HashMap<String, String> getColumnInfo(String[] columnSqls);
 
     public Schema generateSchemaNoKeys(String tableName, String sql) throws TouchstoneToolChainException {
-        Pair<String[], String> columnSqlAndKeySql = getColumnSqlAndKeySql(sql);
-        HashMap<String, AbstractColumn> columns = getColumns(getColumnInfo(columnSqlAndKeySql.getLeft()));
-        return new Schema(tableName, columns);
+        return new Schema(tableName, getColumns(getColumnInfo(getColumnSql(sql))));
     }
 
     private HashMap<String, AbstractColumn> getColumns(HashMap<String, String> columnNameAndTypes) throws TouchstoneToolChainException {
