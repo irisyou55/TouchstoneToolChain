@@ -27,6 +27,8 @@ public abstract class AbstractFilterOperation implements BoolExprNode {
     protected BigDecimal probability;
 
     /**
+     * @param columns 计算所需的columns信息
+     *
      * 计算Filter Operation实例化的参数
      */
     public abstract void instantiateParameter(List<AbstractColumn> columns);
