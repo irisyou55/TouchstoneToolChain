@@ -1,8 +1,11 @@
 package ecnu.db.constraintchain.chain;
 
 import ecnu.db.constraintchain.filter.logical.AndNode;
+import ecnu.db.constraintchain.filter.operation.AbstractFilterOperation;
+import ecnu.db.exception.TouchstoneToolChainException;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author wangqingshuai
@@ -10,11 +13,18 @@ import java.math.BigDecimal;
 public class ConstraintChainFilterNode extends ConstraintChainNode {
     private AndNode root;
     private BigDecimal probability;
+    // 概率下推后，该节点的所有operation
+    private List<AbstractFilterOperation> operations;
 
-    public ConstraintChainFilterNode(String tableName, BigDecimal probability, AndNode root) {
+    public List<AbstractFilterOperation> getOperations() {
+        return operations;
+    }
+
+    public ConstraintChainFilterNode(String tableName, BigDecimal probability, AndNode root) throws TouchstoneToolChainException {
         super(tableName, ConstraintChainNodeType.FILTER);
         this.probability = probability;
         this.root = root;
+        operations = root.calculateProbability(probability);
     }
 
     public void setRoot(AndNode root) {

@@ -47,9 +47,8 @@ parser code {:
       throw new TouchstoneToolChainException("select表名不一致");
     }
   }
-  private ColumnType getColumnType(String tableName, String columnName) throws TouchstoneToolChainException {
-    Schema schema = analyzer.getSchema(tableName);
-    return schema.getColumn(columnName).getColumnType();
+  private float getColumnNullProbability(String tableName, String canonicalColumnName) throws TouchstoneToolChainException {
+    return analyzer.getSchema(tableName).getColumn(canonicalColumnName.split("\\.")[2]).getNullPercentage();
   }
   private boolean isColumnNeedQuote(String canonicalColumnName) throws TouchstoneToolChainException {
     boolean needQuote = false;
@@ -264,7 +263,8 @@ isnull_expr ::=
         ISNULL:isnull LPAREN CANONICAL_COLUMN_NAME:col RPAREN                      {:
                                                                                       String tableName = getCanonicalTableName(col);
                                                                                       verifyTableName(tableName);
-                                                                                      IsNullFilterOperation operation = new IsNullFilterOperation(col);
+                                                                                      float nullProbability = getColumnNullProbability(tableName, col);
+                                                                                      IsNullFilterOperation operation = new IsNullFilterOperation(col, nullProbability);
                                                                                       RESULT = operation;
                                                                                   :}
         ;

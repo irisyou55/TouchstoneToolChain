@@ -1,5 +1,6 @@
 package ecnu.db.utils;
 
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -11,6 +12,7 @@ import java.util.regex.Pattern;
 public class CommonUtils {
     private static final Pattern CANONICAL_TBL_NAME = Pattern.compile("[a-zA-Z0-9_$]+\\.[a-zA-Z0-9_$]+");
     public static final int INIT_HASHMAP_SIZE = 16;
+    public static final MathContext BIG_DECIMAL_DEFAULT_PRECISION =new MathContext(10);
     public static final String DUMP_FILE_POSTFIX = "dump";
 
     /**

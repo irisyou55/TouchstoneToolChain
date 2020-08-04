@@ -1,6 +1,10 @@
 package ecnu.db.constraintchain.filter;
 
+import ecnu.db.constraintchain.filter.operation.AbstractFilterOperation;
+import ecnu.db.exception.TouchstoneToolChainException;
+
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author wangqingshuai
@@ -11,8 +15,9 @@ public interface BoolExprNode {
      * 计算所有子节点的概率
      *
      * @param probability 当前节点的总概率
+     * @throws TouchstoneToolChainException isnull算子和operation互斥，会导致概率为0，输入异常
      */
-    void calculateProbability(BigDecimal probability);
+    List<AbstractFilterOperation> calculateProbability(BigDecimal probability) throws TouchstoneToolChainException;
 
     /**
      * 获得当前布尔表达式节点的类型
