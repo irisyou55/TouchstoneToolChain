@@ -41,14 +41,15 @@ public class Schema {
      * 初始化Schema.foreignKeys和Schema.metaDataFks
      *
      * @param metaData 数据库的元信息
+     * @param database 数据库名
      * @param schemas  需要初始化的表
      * @throws SQLException 无法从数据库的metadata中获取信息
      * @throws TouchstoneToolChainException 没有找到主键/外键表，或者外键关系冲突
      */
     public static void initFks(DatabaseMetaData metaData, Map<String, Schema> schemas) throws SQLException, TouchstoneToolChainException {
         for (Map.Entry<String, Schema> entry : schemas.entrySet()) {
-            String tableName = entry.getKey();
-            ResultSet rs = metaData.getImportedKeys(null, null, tableName);
+            String[] canonicalTableName = entry.getKey().split("\\.");
+            ResultSet rs = metaData.getImportedKeys(null, canonicalTableName[0], canonicalTableName[1]);
             while (rs.next()) {
                 String pkTable = rs.getString("PKTABLE_NAME"), pkCol = rs.getString("PKCOLUMN_NAME"),
                         fkTable = rs.getString("FKTABLE_NAME"), fkCol = rs.getString("FKCOLUMN_NAME");
