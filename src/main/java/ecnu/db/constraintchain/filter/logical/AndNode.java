@@ -1,20 +1,19 @@
 package ecnu.db.constraintchain.filter.logical;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import ecnu.db.constraintchain.filter.BoolExprNode;
 import ecnu.db.constraintchain.filter.BoolExprType;
-import ecnu.db.constraintchain.filter.operation.AbstractFilterOperation;
-import ecnu.db.constraintchain.filter.operation.IsNullFilterOperation;
-import ecnu.db.constraintchain.filter.operation.MultiVarFilterOperation;
-import ecnu.db.constraintchain.filter.operation.UniVarFilterOperation;
-import ecnu.db.exception.TouchstoneToolChainException;
-import ecnu.db.utils.CommonUtils;
+import ecnu.db.constraintchain.filter.operation.*;
+import ecnu.db.exception.CalculateProbabilityException;
 
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static ecnu.db.constraintchain.filter.BoolExprType.*;
+import static ecnu.db.utils.CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION;
 
 /**
  * @author wangqingshuai
@@ -39,71 +38,51 @@ public class AndNode implements BoolExprNode {
      * @param probability 当前节点的总概率值
      */
     @Override
-    public List<AbstractFilterOperation> calculateProbability(BigDecimal probability) throws TouchstoneToolChainException {
-        BigDecimal nodeProbability = new BigDecimal(probability.toString());
-        HashMap<String, UniVarFilterOperation> uniVarFilterOperationHashMap = new HashMap<>();
-        LinkedList<BoolExprNode> logicalNodes = new LinkedList<>();
-        LinkedList<MultiVarFilterOperation> multiVarFilterOperations = new LinkedList<>();
-        LinkedList<IsNullFilterOperation> isNullFilterOperations = new LinkedList<>();
-        HashSet<String> operationColNames = new HashSet<>();
+    public List<AbstractFilterOperation> pushDownProbability(BigDecimal probability, Set<String> columns) throws CalculateProbabilityException {
+        List<BoolExprNode> otherNodes = new LinkedList<>();
+        Multimap<String, UniVarFilterOperation> col2uniFilters = ArrayListMultimap.create();
         // 1. 分离各种node
         // 2. 合并单列的operation
         // 3. 记录operation访问的各个列名
         for (BoolExprNode child : children) {
             if (child.getType() == AND || child.getType() == OR) {
-                logicalNodes.add(child);
+                otherNodes.add(child);
             } else if (child.getType() == UNI_FILTER_OPERATION) {
-                UniVarFilterOperation uniVarFilterOperation = (UniVarFilterOperation) child;
-                if (!uniVarFilterOperationHashMap.containsKey(uniVarFilterOperation.getColumnName())) {
-                    uniVarFilterOperationHashMap.put(uniVarFilterOperation.getColumnName(), uniVarFilterOperation);
-                    operationColNames.add(uniVarFilterOperation.getColumnName());
-                } else {
-                    uniVarFilterOperationHashMap.get(uniVarFilterOperation.getColumnName()).merge(uniVarFilterOperation);
-                }
+                col2uniFilters.put(((UniVarFilterOperation) child).getColumnName(), (UniVarFilterOperation) child);
+            } else if (child.getType() == MULTI_FILTER_OPERATION) {
+                otherNodes.add(child);
             } else if (child.getType() == ISNULL_FILTER_OPERATION) {
-                isNullFilterOperations.add((IsNullFilterOperation) child);
-            } else {
-                multiVarFilterOperations.add((MultiVarFilterOperation) child);
-                operationColNames.addAll(((MultiVarFilterOperation) child).getColNames());
-            }
-        }
-        // 如果存在表达式的话，not isnull的约束不应该再被考虑，而isnull是相斥约束，会导致概率为0，应该抛出异常
-        // 对于合法的null约束，应该重新计算and算子的总概率
-        Iterator<IsNullFilterOperation> isNullFilterOperationIterator = isNullFilterOperations.iterator();
-        while (isNullFilterOperationIterator.hasNext()) {
-            IsNullFilterOperation isNullFilterOperation = isNullFilterOperationIterator.next();
-            if (isNullFilterOperation.getHasNot()) {
-                if (operationColNames.contains(isNullFilterOperation.getColumnName())) {
-                    isNullFilterOperationIterator.remove();
+                String columnName = ((IsNullFilterOperation) child).getColumnName();
+                boolean hasNot = ((IsNullFilterOperation) child).getHasNot();
+                if (columns.contains(columnName)) {
+                    if (!hasNot && !probability.equals(BigDecimal.ZERO)) {
+                        throw new CalculateProbabilityException(String.format("and中包含了isnull(%s)与其他运算, 冲突而总概率不为0", ((IsNullFilterOperation) child).getColumnName()));
+                    }
                 } else {
-                    BigDecimal filterOperationProbability = BigDecimal.ONE.subtract(BigDecimal.valueOf(isNullFilterOperation.getNullProbability()));
-                    nodeProbability = nodeProbability.divide(filterOperationProbability, CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION);
+                    BigDecimal nullProbability = ((IsNullFilterOperation) child).getProbability();
+                    BigDecimal toDivide = hasNot ? BigDecimal.ONE.subtract(nullProbability) : nullProbability;
+                    if (toDivide.equals(BigDecimal.ZERO)) {
+                        if (!probability.equals(BigDecimal.ZERO)) {
+                            throw new CalculateProbabilityException(String.format("'%s'的概率为0而and总概率不为0", child.toString()));
+                        }
+                    } else {
+                        probability = probability.divide(toDivide, BIG_DECIMAL_DEFAULT_PRECISION);
+                    }
                 }
             } else {
-                if (operationColNames.contains(isNullFilterOperation.getColumnName())) {
-                    throw new TouchstoneToolChainException("isnull和operation互斥");
-                } else {
-                    BigDecimal filterOperationProbability = BigDecimal.valueOf(isNullFilterOperation.getNullProbability());
-                    nodeProbability = nodeProbability.divide(filterOperationProbability, CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION);
-                }
+                throw new UnsupportedOperationException();
             }
         }
 
-        // 归纳未被合并的node
-        List<BoolExprNode> mergedExprNodes = new LinkedList<>();
-        mergedExprNodes.addAll(uniVarFilterOperationHashMap.values());
-        mergedExprNodes.addAll(multiVarFilterOperations);
-        mergedExprNodes.addAll(logicalNodes);
+        UniVarFilterOperation.merge(otherNodes, col2uniFilters);
 
-        // 对总概率开mergedExprNodes.size次方
-        BigDecimal rootForComputing = BigDecimal.ONE.divide(BigDecimal.valueOf(mergedExprNodes.size()), CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION);
-        nodeProbability = BigDecimalMath.pow(nodeProbability, rootForComputing, CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION);
+        probability = BigDecimalMath.pow(probability, BigDecimal.ONE.divide(BigDecimal.valueOf(otherNodes.size()), BIG_DECIMAL_DEFAULT_PRECISION), BIG_DECIMAL_DEFAULT_PRECISION);
 
-        // 设置概率并递归计算
         List<AbstractFilterOperation> operations = new LinkedList<>();
-        for (BoolExprNode logicalNode : mergedExprNodes) {
-            operations.addAll(logicalNode.calculateProbability(nodeProbability));
+        for (BoolExprNode node : otherNodes) {
+            operations.addAll(node.pushDownProbability(probability, columns));
         }
+
         return operations;
     }
 

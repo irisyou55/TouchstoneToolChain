@@ -3,14 +3,16 @@ package ecnu.db.constraintchain.filter;
 import ecnu.db.constraintchain.filter.logical.AndNode;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author alan
  */
 public class SelectResult {
-    AndNode condition;
-    List<Parameter> parameters;
-    String tableName;
+    private AndNode condition;
+    private List<Parameter> parameters;
+    private String tableName;
+    private Set<String> columns;
 
     public AndNode getCondition() {
         return condition;
@@ -34,5 +36,13 @@ public class SelectResult {
 
     public void setTableName(String tableName) {
         this.tableName = tableName;
+    }
+
+    public Set<String> getColumns() {
+        return columns;
+    }
+
+    public void setColumns(Set<String> columns) {
+        this.columns = columns;
     }
 }

@@ -1,13 +1,14 @@
 package ecnu.db.constraintchain.filter.operation;
 
+import com.google.common.collect.Lists;
 import ecnu.db.constraintchain.filter.BoolExprNode;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.schema.column.AbstractColumn;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author wangqingshuai
@@ -34,9 +35,9 @@ public abstract class AbstractFilterOperation implements BoolExprNode {
     public abstract void instantiateParameter(List<AbstractColumn> columns);
 
     @Override
-    public List<AbstractFilterOperation> calculateProbability(BigDecimal probability) {
+    public List<AbstractFilterOperation> pushDownProbability(BigDecimal probability, Set<String> columns) {
         this.probability = probability;
-        return Collections.singletonList(this);
+        return Lists.newArrayList(this);
     }
 
     public AbstractFilterOperation(CompareOperator operator) {

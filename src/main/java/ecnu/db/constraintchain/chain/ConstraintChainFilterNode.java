@@ -6,6 +6,7 @@ import ecnu.db.exception.TouchstoneToolChainException;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author wangqingshuai
@@ -20,11 +21,11 @@ public class ConstraintChainFilterNode extends ConstraintChainNode {
         return operations;
     }
 
-    public ConstraintChainFilterNode(String tableName, BigDecimal probability, AndNode root) throws TouchstoneToolChainException {
+    public ConstraintChainFilterNode(String tableName, BigDecimal probability, AndNode root, Set<String> columns) throws TouchstoneToolChainException {
         super(tableName, ConstraintChainNodeType.FILTER);
         this.probability = probability;
         this.root = root;
-        operations = root.calculateProbability(probability);
+        operations = this.root.pushDownProbability(probability, columns);
     }
 
     public void setRoot(AndNode root) {

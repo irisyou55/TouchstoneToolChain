@@ -1,5 +1,6 @@
 package ecnu.db.constraintchain;
 
+import com.google.common.collect.Lists;
 import ecnu.db.constraintchain.chain.ConstraintChain;
 import ecnu.db.constraintchain.chain.ConstraintChainFilterNode;
 import ecnu.db.constraintchain.chain.ConstraintChainNode;
@@ -9,7 +10,6 @@ import ecnu.db.constraintchain.filter.operation.UniVarFilterOperation;
 import ecnu.db.exception.CannotFindColumnException;
 import ecnu.db.schema.Schema;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +33,7 @@ public class QueryInstantiation {
                     for (AbstractFilterOperation operation : operations) {
                         if(operation instanceof UniVarFilterOperation){
                             //todo 实现单元计算
-                            operation.instantiateParameter(Collections.singletonList(schema.getColumn(((UniVarFilterOperation) operation).getColumnName())));
+                            operation.instantiateParameter(Lists.newArrayList(schema.getColumn(((UniVarFilterOperation) operation).getColumnName())));
                         }
                     }
                 }

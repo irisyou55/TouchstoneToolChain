@@ -1,15 +1,20 @@
 package ecnu.db.constraintchain.filter.operation;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import ecnu.db.constraintchain.filter.BoolExprNode;
 import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
-import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.schema.column.AbstractColumn;
+import org.apache.commons.collections.CollectionUtils;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static ecnu.db.constraintchain.filter.operation.CompareOperator.*;
+import java.util.stream.Stream;
 
 /**
  * @author wangqingshuai
@@ -18,133 +23,54 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
     private String columnName;
     private Boolean hasNot = false;
     private CompareOperator leftOperator;
-    private List<Parameter> leftParameters;
+    private List<Parameter> leftParameters = new ArrayList<>();
     private CompareOperator rightOperator;
-    private List<Parameter> rightParameters;
+    private List<Parameter> rightParameters = new ArrayList<>();
 
-    public UniVarFilterOperation(String columnName, CompareOperator operator) throws TouchstoneToolChainException {
+    public UniVarFilterOperation(String columnName, CompareOperator operator) {
         super(operator);
         this.columnName = columnName;
-        // 小于EQ的只有GE GT LE LT，为between的tag
-        if (operator.ordinal() < CompareOperator.EQ.ordinal()) {
-            CompareOperator normalOperator = operator;
-            if (hasNot) {
-                switch (operator) {
-                    case LE:
-                        normalOperator = GT;
-                        break;
-                    case LT:
-                        normalOperator = GE;
-                        break;
-                    case GE:
-                        normalOperator = LT;
-                        break;
-                    case GT:
-                        normalOperator = LE;
-                        break;
-                    default:
-                        throw new TouchstoneToolChainException("不属于between的标志");
+    }
+
+    /**
+     * merge operation
+     */
+    public static void merge(List<BoolExprNode> toMergeNodes, Multimap<String, UniVarFilterOperation> col2uniFilters) {
+        for (String colName: col2uniFilters.keys()) {
+            Collection<UniVarFilterOperation> filters = col2uniFilters.get(colName);
+            Multimap<CompareOperator, UniVarFilterOperation> typ2Filter = Multimaps.index(filters, AbstractFilterOperation::getOperator);
+            Set<CompareOperator.TYPE> types = typ2Filter.asMap().keySet().stream().map(CompareOperator::getType).collect(Collectors.toSet());
+            if (types.contains(CompareOperator.TYPE.GREATER) && types.contains(CompareOperator.TYPE.LESS)) {
+                BetweenFilterOperation newFilter = new BetweenFilterOperation(colName);
+                newFilter.addLessParameters(Stream.concat(typ2Filter.get(CompareOperator.LE).stream(), typ2Filter.get(CompareOperator.LT).stream())
+                        .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
+                newFilter.addGreaterParameters(Stream.concat(typ2Filter.get(CompareOperator.GE).stream(), typ2Filter.get(CompareOperator.GT).stream())
+                        .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
+                newFilter.setLessOperator(typ2Filter.containsKey(CompareOperator.LE) ? CompareOperator.LE : CompareOperator.LT);
+                newFilter.setGreaterOperator(typ2Filter.containsKey(CompareOperator.GE) ? CompareOperator.GE : CompareOperator.GT);
+                toMergeNodes.add(newFilter);
+            } else if (types.contains(CompareOperator.TYPE.LESS)) {
+                if (typ2Filter.size() == 1) {
+                    toMergeNodes.add((BoolExprNode) CollectionUtils.get(typ2Filter.values(), 0));
+                } else {
+                    BetweenFilterOperation newFilter = new BetweenFilterOperation(colName);
+                    newFilter.addLessParameters(Stream.concat(typ2Filter.get(CompareOperator.LE).stream(), typ2Filter.get(CompareOperator.LT).stream())
+                            .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
+                    newFilter.setLessOperator(typ2Filter.containsKey(CompareOperator.LE) ? CompareOperator.LE : CompareOperator.LT);
+                    toMergeNodes.add(newFilter);
                 }
-            }
-            if (normalOperator.ordinal() > GT.ordinal()) {
-                rightOperator = normalOperator;
-                rightParameters = parameters;
+            } else if (types.contains(CompareOperator.TYPE.GREATER)) {
+                if (typ2Filter.size() == 1) {
+                    toMergeNodes.add((BoolExprNode) CollectionUtils.get(typ2Filter.values(), 0));
+                } else {
+                    BetweenFilterOperation newFilter = new BetweenFilterOperation(colName);
+                    newFilter.addGreaterParameters(Stream.concat(typ2Filter.get(CompareOperator.GE).stream(), typ2Filter.get(CompareOperator.GT).stream())
+                            .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
+                    newFilter.setGreaterOperator(typ2Filter.containsKey(CompareOperator.GE) ? CompareOperator.GE : CompareOperator.GT);
+                    toMergeNodes.add(newFilter);
+                }
             } else {
-                leftOperator = normalOperator;
-                leftParameters = parameters;
-            }
-        }
-    }
-
-
-    /**
-     * 当只有一个operator时，返回非null的operator，当存在两个时，返回operator
-     *
-     * @return 第一个合法的operator
-     */
-    @Override
-    public CompareOperator getOperator() {
-        if (operator.ordinal() < EQ.ordinal()) {
-            return leftOperator != null ? leftOperator : rightOperator;
-        } else {
-            return operator;
-        }
-    }
-
-    @Override
-    public List<Parameter> getParameters() {
-        if (operator.ordinal() < EQ.ordinal()) {
-            List<Parameter> parameters = new LinkedList<>();
-            parameters.addAll(leftParameters);
-            parameters.addAll(rightParameters);
-            return parameters;
-        } else {
-            return parameters;
-        }
-    }
-
-    @Override
-    public void addParameter(Parameter parameter) {
-        if (operator.ordinal() < EQ.ordinal()) {
-            if (rightOperator == null) {
-                leftParameters.add(parameter);
-            } else {
-                rightParameters.add(parameter);
-            }
-        } else {
-            this.parameters.add(parameter);
-        }
-    }
-
-    @Override
-    public void setParameters(List<Parameter> parameters) {
-        if (operator.ordinal() < EQ.ordinal()) {
-            if (rightOperator == null) {
-                this.parameters.addAll(parameters);
-            } else {
-                this.rightParameters.addAll(parameters);
-            }
-        } else {
-            this.parameters.addAll(parameters);
-        }
-    }
-
-    @Override
-    public String toString() {
-        List<String> content = parameters.stream().map(Parameter::toString).collect(Collectors.toList());
-        content.add(0, String.format("%s", columnName));
-        if (hasNot) {
-            return String.format("not(%s(%s))", operator.toString().toLowerCase(), String.join(", ", content));
-        }
-        return String.format("%s(%s)", operator.toString().toLowerCase(), String.join(", ", content));
-    }
-
-    /**
-     * merge一个operation
-     *
-     * @param uniVarFilterOperation 待merge的operation
-     */
-    public void merge(UniVarFilterOperation uniVarFilterOperation) {
-        CompareOperator uniVarFilterOperationOperator = uniVarFilterOperation.getOperator();
-        if (uniVarFilterOperationOperator.ordinal() > CompareOperator.GT.ordinal()) {
-            if (rightOperator == null) {
-                rightOperator = uniVarFilterOperationOperator;
-                rightParameters = uniVarFilterOperation.getParameters();
-            } else if (rightOperator.ordinal() < uniVarFilterOperationOperator.ordinal()) {
-                rightOperator = uniVarFilterOperationOperator;
-                rightParameters.addAll(uniVarFilterOperation.getParameters());
-            } else {
-                rightParameters.addAll(uniVarFilterOperation.getParameters());
-            }
-        } else {
-            if (leftOperator == null) {
-                leftOperator = uniVarFilterOperationOperator;
-                leftParameters = uniVarFilterOperation.getParameters();
-            } else if (leftOperator.ordinal() < uniVarFilterOperationOperator.ordinal()) {
-                leftOperator = uniVarFilterOperationOperator;
-                leftParameters.addAll(uniVarFilterOperation.getParameters());
-            } else {
-                leftParameters.addAll(uniVarFilterOperation.getParameters());
+                throw new UnsupportedOperationException();
             }
         }
     }
@@ -154,7 +80,7 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
      */
     @Override
     public void instantiateParameter(List<AbstractColumn> columns) {
-
+        throw new NotImplementedException();
     }
 
     @Override
@@ -176,5 +102,15 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
 
     public void setColumnName(String columnName) {
         this.columnName = columnName;
+    }
+
+    @Override
+    public String toString() {
+        List<String> content = parameters.stream().map(Parameter::toString).collect(Collectors.toList());
+        content.add(0, String.format("%s", columnName));
+        if (hasNot) {
+            return String.format("not(%s(%s))", operator.toString().toLowerCase(), String.join(", ", content));
+        }
+        return String.format("%s(%s)", operator.toString().toLowerCase(), String.join(", ", content));
     }
 }

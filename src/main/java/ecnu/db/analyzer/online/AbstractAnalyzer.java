@@ -1,5 +1,6 @@
 package ecnu.db.analyzer.online;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import ecnu.db.analyzer.statical.QueryAliasParser;
 import ecnu.db.constraintchain.chain.ConstraintChain;
@@ -161,7 +162,7 @@ public abstract class AbstractAnalyzer {
             }
         }
         if (root.leftNode == null && root.rightNode == null) {
-            List<ExecutionNode> newPath = new ArrayList<>(Collections.singletonList(root));
+            List<ExecutionNode> newPath = Lists.newArrayList(root);
             paths.add(newPath);
         }
     }
@@ -186,7 +187,8 @@ public abstract class AbstractAnalyzer {
             SelectResult result = analyzeSelectInfo(node.getInfo());
             tableName = result.getTableName();
             constraintChain = new ConstraintChain(tableName);
-            ConstraintChainFilterNode filterNode = new ConstraintChainFilterNode(tableName, BigDecimal.valueOf((double) node.getOutputRows() / getSchema(tableName).getTableSize()), result.getCondition());
+            BigDecimal ratio = BigDecimal.valueOf((double) node.getOutputRows() / getSchema(tableName).getTableSize());
+            ConstraintChainFilterNode filterNode = new ConstraintChainFilterNode(tableName, ratio, result.getCondition(), result.getColumns());
             constraintChain.addNode(filterNode);
             constraintChain.addParameters(result.getParameters());
             lastNodeLineCount = node.getOutputRows();
@@ -236,7 +238,7 @@ public abstract class AbstractAnalyzer {
             if (!tableName.equals(result.getTableName())) {
                 throw new TouchstoneToolChainException("select表名不匹配");
             }
-            ConstraintChainFilterNode filterNode = new ConstraintChainFilterNode(tableName, BigDecimal.valueOf((double) node.getOutputRows() / lastNodeLineCount), result.getCondition());
+            ConstraintChainFilterNode filterNode = new ConstraintChainFilterNode(tableName, BigDecimal.valueOf((double) node.getOutputRows() / lastNodeLineCount), result.getCondition(), result.getColumns());
             lastNodeLineCount = node.getOutputRows();
             constraintChain.addNode(filterNode);
             constraintChain.addParameters(result.getParameters());

@@ -2,6 +2,8 @@ import java_cup.runtime.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.HashSet;
 import ecnu.db.constraintchain.arithmetic.*;
 import ecnu.db.constraintchain.arithmetic.operator.*;
 import ecnu.db.constraintchain.arithmetic.value.*;
@@ -20,12 +22,14 @@ parser code {:
   private AndNode root = new AndNode();
   private AbstractAnalyzer analyzer;
   private List<Parameter> parameters;
+  private Set<String> columns;
   private String tableName;
   public void setAnalyzer(AbstractAnalyzer analyzer) {
     this.analyzer = analyzer;
   }
   public SelectResult parseSelectOperatorInfo(String operatorInfo) throws Exception {
     this.parameters = new ArrayList<>();
+    this.columns = new HashSet<>();
     this.tableName = null;
     this.root = new AndNode();
     ((TidbSelectOperatorInfoLexer) this.getScanner()).yyreset(new StringReader(operatorInfo));
@@ -34,6 +38,7 @@ parser code {:
     result.setParameters(this.parameters);
     result.setCondition(this.root);
     result.setTableName(this.tableName);
+    result.setColumns(this.columns);
     return result;
   }
   private String getCanonicalTableName(String canonicalColumnName) {
@@ -160,6 +165,7 @@ uni_compare_expr ::=
                                                                                                         operation = new UniVarFilterOperation(canonicalColumnName, op);
                                                                                                         needQuote = isColumnNeedQuote(canonicalColumnName);
                                                                                                         isDate = isColumnDate(canonicalColumnName);
+                                                                                                        columns.add(canonicalColumnName);
                                                                                                     } else {
                                                                                                         operation = new MultiVarFilterOperation(op, e1);
                                                                                                     }
@@ -198,6 +204,7 @@ in_compare_expr ::=
                                                                                         operation.addParameter(parameter);
                                                                                         parameters.add(parameter);
                                                                                       }
+                                                                                      columns.add(col);
                                                                                       RESULT = operation;
                                                                                   :}
         ;
@@ -221,6 +228,7 @@ like_compare_expr ::=
                                                                                       Parameter parameter = new Parameter(analyzer.getParameterId(), str, true, false, CompareOperator.LIKE, col);
                                                                                       operation.addParameter(parameter);
                                                                                       parameters.add(parameter);
+                                                                                      columns.add(col);
                                                                                       RESULT = operation;
                                                                                   :}
         ;
@@ -238,6 +246,7 @@ arithmetic_expr ::=
                                                                                       verifyTableName(tableName);
                                                                                       ArithmeticNode node = ArithmeticNodeFactory.create(ArithmeticNodeType.COLUMN);
                                                                                       ((ColumnNode) node).setColumnName(col);
+                                                                                      columns.add(col);
                                                                                       RESULT = node;
                                                                                   :}
         | INTEGER:num                                                             {:
