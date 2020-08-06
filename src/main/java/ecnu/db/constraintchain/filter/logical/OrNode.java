@@ -100,8 +100,8 @@ public class OrNode implements BoolExprNode {
             }
         }
 
-        merge(otherNodes, lessCol2UniFilters);
-        merge(otherNodes, greaterCol2UniFilters);
+        merge(otherNodes, lessCol2UniFilters, false);
+        merge(otherNodes, greaterCol2UniFilters, false);
 
 
         probability = BigDecimalMath.pow(BigDecimal.ONE.subtract(probability), BigDecimal.ONE.divide(BigDecimal.valueOf(otherNodes.size()), BIG_DECIMAL_DEFAULT_PRECISION), BIG_DECIMAL_DEFAULT_PRECISION);

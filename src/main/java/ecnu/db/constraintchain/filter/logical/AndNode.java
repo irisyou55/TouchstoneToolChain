@@ -88,7 +88,7 @@ public class AndNode implements BoolExprNode {
             }
         }
 
-        UniVarFilterOperation.merge(otherNodes, col2uniFilters);
+        UniVarFilterOperation.merge(otherNodes, col2uniFilters, true);
         if (otherNodes.size() != 0) {
             probability = BigDecimalMath.pow(probability, BigDecimal.ONE.divide(BigDecimal.valueOf(otherNodes.size()), BIG_DECIMAL_DEFAULT_PRECISION), BIG_DECIMAL_DEFAULT_PRECISION);
         } else if (probability.compareTo(BigDecimal.ONE) != 0) {
