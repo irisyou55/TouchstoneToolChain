@@ -2,7 +2,7 @@ package ecnu.db.constraintchain.chain;
 
 import ecnu.db.constraintchain.filter.logical.AndNode;
 import ecnu.db.constraintchain.filter.operation.AbstractFilterOperation;
-import ecnu.db.exception.TouchstoneToolChainException;
+import ecnu.db.exception.PushDownProbabilityException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -14,18 +14,21 @@ import java.util.Set;
 public class ConstraintChainFilterNode extends ConstraintChainNode {
     private AndNode root;
     private BigDecimal probability;
-    // 概率下推后，该节点的所有operation
-    private List<AbstractFilterOperation> operations;
+    private Set<String> columns;
 
-    public List<AbstractFilterOperation> getOperations() {
-        return operations;
+    public List<AbstractFilterOperation> pushDownProbability() throws PushDownProbabilityException {
+        return root.pushDownProbability(probability, columns);
     }
 
-    public ConstraintChainFilterNode(String tableName, BigDecimal probability, AndNode root, Set<String> columns) throws TouchstoneToolChainException {
+    public ConstraintChainFilterNode() {
+        super(null, ConstraintChainNodeType.FILTER);
+    }
+
+    public ConstraintChainFilterNode(String tableName, BigDecimal probability, AndNode root, Set<String> columns) {
         super(tableName, ConstraintChainNodeType.FILTER);
         this.probability = probability;
         this.root = root;
-        operations = this.root.pushDownProbability(probability, columns);
+        this.columns = columns;
     }
 
     public void setRoot(AndNode root) {
@@ -42,6 +45,14 @@ public class ConstraintChainFilterNode extends ConstraintChainNode {
 
     public BigDecimal getProbability() {
         return probability;
+    }
+
+    public Set<String> getColumns() {
+        return columns;
+    }
+
+    public void setColumns(Set<String> columns) {
+        this.columns = columns;
     }
 
     @Override

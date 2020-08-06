@@ -9,6 +9,10 @@ public class ConstraintChainPkJoinNode extends ConstraintChainNode {
     private String[] pkColumns;
     private int pkTag;
 
+    public ConstraintChainPkJoinNode() {
+        super(null, ConstraintChainNodeType.PK_JOIN);
+    }
+
     public ConstraintChainPkJoinNode(String tableName, int pkTag, String[] pkColumns) {
         super(tableName, ConstraintChainNodeType.PK_JOIN);
         this.pkTag = pkTag;

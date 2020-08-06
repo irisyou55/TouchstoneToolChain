@@ -11,9 +11,11 @@ import java.util.List;
  */
 public class ConstraintChain {
 
-    private final String tableName;
+    private String tableName;
     private final List<ConstraintChainNode> nodes = new ArrayList<>();
     private List<Parameter> parameters = new ArrayList<>();
+
+    public ConstraintChain() {}
 
     public ConstraintChain(String tableName) {
         this.tableName = tableName;
@@ -25,6 +27,10 @@ public class ConstraintChain {
 
     public List<ConstraintChainNode> getNodes() {
         return nodes;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
 
     public String getTableName() {

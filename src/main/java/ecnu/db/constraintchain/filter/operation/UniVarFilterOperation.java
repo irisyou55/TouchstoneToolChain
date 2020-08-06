@@ -1,5 +1,6 @@
 package ecnu.db.constraintchain.filter.operation;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import ecnu.db.constraintchain.filter.BoolExprNode;
@@ -7,7 +8,7 @@ import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.schema.column.AbstractColumn;
 import org.apache.commons.collections.CollectionUtils;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
 /**
  * @author wangqingshuai
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UniVarFilterOperation extends AbstractFilterOperation {
     private String columnName;
     private Boolean hasNot = false;
@@ -26,6 +28,10 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
     private List<Parameter> leftParameters = new ArrayList<>();
     private CompareOperator rightOperator;
     private List<Parameter> rightParameters = new ArrayList<>();
+
+    public UniVarFilterOperation() {
+        super(null);
+    }
 
     public UniVarFilterOperation(String columnName, CompareOperator operator) {
         super(operator);
@@ -36,12 +42,12 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
      * merge operation
      */
     public static void merge(List<BoolExprNode> toMergeNodes, Multimap<String, UniVarFilterOperation> col2uniFilters) {
-        for (String colName: col2uniFilters.keys()) {
+        for (String colName: col2uniFilters.keySet()) {
             Collection<UniVarFilterOperation> filters = col2uniFilters.get(colName);
             Multimap<CompareOperator, UniVarFilterOperation> typ2Filter = Multimaps.index(filters, AbstractFilterOperation::getOperator);
             Set<CompareOperator.TYPE> types = typ2Filter.asMap().keySet().stream().map(CompareOperator::getType).collect(Collectors.toSet());
             if (types.contains(CompareOperator.TYPE.GREATER) && types.contains(CompareOperator.TYPE.LESS)) {
-                BetweenFilterOperation newFilter = new BetweenFilterOperation(colName);
+                RangeFilterOperation newFilter = new RangeFilterOperation(colName);
                 newFilter.addLessParameters(Stream.concat(typ2Filter.get(CompareOperator.LE).stream(), typ2Filter.get(CompareOperator.LT).stream())
                         .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
                 newFilter.addGreaterParameters(Stream.concat(typ2Filter.get(CompareOperator.GE).stream(), typ2Filter.get(CompareOperator.GT).stream())
@@ -49,21 +55,21 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
                 newFilter.setLessOperator(typ2Filter.containsKey(CompareOperator.LE) ? CompareOperator.LE : CompareOperator.LT);
                 newFilter.setGreaterOperator(typ2Filter.containsKey(CompareOperator.GE) ? CompareOperator.GE : CompareOperator.GT);
                 toMergeNodes.add(newFilter);
-            } else if (types.contains(CompareOperator.TYPE.LESS)) {
+            } else if (types.contains(CompareOperator.TYPE.LESS) && !types.contains(CompareOperator.TYPE.GREATER)) {
                 if (typ2Filter.size() == 1) {
                     toMergeNodes.add((BoolExprNode) CollectionUtils.get(typ2Filter.values(), 0));
                 } else {
-                    BetweenFilterOperation newFilter = new BetweenFilterOperation(colName);
+                    RangeFilterOperation newFilter = new RangeFilterOperation(colName);
                     newFilter.addLessParameters(Stream.concat(typ2Filter.get(CompareOperator.LE).stream(), typ2Filter.get(CompareOperator.LT).stream())
                             .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
                     newFilter.setLessOperator(typ2Filter.containsKey(CompareOperator.LE) ? CompareOperator.LE : CompareOperator.LT);
                     toMergeNodes.add(newFilter);
                 }
-            } else if (types.contains(CompareOperator.TYPE.GREATER)) {
+            } else if (types.contains(CompareOperator.TYPE.GREATER) && !types.contains(CompareOperator.TYPE.LESS)) {
                 if (typ2Filter.size() == 1) {
                     toMergeNodes.add((BoolExprNode) CollectionUtils.get(typ2Filter.values(), 0));
                 } else {
-                    BetweenFilterOperation newFilter = new BetweenFilterOperation(colName);
+                    RangeFilterOperation newFilter = new RangeFilterOperation(colName);
                     newFilter.addGreaterParameters(Stream.concat(typ2Filter.get(CompareOperator.GE).stream(), typ2Filter.get(CompareOperator.GT).stream())
                             .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
                     newFilter.setGreaterOperator(typ2Filter.containsKey(CompareOperator.GE) ? CompareOperator.GE : CompareOperator.GT);

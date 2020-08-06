@@ -33,6 +33,8 @@ public class Parameter {
      */
     private String operand;
 
+    public Parameter() {}
+
     public Parameter(Integer id, String data, boolean needQuote, boolean isDate, CompareOperator operator, String operand) {
         this.id = id;
         this.data = data;

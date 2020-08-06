@@ -16,6 +16,10 @@ public class ConstraintChainFkJoinNode extends ConstraintChainNode {
     private int pkTag;
     private BigDecimal probability;
 
+    public ConstraintChainFkJoinNode() {
+        super(null, ConstraintChainNodeType.FK_JOIN);
+    }
+
     public ConstraintChainFkJoinNode(String tableName, String refTable, int pkTag, Map<String, String> foreignKeys, BigDecimal probability) {
         super(tableName, ConstraintChainNodeType.FK_JOIN);
         this.refTable = refTable;

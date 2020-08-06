@@ -1,30 +1,34 @@
 package ecnu.db.constraintchain.filter.operation;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.schema.column.AbstractColumn;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author alan
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class IsNullFilterOperation extends AbstractFilterOperation {
     private String columnName;
     private Boolean hasNot = false;
-    private float nullProbability;
 
-    public float getNullProbability() {
-        return nullProbability;
+    public IsNullFilterOperation() {
+        super(CompareOperator.ISNULL);
     }
 
-    public void setNullProbability(float nullProbability) {
-        this.nullProbability = nullProbability;
-    }
-
-    public IsNullFilterOperation(String columnName, float nullProbability) {
+    public IsNullFilterOperation(String columnName, BigDecimal probability) {
         super(CompareOperator.ISNULL);
         this.columnName = columnName;
-        this.nullProbability = nullProbability;
+        this.probability = probability;
+    }
+
+    @Override
+    public List<AbstractFilterOperation> pushDownProbability(BigDecimal probability, Set<String> columns) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

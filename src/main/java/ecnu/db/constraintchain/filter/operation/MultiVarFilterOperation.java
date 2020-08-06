@@ -1,5 +1,6 @@
 package ecnu.db.constraintchain.filter.operation;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
 import ecnu.db.constraintchain.arithmetic.value.ColumnNode;
@@ -14,8 +15,13 @@ import java.util.stream.Collectors;
 /**
  * @author wangqingshuai
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MultiVarFilterOperation extends AbstractFilterOperation {
     private ArithmeticNode arithmeticTree;
+
+    public MultiVarFilterOperation() {
+        super(null);
+    }
 
     public MultiVarFilterOperation(CompareOperator operator, ArithmeticNode arithmeticTree) {
         super(operator);

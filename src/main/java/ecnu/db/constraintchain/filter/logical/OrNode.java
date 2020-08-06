@@ -9,12 +9,11 @@ import ecnu.db.constraintchain.filter.operation.AbstractFilterOperation;
 import ecnu.db.constraintchain.filter.operation.IsNullFilterOperation;
 import ecnu.db.constraintchain.filter.operation.UniVarFilterOperation;
 import ecnu.db.exception.PushDownProbabilityException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static ecnu.db.constraintchain.filter.BoolExprType.*;
 import static ecnu.db.constraintchain.filter.operation.UniVarFilterOperation.merge;
@@ -24,6 +23,7 @@ import static ecnu.db.utils.CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION;
  * @author wangqingshuai
  */
 public class OrNode implements BoolExprNode {
+    private final Logger logger = LoggerFactory.getLogger(OrNode.class);
     private BoolExprNode leftNode;
     private BoolExprNode rightNode;
     private final BoolExprType type = BoolExprType.OR;
@@ -55,11 +55,13 @@ public class OrNode implements BoolExprNode {
      */
     @Override
     public List<AbstractFilterOperation> pushDownProbability(BigDecimal probability, Set<String> columns) throws PushDownProbabilityException {
+        if (probability.compareTo(BigDecimal.ZERO) == 0) {
+            logger.info(String.format("'%s'的概率为0", toString()));
+            return new ArrayList<>();
+        }
+
         List<BoolExprNode> otherNodes = new LinkedList<>();
         Multimap<String, UniVarFilterOperation> col2uniFilters = ArrayListMultimap.create();
-        // 1. 分离各种node
-        // 2. 合并单列的operation
-        // 3. 记录operation访问的各个列名
         for (BoolExprNode child : Arrays.asList(leftNode, rightNode)) {
             if (child.getType() == AND || child.getType() == OR) {
                 otherNodes.add(child);
@@ -77,8 +79,8 @@ public class OrNode implements BoolExprNode {
                 } else {
                     BigDecimal nullProbability = ((IsNullFilterOperation) child).getProbability();
                     BigDecimal toDivide = BigDecimal.ONE.subtract(hasNot ? BigDecimal.ONE.subtract(nullProbability) : nullProbability);
-                    if (toDivide.equals(BigDecimal.ZERO)) {
-                        if (!probability.equals(BigDecimal.ONE)) {
+                    if (toDivide.compareTo(BigDecimal.ZERO) == 0) {
+                        if (probability.compareTo(BigDecimal.ONE) != 0) {
                             throw new PushDownProbabilityException(String.format("'%s'的概率为1而总概率不为1", child.toString()));
                         }
                     } else {

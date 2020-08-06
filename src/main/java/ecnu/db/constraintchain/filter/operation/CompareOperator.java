@@ -43,7 +43,10 @@ public enum CompareOperator {
      * ISNULL运算符
      */
     ISNULL(TYPE.OTHER),
-    BETWEEN(TYPE.OTHER);
+    /**
+     * RANGE运算符，表示多个lt,gt,le,ge的整合，不直接在parser中使用
+     */
+    RANGE(TYPE.OTHER);
 
     private final TYPE type;
     public enum TYPE {
