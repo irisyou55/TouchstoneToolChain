@@ -8,7 +8,6 @@ import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.schema.column.AbstractColumn;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -93,12 +92,9 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
         }
     }
 
-    /**
-     * todo 参数实例化
-     */
     @Override
     public void instantiateParameter(List<AbstractColumn> columns) {
-        throw new NotImplementedException();
+
     }
 
     @Override

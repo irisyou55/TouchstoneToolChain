@@ -18,9 +18,6 @@ import java.util.Map;
  * @author wangqingshuai
  */
 public class QueryInstantiation {
-    /**
-     * todo 参数实例化计算
-     */
     public static void compute(List<ConstraintChain> constraintChains, Map<String, Schema> schemas) throws CannotFindColumnException, PushDownProbabilityException {
         //todo 1. 对于数值型的filter, 首先计算单元的filter, 然后计算多值的filter，
         //        对于bet操作，先记录阈值，然后选择合适的区间插入，等值约束也需选择合适的区间

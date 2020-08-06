@@ -6,9 +6,6 @@ import java.math.BigDecimal;
  * @author qingshuai.wang
  */
 public class BoolColumn extends AbstractColumn {
-    /**
-     * TODO add Bool Column
-     */
     private BigDecimal trueProbability;
 
     public BoolColumn(String columnName) {
