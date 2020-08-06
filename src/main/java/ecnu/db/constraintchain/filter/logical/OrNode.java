@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import ecnu.db.constraintchain.filter.BoolExprNode;
 import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.operation.AbstractFilterOperation;
+import ecnu.db.constraintchain.filter.operation.CompareOperator;
 import ecnu.db.constraintchain.filter.operation.IsNullFilterOperation;
 import ecnu.db.constraintchain.filter.operation.UniVarFilterOperation;
 import ecnu.db.exception.PushDownProbabilityException;
@@ -61,12 +62,21 @@ public class OrNode implements BoolExprNode {
         }
 
         List<BoolExprNode> otherNodes = new LinkedList<>();
-        Multimap<String, UniVarFilterOperation> col2uniFilters = ArrayListMultimap.create();
+        Multimap<String, UniVarFilterOperation> lessCol2UniFilters = ArrayListMultimap.create(), greaterCol2UniFilters = ArrayListMultimap.create();
         for (BoolExprNode child : Arrays.asList(leftNode, rightNode)) {
             if (child.getType() == AND || child.getType() == OR || child.getType() == MULTI_FILTER_OPERATION) {
                 otherNodes.add(child);
             } else if (child.getType() == UNI_FILTER_OPERATION) {
-                col2uniFilters.put(((UniVarFilterOperation) child).getColumnName(), (UniVarFilterOperation) child);
+                UniVarFilterOperation operation = (UniVarFilterOperation) child;
+                if (operation.getOperator().getType() == CompareOperator.TYPE.LESS) {
+                    lessCol2UniFilters.put(operation.getColumnName(), operation);
+                } else if (operation.getOperator().getType() == CompareOperator.TYPE.GREATER) {
+                    greaterCol2UniFilters.put(operation.getColumnName(), operation);
+                } else if (operation.getOperator().getType() == CompareOperator.TYPE.OTHER) {
+                    otherNodes.add(operation);
+                } else {
+                    throw new UnsupportedOperationException();
+                }
             } else if (child.getType() == ISNULL_FILTER_OPERATION) {
                 String columnName = ((IsNullFilterOperation) child).getColumnName();
                 boolean hasNot = ((IsNullFilterOperation) child).getHasNot();
@@ -90,7 +100,9 @@ public class OrNode implements BoolExprNode {
             }
         }
 
-        merge(otherNodes, col2uniFilters);
+        merge(otherNodes, lessCol2UniFilters);
+        merge(otherNodes, greaterCol2UniFilters);
+
 
         probability = BigDecimalMath.pow(probability, BigDecimal.ONE.divide(BigDecimal.valueOf(otherNodes.size()), BIG_DECIMAL_DEFAULT_PRECISION), BIG_DECIMAL_DEFAULT_PRECISION);
 

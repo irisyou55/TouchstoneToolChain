@@ -46,6 +46,10 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
             Collection<UniVarFilterOperation> filters = col2uniFilters.get(colName);
             Multimap<CompareOperator, UniVarFilterOperation> typ2Filter = Multimaps.index(filters, AbstractFilterOperation::getOperator);
             Set<CompareOperator.TYPE> types = typ2Filter.asMap().keySet().stream().map(CompareOperator::getType).collect(Collectors.toSet());
+            if (typ2Filter.size() == 1) {
+                toMergeNodes.add((BoolExprNode) CollectionUtils.get(typ2Filter.values(), 0));
+                return;
+            }
             if (types.contains(CompareOperator.TYPE.GREATER) && types.contains(CompareOperator.TYPE.LESS)) {
                 RangeFilterOperation newFilter = new RangeFilterOperation(colName);
                 newFilter.addLessParameters(Stream.concat(typ2Filter.get(CompareOperator.LE).stream(), typ2Filter.get(CompareOperator.LT).stream())
@@ -56,25 +60,17 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
                 newFilter.setGreaterOperator(typ2Filter.containsKey(CompareOperator.GE) ? CompareOperator.GE : CompareOperator.GT);
                 toMergeNodes.add(newFilter);
             } else if (types.contains(CompareOperator.TYPE.LESS) && !types.contains(CompareOperator.TYPE.GREATER)) {
-                if (typ2Filter.size() == 1) {
-                    toMergeNodes.add((BoolExprNode) CollectionUtils.get(typ2Filter.values(), 0));
-                } else {
-                    RangeFilterOperation newFilter = new RangeFilterOperation(colName);
-                    newFilter.addLessParameters(Stream.concat(typ2Filter.get(CompareOperator.LE).stream(), typ2Filter.get(CompareOperator.LT).stream())
-                            .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
-                    newFilter.setLessOperator(typ2Filter.containsKey(CompareOperator.LE) ? CompareOperator.LE : CompareOperator.LT);
-                    toMergeNodes.add(newFilter);
-                }
+                RangeFilterOperation newFilter = new RangeFilterOperation(colName);
+                newFilter.addLessParameters(Stream.concat(typ2Filter.get(CompareOperator.LE).stream(), typ2Filter.get(CompareOperator.LT).stream())
+                        .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
+                newFilter.setLessOperator(typ2Filter.containsKey(CompareOperator.LE) ? CompareOperator.LE : CompareOperator.LT);
+                toMergeNodes.add(newFilter);
             } else if (types.contains(CompareOperator.TYPE.GREATER) && !types.contains(CompareOperator.TYPE.LESS)) {
-                if (typ2Filter.size() == 1) {
-                    toMergeNodes.add((BoolExprNode) CollectionUtils.get(typ2Filter.values(), 0));
-                } else {
-                    RangeFilterOperation newFilter = new RangeFilterOperation(colName);
-                    newFilter.addGreaterParameters(Stream.concat(typ2Filter.get(CompareOperator.GE).stream(), typ2Filter.get(CompareOperator.GT).stream())
-                            .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
-                    newFilter.setGreaterOperator(typ2Filter.containsKey(CompareOperator.GE) ? CompareOperator.GE : CompareOperator.GT);
-                    toMergeNodes.add(newFilter);
-                }
+                RangeFilterOperation newFilter = new RangeFilterOperation(colName);
+                newFilter.addGreaterParameters(Stream.concat(typ2Filter.get(CompareOperator.GE).stream(), typ2Filter.get(CompareOperator.GT).stream())
+                        .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
+                newFilter.setGreaterOperator(typ2Filter.containsKey(CompareOperator.GE) ? CompareOperator.GE : CompareOperator.GT);
+                toMergeNodes.add(newFilter);
             } else {
                 throw new UnsupportedOperationException();
             }
