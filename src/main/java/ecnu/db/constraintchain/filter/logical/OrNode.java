@@ -92,7 +92,7 @@ public class OrNode implements BoolExprNode {
                             throw new PushDownProbabilityException(String.format("'%s'的概率为1而总概率不为1", child.toString()));
                         }
                     } else {
-                        probability = BigDecimal.ONE.subtract(probability.divide(toDivide, BIG_DECIMAL_DEFAULT_PRECISION));
+                        probability = BigDecimal.ONE.subtract(BigDecimal.ONE.subtract(probability).divide(toDivide, BIG_DECIMAL_DEFAULT_PRECISION));
                     }
                 }
             } else {
@@ -104,7 +104,7 @@ public class OrNode implements BoolExprNode {
         merge(otherNodes, greaterCol2UniFilters);
 
 
-        probability = BigDecimalMath.pow(probability, BigDecimal.ONE.divide(BigDecimal.valueOf(otherNodes.size()), BIG_DECIMAL_DEFAULT_PRECISION), BIG_DECIMAL_DEFAULT_PRECISION);
+        probability = BigDecimalMath.pow(BigDecimal.ONE.subtract(probability), BigDecimal.ONE.divide(BigDecimal.valueOf(otherNodes.size()), BIG_DECIMAL_DEFAULT_PRECISION), BIG_DECIMAL_DEFAULT_PRECISION);
 
         List<AbstractFilterOperation> operations = new LinkedList<>();
         for (BoolExprNode node : otherNodes) {
