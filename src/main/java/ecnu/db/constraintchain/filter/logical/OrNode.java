@@ -8,7 +8,7 @@ import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.operation.AbstractFilterOperation;
 import ecnu.db.constraintchain.filter.operation.IsNullFilterOperation;
 import ecnu.db.constraintchain.filter.operation.UniVarFilterOperation;
-import ecnu.db.exception.CalculateProbabilityException;
+import ecnu.db.exception.PushDownProbabilityException;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -54,7 +54,7 @@ public class OrNode implements BoolExprNode {
      * @param probability 当前节点的总概率值
      */
     @Override
-    public List<AbstractFilterOperation> pushDownProbability(BigDecimal probability, Set<String> columns) throws CalculateProbabilityException {
+    public List<AbstractFilterOperation> pushDownProbability(BigDecimal probability, Set<String> columns) throws PushDownProbabilityException {
         List<BoolExprNode> otherNodes = new LinkedList<>();
         Multimap<String, UniVarFilterOperation> col2uniFilters = ArrayListMultimap.create();
         // 1. 分离各种node
@@ -72,14 +72,14 @@ public class OrNode implements BoolExprNode {
                 boolean hasNot = ((IsNullFilterOperation) child).getHasNot();
                 if (columns.contains(columnName)) {
                     if (hasNot && !probability.equals(((IsNullFilterOperation) child).getProbability())) {
-                        throw new CalculateProbabilityException("or中包含了not(isnull(%s))与其他运算, 总概率不等于not isnull的概率");
+                        throw new PushDownProbabilityException("or中包含了not(isnull(%s))与其他运算, 总概率不等于not isnull的概率");
                     }
                 } else {
                     BigDecimal nullProbability = ((IsNullFilterOperation) child).getProbability();
                     BigDecimal toDivide = BigDecimal.ONE.subtract(hasNot ? BigDecimal.ONE.subtract(nullProbability) : nullProbability);
                     if (toDivide.equals(BigDecimal.ZERO)) {
                         if (!probability.equals(BigDecimal.ONE)) {
-                            throw new CalculateProbabilityException(String.format("'%s'的概率为1而总概率不为1", child.toString()));
+                            throw new PushDownProbabilityException(String.format("'%s'的概率为1而总概率不为1", child.toString()));
                         }
                     } else {
                         probability = BigDecimal.ONE.subtract(probability.divide(toDivide, BIG_DECIMAL_DEFAULT_PRECISION));
