@@ -41,7 +41,6 @@ public class Schema {
      * 初始化Schema.foreignKeys和Schema.metaDataFks
      *
      * @param metaData 数据库的元信息
-     * @param database 数据库名
      * @param schemas  需要初始化的表
      * @throws SQLException 无法从数据库的metadata中获取信息
      * @throws TouchstoneToolChainException 没有找到主键/外键表，或者外键关系冲突
