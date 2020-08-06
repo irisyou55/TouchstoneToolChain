@@ -35,8 +35,7 @@ public class ConstraintChainReader {
         module.addDeserializer(BoolExprNode.class, new BoolExprNodeDeserializer());
         module.addDeserializer(ArithmeticNode.class, new ArithmeticNodeDeserializer());
         mapper.registerModule(module);
-        Map<String, List<ConstraintChain>> query2chain = mapper.readValue(content, new TypeReference<Map<String, List<ConstraintChain>>>() {});
-        return query2chain;
+        return mapper.readValue(content, new TypeReference<Map<String, List<ConstraintChain>>>() {});
     }
 
 }
