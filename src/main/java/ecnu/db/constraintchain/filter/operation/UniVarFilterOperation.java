@@ -48,7 +48,7 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
             Set<CompareOperator.TYPE> types = typ2Filter.asMap().keySet().stream().map(CompareOperator::getType).collect(Collectors.toSet());
             if (typ2Filter.size() == 1) {
                 toMergeNodes.add((BoolExprNode) CollectionUtils.get(typ2Filter.values(), 0));
-                return;
+                continue;
             }
             if (types.contains(CompareOperator.TYPE.GREATER) && types.contains(CompareOperator.TYPE.LESS)) {
                 RangeFilterOperation newFilter = new RangeFilterOperation(colName);
