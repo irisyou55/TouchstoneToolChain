@@ -21,7 +21,12 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static ecnu.db.utils.CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION;
 
 /**
  * @author wangqingshuai
@@ -187,7 +192,7 @@ public abstract class AbstractAnalyzer {
             SelectResult result = analyzeSelectInfo(node.getInfo());
             tableName = result.getTableName();
             constraintChain = new ConstraintChain(tableName);
-            BigDecimal ratio = BigDecimal.valueOf((double) node.getOutputRows() / getSchema(tableName).getTableSize());
+            BigDecimal ratio = BigDecimal.valueOf(node.getOutputRows()).divide(BigDecimal.valueOf(getSchema(tableName).getTableSize()), BIG_DECIMAL_DEFAULT_PRECISION);
             ConstraintChainFilterNode filterNode = new ConstraintChainFilterNode(tableName, ratio, result.getCondition(), result.getColumns());
             constraintChain.addNode(filterNode);
             constraintChain.addParameters(result.getParameters());

@@ -56,7 +56,7 @@ public class AndNode implements BoolExprNode {
         List<BoolExprNode> otherNodes = new LinkedList<>();
         Multimap<String, UniVarFilterOperation> col2uniFilters = ArrayListMultimap.create();
         for (BoolExprNode child : children) {
-            if (child.getType() == AND || child.getType() == OR) {
+            if (child.getType() == AND || child.getType() == OR || child.getType() == MULTI_FILTER_OPERATION) {
                 otherNodes.add(child);
             } else if (child.getType() == UNI_FILTER_OPERATION) {
                 CompareOperator.TYPE type = ((UniVarFilterOperation) child).getOperator().getType();
@@ -67,8 +67,6 @@ public class AndNode implements BoolExprNode {
                 } else {
                     throw new UnsupportedOperationException();
                 }
-            } else if (child.getType() == MULTI_FILTER_OPERATION) {
-                otherNodes.add(child);
             } else if (child.getType() == ISNULL_FILTER_OPERATION) {
                 String columnName = ((IsNullFilterOperation) child).getColumnName();
                 boolean hasNot = ((IsNullFilterOperation) child).getHasNot();

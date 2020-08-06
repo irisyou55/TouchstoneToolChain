@@ -63,12 +63,10 @@ public class OrNode implements BoolExprNode {
         List<BoolExprNode> otherNodes = new LinkedList<>();
         Multimap<String, UniVarFilterOperation> col2uniFilters = ArrayListMultimap.create();
         for (BoolExprNode child : Arrays.asList(leftNode, rightNode)) {
-            if (child.getType() == AND || child.getType() == OR) {
+            if (child.getType() == AND || child.getType() == OR || child.getType() == MULTI_FILTER_OPERATION) {
                 otherNodes.add(child);
             } else if (child.getType() == UNI_FILTER_OPERATION) {
                 col2uniFilters.put(((UniVarFilterOperation) child).getColumnName(), (UniVarFilterOperation) child);
-            } else if (child.getType() == MULTI_FILTER_OPERATION) {
-                otherNodes.add(child);
             } else if (child.getType() == ISNULL_FILTER_OPERATION) {
                 String columnName = ((IsNullFilterOperation) child).getColumnName();
                 boolean hasNot = ((IsNullFilterOperation) child).getHasNot();
@@ -78,7 +76,7 @@ public class OrNode implements BoolExprNode {
                     }
                 } else {
                     BigDecimal nullProbability = ((IsNullFilterOperation) child).getProbability();
-                    BigDecimal toDivide = BigDecimal.ONE.subtract(hasNot ? BigDecimal.ONE.subtract(nullProbability) : nullProbability);
+                    BigDecimal toDivide = hasNot ? nullProbability:BigDecimal.ONE.subtract(nullProbability);
                     if (toDivide.compareTo(BigDecimal.ZERO) == 0) {
                         if (probability.compareTo(BigDecimal.ONE) != 0) {
                             throw new PushDownProbabilityException(String.format("'%s'的概率为1而总概率不为1", child.toString()));
