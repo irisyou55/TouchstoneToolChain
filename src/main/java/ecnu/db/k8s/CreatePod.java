@@ -9,7 +9,6 @@ import io.kubernetes.client.openapi.models.*;
 import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.KubeConfig;
 import io.kubernetes.client.util.Yaml;
-import io.kubernetes.client.util.exception.CopyNotSupportedException;
 
 import java.io.File;
 import java.io.FileReader;
