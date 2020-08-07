@@ -1,10 +1,11 @@
 package ecnu.db.schema;
 
 import ecnu.db.exception.TouchstoneToolChainException;
-import ecnu.db.schema.Schema;
 import ecnu.db.schema.column.*;
 import ecnu.db.utils.ColumnConvert;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,51 +35,43 @@ public class SchemaGenerator {
         return sqls;
     }
 
-    /**
-     * 获取table DDL结果中的col的名称到类型的map
-     *
-     * @param columnSqls 需要的col
-     * @return col的名称到类型的map
-     */
-    protected HashMap<String, String> getColumnInfo(String[] columnSqls) {
-        HashMap<String, String> columnInfos = new HashMap<>(columnSqls.length);
+    public Schema generateSchemas(String tableName, String sql) throws TouchstoneToolChainException {
+        String[] columnSqls = getColumnSql(sql);
+        Map<String, AbstractColumn> columns = new HashMap<>(columnSqls.length);
         for (String columnSql : columnSqls) {
             String[] attributes = columnSql.trim().split(" ");
             String columnName = attributes[0];
             int indexOfBrackets = attributes[1].indexOf('(');
-            columnInfos.put(columnName, (indexOfBrackets > 0) ? attributes[1].substring(0, indexOfBrackets) : attributes[1]);
-        }
-        return columnInfos;
-    }
-
-    public Schema generateSchemas(String tableName, String sql) throws TouchstoneToolChainException {
-        return new Schema(tableName, getColumns(getColumnInfo(getColumnSql(sql))));
-    }
-
-    private HashMap<String, AbstractColumn> getColumns(HashMap<String, String> columnNameAndTypes) throws TouchstoneToolChainException {
-        HashMap<String, AbstractColumn> columns = new HashMap<>(columnNameAndTypes.size());
-        for (Map.Entry<String, String> columnNameAndType : columnNameAndTypes.entrySet()) {
-            switch (ColumnConvert.getColumnType(columnNameAndType.getValue())) {
+            String dataType = (indexOfBrackets > 0) ? attributes[1].substring(0, indexOfBrackets) : attributes[1];
+            switch (ColumnConvert.getColumnType(dataType)) {
                 case INTEGER:
-                    columns.put(columnNameAndType.getKey(), new IntColumn(columnNameAndType.getKey()));
+                    columns.put(columnName, new IntColumn(columnName));
                     break;
                 case BOOL:
-                    columns.put(columnNameAndType.getKey(), new BoolColumn(columnNameAndType.getKey()));
+                    columns.put(columnName, new BoolColumn(columnName));
                     break;
                 case DECIMAL:
-                    columns.put(columnNameAndType.getKey(), new DecimalColumn(columnNameAndType.getKey()));
+                    columns.put(columnName, new DecimalColumn(columnName));
                     break;
                 case VARCHAR:
-                    columns.put(columnNameAndType.getKey(), new StringColumn(columnNameAndType.getKey()));
+                    columns.put(columnName, new StringColumn(columnName));
                     break;
+                case DATE:
+                    columns.put(columnName, new DateColumn(columnName));
                 case DATETIME:
-                    columns.put(columnNameAndType.getKey(), new DateColumn(columnNameAndType.getKey()));
+                    DateTimeColumn column = new DateTimeColumn(columnName);
+                    if (indexOfBrackets > 0) {
+                        column.setPrecision(Integer.parseInt(attributes[1].substring(indexOfBrackets + 1, attributes[1].length() - 1)));
+                    } else {
+                        column.setPrecision(0);
+                    }
+                    columns.put(columnName, column);
                     break;
                 default:
                     throw new TouchstoneToolChainException("没有实现的类型转换");
             }
         }
-        return columns;
+        return new Schema(tableName, columns);
     }
 
     /**
@@ -93,6 +86,7 @@ public class SchemaGenerator {
         StringBuilder sql = new StringBuilder();
         for (AbstractColumn column : columns) {
             switch (column.getColumnType()) {
+                case DATE:
                 case DATETIME:
                 case DECIMAL:
                 case INTEGER:
@@ -134,8 +128,12 @@ public class SchemaGenerator {
                     ((DecimalColumn) column).setMax(Double.parseDouble(sqlResult[index++]));
                     break;
                 case DATETIME:
-                    ((DateColumn) column).setBegin(sqlResult[index++]);
-                    ((DateColumn) column).setEnd(sqlResult[index++]);
+                    ((DateTimeColumn) column).setBegin(LocalDateTime.parse(sqlResult[index++], DateTimeColumn.FMT));
+                    ((DateTimeColumn) column).setEnd(LocalDateTime.parse(sqlResult[index++], DateTimeColumn.FMT));
+                    break;
+                case DATE:
+                    ((DateColumn) column).setBegin(LocalDate.parse(sqlResult[index++], DateColumn.FMT));
+                    ((DateColumn) column).setEnd(LocalDate.parse(sqlResult[index++], DateColumn.FMT));
                     break;
                 case BOOL:
                     break;

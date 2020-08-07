@@ -60,4 +60,22 @@ public class CommonUtils {
         List<List<String>> matches = matchPattern(CANONICAL_TBL_NAME, tableName);
         return matches.size() == 1 && matches.get(0).get(0).length() == tableName.length();
     }
+
+    public static boolean isInteger(String str) {
+        try {
+            int val = Integer.parseInt(str);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean isFloat(String str) {
+        try {
+            float val = Float.parseFloat(str);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
+    }
 }

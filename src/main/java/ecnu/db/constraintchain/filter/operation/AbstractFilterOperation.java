@@ -8,6 +8,7 @@ import ecnu.db.schema.column.AbstractColumn;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -32,7 +33,7 @@ public abstract class AbstractFilterOperation implements BoolExprNode {
      *
      * 计算Filter Operation实例化的参数
      */
-    public abstract void instantiateParameter(List<AbstractColumn> columns);
+    public abstract void instantiateParameter(Map<String, AbstractColumn> columns);
 
     @Override
     public List<AbstractFilterOperation> pushDownProbability(BigDecimal probability, Set<String> columns) {

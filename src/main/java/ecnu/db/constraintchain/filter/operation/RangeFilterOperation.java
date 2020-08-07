@@ -1,6 +1,5 @@
 package ecnu.db.constraintchain.filter.operation;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.schema.column.AbstractColumn;
@@ -9,6 +8,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author alan
@@ -23,7 +23,7 @@ public class RangeFilterOperation extends UniVarFilterOperation {
     }
 
     @Override
-    public void instantiateParameter(List<AbstractColumn> columns) {
+    public void instantiateParameter(Map<String, AbstractColumn> columns) {
         throw new NotImplementedException();
     }
 

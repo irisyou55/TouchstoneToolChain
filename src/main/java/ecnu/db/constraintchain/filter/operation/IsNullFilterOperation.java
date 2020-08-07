@@ -6,6 +6,7 @@ import ecnu.db.schema.column.AbstractColumn;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -32,7 +33,7 @@ public class IsNullFilterOperation extends AbstractFilterOperation {
     }
 
     @Override
-    public void instantiateParameter(List<AbstractColumn> columns) {
+    public void instantiateParameter(Map<String, AbstractColumn> columns) {
         throw new UnsupportedOperationException();
     }
 

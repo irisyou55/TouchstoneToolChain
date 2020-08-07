@@ -46,9 +46,7 @@ public class SystemConfig {
         while ((line = reader.readLine()) != null) {
             configJson.append(line);
         }
-        SystemConfig systemConfig = new ObjectMapper().readValue(configJson.toString(), SystemConfig.class);
-        ColumnConvert.setColumnTypeConvert(systemConfig.getTypeConvert());
-        return systemConfig;
+        return new ObjectMapper().readValue(configJson.toString(), SystemConfig.class);
     }
 
     public boolean isCrossMultiDatabase() {

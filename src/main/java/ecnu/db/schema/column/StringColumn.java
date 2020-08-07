@@ -10,6 +10,10 @@ public class StringColumn extends AbstractColumn {
     private int maxLength;
     private int ndv;
 
+    public StringColumn() {
+        super(null, ColumnType.VARCHAR);
+    }
+
     public StringColumn(String columnName) {
         super(columnName, ColumnType.VARCHAR);
     }

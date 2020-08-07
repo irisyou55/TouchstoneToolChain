@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 public abstract class AbstractColumn {
     private final ColumnType columnType;
     protected float nullPercentage;
-    protected final String columnName;
+    protected String columnName;
 
     public AbstractColumn(String columnName, ColumnType columnType) {
         this.columnName = columnName;
@@ -28,6 +28,10 @@ public abstract class AbstractColumn {
     @SuppressWarnings("unused")
     public float getNullPercentage() {
         return nullPercentage;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
     }
 
     public String getColumnName() {

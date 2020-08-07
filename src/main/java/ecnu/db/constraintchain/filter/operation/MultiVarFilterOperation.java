@@ -7,9 +7,13 @@ import ecnu.db.constraintchain.arithmetic.value.ColumnNode;
 import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.schema.column.AbstractColumn;
+import ecnu.db.utils.CommonUtils;
+import org.apache.commons.lang3.NotImplementedException;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -53,7 +57,24 @@ public class MultiVarFilterOperation extends AbstractFilterOperation {
      * todo 通过计算树计算概率，暂时不考虑其他FilterOperation对于此操作的阈值影响
      */
     @Override
-    public void instantiateParameter(List<AbstractColumn> columns) {
+    public void instantiateParameter(Map<String, AbstractColumn> columns) {
+        if (operator.getType() == CompareOperator.TYPE.LESS || operator.getType() == CompareOperator.TYPE.GREATER) {
+            float[] vector = arithmeticTree.getVector();
+            int pos = probability.multiply(BigDecimal.valueOf(vector.length)).intValue();
+            Arrays.sort(vector);
+            parameters.forEach(param -> {
+                if (CommonUtils.isInteger(param.getData())) {
+                    param.setData(Integer.toString((int) vector[pos]));
+                } else if (CommonUtils.isFloat(param.getData())) {
+                    param.setData(Float.toString(vector[pos]));
+                } else {
+                    throw new UnsupportedOperationException();
+                }
+            });
+        }
+        else if (operator.getType() == CompareOperator.TYPE.OTHER) {
+            throw new NotImplementedException();
+        }
     }
 
     @Override

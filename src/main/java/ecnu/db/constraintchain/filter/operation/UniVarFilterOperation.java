@@ -6,12 +6,18 @@ import com.google.common.collect.Multimaps;
 import ecnu.db.constraintchain.filter.BoolExprNode;
 import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
-import ecnu.db.schema.column.AbstractColumn;
+import ecnu.db.schema.column.*;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.NotImplementedException;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,10 +29,6 @@ import java.util.stream.Stream;
 public class UniVarFilterOperation extends AbstractFilterOperation {
     private String columnName;
     private Boolean hasNot = false;
-    private CompareOperator leftOperator;
-    private List<Parameter> leftParameters = new ArrayList<>();
-    private CompareOperator rightOperator;
-    private List<Parameter> rightParameters = new ArrayList<>();
 
     public UniVarFilterOperation() {
         super(null);
@@ -93,8 +95,51 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
     }
 
     @Override
-    public void instantiateParameter(List<AbstractColumn> columns) {
-
+    public void instantiateParameter(Map<String, AbstractColumn> columns) {
+        AbstractColumn absColumn = columns.get(columnName);
+        if (operator.getType() == CompareOperator.TYPE.LESS || operator.getType() == CompareOperator.TYPE.GREATER) {
+            probability = operator.getType() == CompareOperator.TYPE.LESS ? probability : BigDecimal.ONE.subtract(probability);
+            if (absColumn.getColumnType() == ColumnType.INTEGER) {
+                IntColumn column = (IntColumn) absColumn;
+                int value =  BigDecimal.valueOf(column.getMax() - column.getMin()).multiply(probability).intValue();
+                parameters.forEach((param) -> {
+                    param.setData(Integer.toString(value));
+                });
+            }
+            else if (absColumn.getColumnType() == ColumnType.DECIMAL) {
+                DecimalColumn column = (DecimalColumn) absColumn;
+                BigDecimal value =  BigDecimal.valueOf(column.getMax() - column.getMin()).multiply(probability);
+                parameters.forEach((param) -> {
+                    param.setData(value.toString());
+                });
+            }
+            else if (absColumn.getColumnType() == ColumnType.DATETIME) {
+                DateTimeColumn column = (DateTimeColumn) absColumn;
+                Duration duration = Duration.between(column.getBegin(), column.getEnd());
+                BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
+                BigDecimal nano = BigDecimal.valueOf(duration.getNano());
+                duration = Duration.ofSeconds(seconds.multiply(probability).longValue(), nano.multiply(probability).intValue());
+                LocalDateTime newDateTime = column.getBegin().plus(duration);
+                DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                        .appendPattern("yyyy-MM-dd HH:mm:ss").appendFraction(ChronoField.MICRO_OF_SECOND, 0, column.getPrecision(), true).toFormatter();
+                parameters.forEach((param) -> param.setData(formatter.format(newDateTime)));
+            }
+            else if (absColumn.getColumnType() == ColumnType.DATE) {
+                DateColumn column = (DateColumn) absColumn;
+                Duration duration = Duration.between(column.getBegin(), column.getEnd());
+                BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
+                duration = Duration.ofSeconds(seconds.multiply(probability).longValue());
+                LocalDate newDate = column.getBegin().plus(duration);
+                DateTimeFormatter formatter = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd").toFormatter();
+                parameters.forEach((param) -> param.setData(formatter.format(newDate)));
+            }
+            else {
+                throw new UnsupportedOperationException();
+            }
+        }
+        else if (operator.getType() == CompareOperator.TYPE.OTHER) {
+            throw new NotImplementedException();
+        }
     }
 
     @Override

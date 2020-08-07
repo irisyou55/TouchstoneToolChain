@@ -7,6 +7,10 @@ public class DecimalColumn extends AbstractColumn {
     double min;
     double max;
 
+    public DecimalColumn() {
+        super(null, ColumnType.DECIMAL);
+    }
+
     public DecimalColumn(String columnName) {
         super(columnName, ColumnType.DECIMAL);
     }

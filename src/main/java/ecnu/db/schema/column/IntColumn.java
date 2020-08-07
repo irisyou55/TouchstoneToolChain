@@ -8,6 +8,10 @@ public class IntColumn extends AbstractColumn {
     private int max;
     private int ndv;
 
+    public IntColumn() {
+        super(null, ColumnType.INTEGER);
+    }
+
     public IntColumn(String columnName) {
         super(columnName, ColumnType.INTEGER);
     }
