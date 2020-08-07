@@ -1,5 +1,4 @@
 package ecnu.db.analyzer.online.select;
-
 import ecnu.db.analyzer.online.select.tidb.TidbSelectSymbol;
 import java_cup.runtime.ComplexSymbolFactory;
 
