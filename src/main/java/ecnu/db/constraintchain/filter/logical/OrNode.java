@@ -72,7 +72,7 @@ public class OrNode implements BoolExprNode {
                     lessCol2UniFilters.put(operation.getColumnName(), operation);
                 } else if (operation.getOperator().getType() == CompareOperator.TYPE.GREATER) {
                     greaterCol2UniFilters.put(operation.getColumnName(), operation);
-                } else if (operation.getOperator().getType() == CompareOperator.TYPE.OTHER) {
+                } else if (operation.getOperator().getType() == CompareOperator.TYPE.EQUAL) {
                     otherNodes.add(operation);
                 } else {
                     throw new UnsupportedOperationException();

@@ -8,7 +8,6 @@ import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.schema.column.AbstractColumn;
 import ecnu.db.utils.CommonUtils;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -72,8 +71,16 @@ public class MultiVarFilterOperation extends AbstractFilterOperation {
                 }
             });
         }
-        else if (operator.getType() == CompareOperator.TYPE.OTHER) {
-            throw new NotImplementedException();
+        else if (operator.getType() == CompareOperator.TYPE.EQUAL) {
+            if (operator == CompareOperator.EQ) {
+
+            }
+            else if (operator == CompareOperator.NE) {
+
+            }
+            else {
+                throw new UnsupportedOperationException();
+            }
         }
     }
 

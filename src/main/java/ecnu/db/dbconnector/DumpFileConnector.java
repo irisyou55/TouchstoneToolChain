@@ -29,10 +29,10 @@ public class DumpFileConnector implements DatabaseConnectorInterface {
     }
 
     @Override
-    public int getMultiColNdv(String schema, String columns) throws TouchstoneToolChainException {
-        Integer ndv = this.multiColumnsNdvMap.get(String.format("%s.%s", schema, columns));
+    public int getMultiColNdv(String canonicalTableName, String columns) throws TouchstoneToolChainException {
+        Integer ndv = this.multiColumnsNdvMap.get(String.format("%s.%s", canonicalTableName, columns));
         if (ndv == null) {
-            throw new TouchstoneToolChainException(String.format("cannot find multicolumn ndv information for schema:%s, cols:%s", schema, columns));
+            throw new TouchstoneToolChainException(String.format("cannot find multicolumn ndv information for schema:%s, cols:%s", canonicalTableName, columns));
         }
         return ndv;
     }

@@ -42,4 +42,9 @@ public class StringColumn extends AbstractColumn {
     public void setNdv(int ndv) {
         this.ndv = ndv;
     }
+
+    @Override
+    public void adjustNonEqProbabilityBucket(BigDecimal probability, String value) {
+        throw new UnsupportedOperationException();
+    }
 }

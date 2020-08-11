@@ -1,5 +1,6 @@
 package ecnu.db.schema;
 
+import com.google.common.collect.Lists;
 import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.schema.column.*;
 import ecnu.db.utils.ColumnConvert;
@@ -8,7 +9,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author wangqingshuai
@@ -21,23 +24,21 @@ public class SchemaGenerator {
      * @param tableMetadata 表的DDL
      * @return 1.column info sqls 2. keys info sql, including primary key and foreign keys
      */
-    protected String[] getColumnSql(String tableMetadata) {
+    protected List<String> getColumnSql(String tableMetadata) {
         tableMetadata = tableMetadata.toLowerCase();
         tableMetadata = tableMetadata.substring(tableMetadata.indexOf(System.lineSeparator()) + 1, tableMetadata.lastIndexOf(")"));
         tableMetadata = tableMetadata.replaceAll("`", "");
-        String[] sqls = tableMetadata.split(System.lineSeparator());
-        int index = sqls.length - 1;
-        for (; index >= 0; index--) {
-            if (!sqls[index].contains("key ")) {
-                break;
-            }
-        }
+        List<String> sqls = Lists.newArrayList(tableMetadata.split(System.lineSeparator()));
+        sqls = sqls.stream().map(String::trim)
+                .filter((str -> !str.startsWith("primary key") && !str.startsWith("key")))
+                .collect(Collectors.toList());
+
         return sqls;
     }
 
-    public Schema generateSchemas(String tableName, String sql) throws TouchstoneToolChainException {
-        String[] columnSqls = getColumnSql(sql);
-        Map<String, AbstractColumn> columns = new HashMap<>(columnSqls.length);
+    public Schema generateSchema(String tableName, String sql) throws TouchstoneToolChainException {
+        List<String> columnSqls = getColumnSql(sql);
+        Map<String, AbstractColumn> columns = new HashMap<>(columnSqls.size());
         for (String columnSql : columnSqls) {
             String[] attributes = columnSql.trim().split(" ");
             String columnName = attributes[0];

@@ -26,31 +26,31 @@ public enum CompareOperator {
     /**
      * 比较运算符，等于
      */
-    EQ(TYPE.OTHER),
+    EQ(TYPE.EQUAL),
     /**
      * 比较运算符，不等于
      */
-    NE(TYPE.OTHER),
+    NE(TYPE.EQUAL),
     /**
      * 比较运算符，相似
      */
-    LIKE(TYPE.OTHER),
+    LIKE(TYPE.EQUAL),
     /**
      * 比较运算符，包含
      */
-    IN(TYPE.OTHER),
+    IN(TYPE.EQUAL),
     /**
      * ISNULL运算符
      */
-    ISNULL(TYPE.OTHER),
+    ISNULL(TYPE.EQUAL),
     /**
      * RANGE运算符，表示多个lt,gt,le,ge的整合，不直接在parser中使用
      */
-    RANGE(TYPE.OTHER);
+    RANGE(TYPE.RANGE);
 
     private final TYPE type;
     public enum TYPE {
-        LESS, GREATER, OTHER
+        LESS, GREATER, EQUAL, RANGE
     }
     private CompareOperator(TYPE type) {
         this.type = type;

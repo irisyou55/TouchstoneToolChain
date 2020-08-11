@@ -62,7 +62,7 @@ public class AndNode implements BoolExprNode {
                 CompareOperator.TYPE type = ((UniVarFilterOperation) child).getOperator().getType();
                 if (type == CompareOperator.TYPE.GREATER || type == CompareOperator.TYPE.LESS) {
                     col2uniFilters.put(((UniVarFilterOperation) child).getColumnName(), (UniVarFilterOperation) child);
-                } else if (type == CompareOperator.TYPE.OTHER) {
+                } else if (type == CompareOperator.TYPE.EQUAL) {
                     otherNodes.add(child);
                 } else {
                     throw new UnsupportedOperationException();

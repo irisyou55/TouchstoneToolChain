@@ -3,8 +3,8 @@ package ecnu.db.dbconnector;
 import ecnu.db.analyzer.statical.QueryReader;
 import ecnu.db.analyzer.statical.QueryTableName;
 import ecnu.db.exception.TouchstoneToolChainException;
-import ecnu.db.schema.SchemaGenerator;
 import ecnu.db.schema.Schema;
+import ecnu.db.schema.SchemaGenerator;
 import ecnu.db.utils.CommonUtils;
 import ecnu.db.utils.SystemConfig;
 import org.slf4j.Logger;
@@ -27,14 +27,13 @@ public class DbConnector implements DatabaseConnectorInterface {
     private final HashMap<String, Integer> multiColNdvMap = new HashMap<>();
 
     public DatabaseMetaData databaseMetaData;
-    /**
-     * JDBC 驱动名及数据库 URL
-     */
+
+    // 数据库连接
     protected Statement stmt;
 
     public DbConnector(SystemConfig config, String dbType, String databaseConnectionConfig) throws TouchstoneToolChainException {
         String url;
-        if (config.isCrossMultiDatabase()) {
+        if (!config.isCrossMultiDatabase()) {
             url = String.format("jdbc:%s://%s:%s/%s?%s", dbType, config.getDatabaseIp(), config.getDatabasePort(), config.getDatabaseName(), databaseConnectionConfig);
         } else {
             url = String.format("jdbc:%s://%s:%s?%s", dbType, config.getDatabaseIp(), config.getDatabasePort(), databaseConnectionConfig);
@@ -51,14 +50,14 @@ public class DbConnector implements DatabaseConnectorInterface {
     }
 
 
-    public String getTableMetadata(String tableName) throws SQLException {
-        ResultSet rs = stmt.executeQuery("show create table " + tableName);
+    public String getTableMetadata(String canonicalTableName) throws SQLException {
+        ResultSet rs = stmt.executeQuery("show create table " + canonicalTableName);
         rs.next();
         return rs.getString(2).trim().toLowerCase();
     }
 
-    public String[] getDataRange(String tableName, String columnInfo) throws SQLException {
-        String sql = "select " + columnInfo + " from " + tableName;
+    public String[] getDataRange(String canonicalTableName, String columnInfo) throws SQLException {
+        String sql = "select " + columnInfo + " from " + canonicalTableName;
         ResultSet rs = stmt.executeQuery(sql);
         rs.next();
         String[] infos = new String[rs.getMetaData().getColumnCount()];
@@ -87,11 +86,11 @@ public class DbConnector implements DatabaseConnectorInterface {
     }
 
     @Override
-    public int getMultiColNdv(String schema, String columns) throws SQLException {
-        ResultSet rs = stmt.executeQuery("select count(distinct " + columns + ") from " + schema);
+    public int getMultiColNdv(String canonicalTableName, String columns) throws SQLException {
+        ResultSet rs = stmt.executeQuery("select count(distinct " + columns + ") from " + canonicalTableName);
         rs.next();
         int result = rs.getInt(1);
-        multiColNdvMap.put(String.format("%s.%s", schema, columns), result);
+        multiColNdvMap.put(String.format("%s.%s", canonicalTableName, columns), result);
         return result;
     }
 
@@ -134,13 +133,22 @@ public class DbConnector implements DatabaseConnectorInterface {
      * @return Schema
      * @throws TouchstoneToolChainException 生成Schema失败，设置col分布失败或者设置col的cardinality和average length等信息失败
      * @throws SQLException                 获取表的DDL失败或者获取col分布失败
-     * @throws IOException                  获取col的cardinality和average length等信息失败
      */
-    public Schema fetchSchema(SchemaGenerator dbSchemaGenerator, String canonicalTableName) throws TouchstoneToolChainException, SQLException, IOException {
-        Schema schema = dbSchemaGenerator.generateSchemas(canonicalTableName, getTableMetadata(canonicalTableName));
-        dbSchemaGenerator.setDataRangeBySqlResult(schema.getColumns().values(), getDataRange(canonicalTableName,
-                dbSchemaGenerator.getColumnDistributionSql(schema.getTableName(), schema.getColumns().values())));
+    public Schema fetchSchema(SchemaGenerator dbSchemaGenerator, String canonicalTableName) throws TouchstoneToolChainException, SQLException {
+        String tableMetadata = getTableMetadata(canonicalTableName);
+        Schema schema = dbSchemaGenerator.generateSchema(canonicalTableName, tableMetadata);
+        String distributionSql = dbSchemaGenerator.getColumnDistributionSql(schema.getTableName(), schema.getColumns().values());
+        String[] dataRange = getDataRange(canonicalTableName, distributionSql);
+        dbSchemaGenerator.setDataRangeBySqlResult(schema.getColumns().values(), dataRange);
         logger.info(String.format("获取'%s'表结构和表数据分布成功", canonicalTableName));
         return schema;
+    }
+
+    public int getTableSize(String canonicalTableName) throws SQLException {
+        ResultSet rs = stmt.executeQuery(String.format("select count(*) as cnt from %s", canonicalTableName));
+        if (rs.next()) {
+            return rs.getInt("cnt");
+        }
+        throw new SQLException(String.format("table'%s'的size为0", canonicalTableName));
     }
 }

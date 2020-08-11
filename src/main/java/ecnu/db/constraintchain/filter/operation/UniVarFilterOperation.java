@@ -8,10 +8,11 @@ import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.schema.column.*;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.math.BigDecimal;
-import java.time.*;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
@@ -21,6 +22,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static ecnu.db.constraintchain.filter.operation.CompareOperator.*;
+import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.*;
+import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.RANGE;
+import static ecnu.db.schema.column.ColumnType.*;
 
 /**
  * @author wangqingshuai
@@ -51,7 +57,7 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
                 toMergeNodes.add((BoolExprNode) CollectionUtils.get(typ2Filter.values(), 0));
                 continue;
             }
-            if (types.contains(CompareOperator.TYPE.GREATER) && types.contains(CompareOperator.TYPE.LESS)) {
+            if (types.contains(GREATER) && types.contains(LESS)) {
                 RangeFilterOperation newFilter = new RangeFilterOperation(colName);
                 newFilter.addLessParameters(Stream.concat(typ2Filter.get(CompareOperator.LE).stream(), typ2Filter.get(CompareOperator.LT).stream())
                         .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
@@ -60,13 +66,13 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
                 setLessOperator(isAnd, typ2Filter, newFilter);
                 setGreaterOperator(isAnd, typ2Filter, newFilter);
                 toMergeNodes.add(newFilter);
-            } else if (types.contains(CompareOperator.TYPE.LESS) && !types.contains(CompareOperator.TYPE.GREATER)) {
+            } else if (types.contains(LESS) && !types.contains(GREATER)) {
                 RangeFilterOperation newFilter = new RangeFilterOperation(colName);
                 newFilter.addLessParameters(Stream.concat(typ2Filter.get(CompareOperator.LE).stream(), typ2Filter.get(CompareOperator.LT).stream())
                         .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
                 setGreaterOperator(isAnd, typ2Filter, newFilter);
                 toMergeNodes.add(newFilter);
-            } else if (types.contains(CompareOperator.TYPE.GREATER) && !types.contains(CompareOperator.TYPE.LESS)) {
+            } else if (types.contains(GREATER) && !types.contains(LESS)) {
                 RangeFilterOperation newFilter = new RangeFilterOperation(colName);
                 newFilter.addGreaterParameters(Stream.concat(typ2Filter.get(CompareOperator.GE).stream(), typ2Filter.get(CompareOperator.GT).stream())
                         .flatMap((filter) -> filter.getParameters().stream()).collect(Collectors.toList()));
@@ -94,26 +100,27 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
         }
     }
 
+    /**
+     *
+     */
     @Override
     public void instantiateParameter(Map<String, AbstractColumn> columns) {
         AbstractColumn absColumn = columns.get(columnName);
-        if (operator.getType() == CompareOperator.TYPE.LESS || operator.getType() == CompareOperator.TYPE.GREATER) {
-            probability = operator.getType() == CompareOperator.TYPE.LESS ? probability : BigDecimal.ONE.subtract(probability);
-            if (absColumn.getColumnType() == ColumnType.INTEGER) {
+        if (operator.getType() == LESS || operator.getType() == GREATER) {
+            probability = operator.getType() == LESS ? probability : BigDecimal.ONE.subtract(probability);
+            if (absColumn.getColumnType() == INTEGER) {
                 IntColumn column = (IntColumn) absColumn;
                 int value =  BigDecimal.valueOf(column.getMax() - column.getMin()).multiply(probability).intValue();
-                parameters.forEach((param) -> {
-                    param.setData(Integer.toString(value));
-                });
+                parameters.forEach((param) -> param.setData(Integer.toString(value)));
+                column.adjustNonEqProbabilityBucket(probability, Integer.toString(value));
             }
-            else if (absColumn.getColumnType() == ColumnType.DECIMAL) {
+            else if (absColumn.getColumnType() == DECIMAL) {
                 DecimalColumn column = (DecimalColumn) absColumn;
                 BigDecimal value =  BigDecimal.valueOf(column.getMax() - column.getMin()).multiply(probability);
-                parameters.forEach((param) -> {
-                    param.setData(value.toString());
-                });
+                parameters.forEach((param) -> param.setData(value.toString()));
+                column.adjustNonEqProbabilityBucket(probability, value.toString());
             }
-            else if (absColumn.getColumnType() == ColumnType.DATETIME) {
+            else if (absColumn.getColumnType() == DATETIME) {
                 DateTimeColumn column = (DateTimeColumn) absColumn;
                 Duration duration = Duration.between(column.getBegin(), column.getEnd());
                 BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
@@ -123,8 +130,9 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
                 DateTimeFormatter formatter = new DateTimeFormatterBuilder()
                         .appendPattern("yyyy-MM-dd HH:mm:ss").appendFraction(ChronoField.MICRO_OF_SECOND, 0, column.getPrecision(), true).toFormatter();
                 parameters.forEach((param) -> param.setData(formatter.format(newDateTime)));
+                column.adjustNonEqProbabilityBucket(probability, formatter.format(newDateTime));
             }
-            else if (absColumn.getColumnType() == ColumnType.DATE) {
+            else if (absColumn.getColumnType() == DATE) {
                 DateColumn column = (DateColumn) absColumn;
                 Duration duration = Duration.between(column.getBegin(), column.getEnd());
                 BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
@@ -132,13 +140,31 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
                 LocalDate newDate = column.getBegin().plus(duration);
                 DateTimeFormatter formatter = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd").toFormatter();
                 parameters.forEach((param) -> param.setData(formatter.format(newDate)));
+                column.adjustNonEqProbabilityBucket(probability, formatter.format(newDate));
             }
             else {
                 throw new UnsupportedOperationException();
             }
         }
-        else if (operator.getType() == CompareOperator.TYPE.OTHER) {
-            throw new NotImplementedException();
+        else if (operator.getType() == EQUAL) {
+            if (operator == EQ) {
+
+            }
+            else if (operator == NE) {
+
+            }
+            else if (operator == LIKE) {
+
+            }
+            else if (operator == IN) {
+
+            }
+            else {
+                throw new UnsupportedOperationException();
+            }
+        }
+        else if (operator.getType() == RANGE) {
+
         }
     }
 

@@ -11,7 +11,17 @@ import java.time.temporal.ChronoField;
  */
 public class DateTimeColumn extends AbstractColumn {
     public static final DateTimeFormatter FMT = new DateTimeFormatterBuilder()
-            .appendPattern("yyyy-MM-dd HH:mm:ss").appendFraction(ChronoField.MICRO_OF_SECOND, 0, 6, true).toFormatter();
+            .appendOptional(new DateTimeFormatterBuilder()
+                    .appendPattern("yyyy-MM-dd")
+                    .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+                    .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+                    .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+                    .toFormatter())
+            .appendOptional(new DateTimeFormatterBuilder()
+                    .appendPattern("yyyy-MM-dd HH:mm:ss")
+                    .appendFraction(ChronoField.MICRO_OF_SECOND, 0, 6, true)
+                    .toFormatter())
+            .toFormatter();
     private LocalDateTime begin;
     private LocalDateTime end;
     private int precision; // fraction precision for datetime

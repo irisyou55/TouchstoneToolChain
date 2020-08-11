@@ -53,7 +53,6 @@ public class Parameter {
         this.id = id;
     }
 
-    @JsonIgnore
     public String getData() {
         return data;
     }

@@ -6,8 +6,6 @@ import ecnu.db.schema.column.ColumnType;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * @author qingshuai.wang
@@ -28,7 +26,6 @@ public class SystemConfig {
     private String dumpDirectory;
     private String logDirectory;
 
-    private HashMap<ColumnType, HashSet<String>> typeConvert;
     private Double skipNodeThreshold;
 
     public SystemConfig() {
@@ -95,14 +92,6 @@ public class SystemConfig {
 
     public void setTidbHttpPort(String tidbHttpPort) {
         this.tidbHttpPort = tidbHttpPort;
-    }
-
-    public HashMap<ColumnType, HashSet<String>> getTypeConvert() {
-        return typeConvert;
-    }
-
-    public void setTypeConvert(HashMap<ColumnType, HashSet<String>> typeConvert) {
-        this.typeConvert = typeConvert;
     }
 
     public ColumnType getColumnType(String readType) {

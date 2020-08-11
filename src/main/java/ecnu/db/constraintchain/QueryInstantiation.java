@@ -4,16 +4,17 @@ import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
 import ecnu.db.constraintchain.chain.ConstraintChain;
 import ecnu.db.constraintchain.chain.ConstraintChainFilterNode;
 import ecnu.db.constraintchain.chain.ConstraintChainNode;
-import ecnu.db.constraintchain.chain.ConstraintChainNodeType;
 import ecnu.db.constraintchain.filter.operation.AbstractFilterOperation;
 import ecnu.db.constraintchain.filter.operation.CompareOperator;
 import ecnu.db.constraintchain.filter.operation.MultiVarFilterOperation;
 import ecnu.db.constraintchain.filter.operation.UniVarFilterOperation;
 import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.schema.Schema;
+import ecnu.db.schema.column.AbstractColumn;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author wangqingshuai
@@ -27,21 +28,24 @@ public class QueryInstantiation {
         ArithmeticNode.setSize(10_000);
         for (ConstraintChain constraintChain : constraintChains) {
             Schema schema = schemas.get(constraintChain.getTableName());
-            for (ConstraintChainNode node : constraintChain.getNodes()) {
-                if (node.getConstraintChainNodeType() == ConstraintChainNodeType.FILTER) {
-                    List<AbstractFilterOperation> operations = ((ConstraintChainFilterNode) node).pushDownProbability();
-                    for (AbstractFilterOperation operation : operations) {
-                        if(operation instanceof UniVarFilterOperation &&
-                                (operation.getOperator().getType() == CompareOperator.TYPE.LESS || operation.getOperator().getType() == CompareOperator.TYPE.GREATER) ) {
-                            operation.instantiateParameter(schema.getColumns());
-                        }
-                        else if (operation instanceof MultiVarFilterOperation) {
-                            operation.instantiateParameter(schema.getColumns());
-                        }
+            for (ConstraintChainNode node : constraintChain.getNodes().stream().filter((node) -> node instanceof ConstraintChainFilterNode).collect(Collectors.toList())) {
+                List<AbstractFilterOperation> operations = ((ConstraintChainFilterNode) node).pushDownProbability();
+                for (AbstractFilterOperation operation : operations) {
+                    if(operation instanceof UniVarFilterOperation &&
+                            (operation.getOperator().getType() == CompareOperator.TYPE.LESS || operation.getOperator().getType() == CompareOperator.TYPE.GREATER) ) {
+                        operation.instantiateParameter(schema.getColumns());
+                    }
+                    else if (operation instanceof MultiVarFilterOperation) {
+                        operation.instantiateParameter(schema.getColumns());
                     }
                 }
             }
         }
-        // todo 多元计算
+        // generate column bucket
+        for (Schema schema : schemas.values()) {
+            for (AbstractColumn column : schema.getColumns().values()) {
+                column.initEqProbabilityBucket();
+            }
+        }
     }
 }

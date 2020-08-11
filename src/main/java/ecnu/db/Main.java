@@ -51,7 +51,7 @@ public class Main {
         StorageManager storageManager = new StorageManager(config.getResultDirectory(), config.getDumpDirectory(), config.getLoadDirectory(), config.getLogDirectory());
         storageManager.init();
 
-        DatabaseConnectorInterface dbConnector;
+        DatabaseConnectorInterface connector;
         AbstractDatabaseInfo databaseInfo;
         Map<String, Schema> schemas = new HashMap<>(INIT_HASHMAP_SIZE);
         List<String> tableNames;
@@ -63,30 +63,33 @@ public class Main {
             Map<String, List<String[]>> queryPlanMap = storageManager.loadQueryPlans();
             Map<String, Integer> multiColNdvMap = storageManager.loadMultiColMap();
             schemas = storageManager.loadSchemas();
-            dbConnector = new DumpFileConnector(queryPlanMap, multiColNdvMap);
+            connector = new DumpFileConnector(queryPlanMap, multiColNdvMap);
             logger.info("数据加载完毕");
         } else {
             switch (config.getDatabaseVersion()) {
                 case TiDB3:
                 case TiDB4:
                     databaseInfo = new TidbInfo(config.getDatabaseVersion());
-                    dbConnector = new DbConnector(config, databaseInfo.getJdbcType(), databaseInfo.getJdbcProperties());
-                    tableNames = ((DbConnector) dbConnector).fetchTableNames(config.isCrossMultiDatabase(),
+                    connector = new DbConnector(config, databaseInfo.getJdbcType(), databaseInfo.getJdbcProperties());
+                    DbConnector dbConnector = (DbConnector) connector;
+                    tableNames = dbConnector.fetchTableNames(config.isCrossMultiDatabase(),
                             config.getDatabaseName(), files, JdbcConstants.MYSQL);
                     logger.info("获取表名成功，表名为:" + tableNames);
                     SchemaGenerator dbSchemaGenerator = new SchemaGenerator();
                     for (String canonicalTableName : tableNames) {
-                        Schema schema = ((DbConnector) dbConnector).fetchSchema(dbSchemaGenerator, canonicalTableName);
+                        Schema schema = dbConnector.fetchSchema(dbSchemaGenerator, canonicalTableName);
+                        int tableSize = dbConnector.getTableSize(canonicalTableName);
+                        schema.setTableSize(tableSize);
                         schemas.put(canonicalTableName, schema);
                     }
-                    Schema.initFks(((DbConnector) dbConnector).databaseMetaData, schemas);
+                    Schema.initFks(((DbConnector) connector).databaseMetaData, schemas);
                     logger.info("获取表结构和数据分布成功");
                     break;
                 default:
                     throw new UnsupportedDBTypeException(config.getDatabaseVersion());
             }
         }
-        AbstractAnalyzer queryAnalyzer = getAnalyzer(config, dbConnector, databaseInfo, schemas);
+        AbstractAnalyzer queryAnalyzer = getAnalyzer(config, connector, databaseInfo, schemas);
         Map<String, List<ConstraintChain>> queryInfos = new HashMap<>();
         String staticalDbType = databaseInfo.getStaticalDbVersion();
         boolean needLog = false;
@@ -125,11 +128,11 @@ public class Main {
         }
         logger.info("获取查询计划完成");
         if (storageManager.isDump()) {
-            storageManager.dumpStaticInfo(dbConnector.getMultiColNdvMap(), schemas, tableNames);
+            storageManager.dumpStaticInfo(connector.getMultiColNdvMap(), schemas, tableNames);
             logger.info("表结构和数据分布持久化成功");
         }
         if (needLog) {
-            storageManager.logStaticInfo(dbConnector.getMultiColNdvMap(), schemas, tableNames);
+            storageManager.logStaticInfo(connector.getMultiColNdvMap(), schemas, tableNames);
             logger.info(String.format("关于表的日志信息已经存盘到'%s'", storageManager.getLogDir().getAbsolutePath()));
         }
         storageManager.storeSchemaResult(schemas);

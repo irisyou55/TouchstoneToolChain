@@ -9,6 +9,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 0,
+            "data" : "MOZAMBIQUE",
             "isDate" : false
           } ],
           "operator" : "EQ",
@@ -38,6 +39,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 0,
+            "data" : "HOUSEHOLD",
             "isDate" : false
           } ],
           "operator" : "EQ",
@@ -70,6 +72,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 1,
+            "data" : "1995-03-10",
             "isDate" : true
           } ],
           "operator" : "LT",
@@ -79,7 +82,7 @@
           "type" : "UNI_FILTER_OPERATION"
         } ]
       },
-      "probability" : 0.4827473333333333,
+      "probability" : 0.4827473333,
       "columns" : [ "tpch.orders.o_orderdate" ]
     }, {
       "tableName" : "tpch.orders",
@@ -102,6 +105,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 0,
+            "data" : "5",
             "isDate" : false
           } ],
           "operator" : "EQ",
@@ -112,6 +116,7 @@
         }, {
           "parameters" : [ {
             "id" : 1,
+            "data" : "%COPPER",
             "isDate" : false
           } ],
           "operator" : "LIKE",
@@ -139,6 +144,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 2,
+            "data" : "AMERICA",
             "isDate" : false
           } ],
           "operator" : "EQ",
@@ -170,6 +176,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 3,
+            "data" : "AMERICA",
             "isDate" : false
           } ],
           "operator" : "EQ",
@@ -202,6 +209,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 0,
+            "data" : "1994-06-01",
             "isDate" : true
           } ],
           "operator" : "GE",
@@ -212,6 +220,7 @@
         }, {
           "parameters" : [ {
             "id" : 1,
+            "data" : "1994-09-01",
             "isDate" : true
           } ],
           "operator" : "LT",
@@ -240,6 +249,7 @@
           "leftNode" : {
             "parameters" : [ {
               "id" : 0,
+              "data" : "24",
               "isDate" : false
             } ],
             "operator" : "LT",
@@ -251,6 +261,7 @@
           "rightNode" : {
             "parameters" : [ {
               "id" : 1,
+              "data" : "29",
               "isDate" : false
             } ],
             "operator" : "EQ",
@@ -262,7 +273,7 @@
           "type" : "OR"
         } ]
       },
-      "probability" : 0.4796910292332469,
+      "probability" : 0.4796910292,
       "columns" : [ "tpch.lineitem.l_quantity" ]
     } ]
   } ],
@@ -292,6 +303,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 0,
+            "data" : "STANDARD BURNISHED NICKEL",
             "isDate" : false
           } ],
           "operator" : "EQ",
@@ -319,6 +331,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 1,
+            "data" : "ASIA",
             "isDate" : false
           } ],
           "operator" : "EQ",
@@ -347,6 +360,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 2,
+            "data" : "1995-01-01",
             "isDate" : true
           } ],
           "operator" : "GE",
@@ -357,6 +371,7 @@
         }, {
           "parameters" : [ {
             "id" : 3,
+            "data" : "1996-12-31",
             "isDate" : true
           } ],
           "operator" : "LE",
@@ -389,6 +404,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 0,
+            "data" : "0.02",
             "isDate" : false
           } ],
           "operator" : "GE",
@@ -399,6 +415,7 @@
         }, {
           "parameters" : [ {
             "id" : 1,
+            "data" : "1997-01-01",
             "isDate" : true
           } ],
           "operator" : "GE",
@@ -409,6 +426,7 @@
         }, {
           "parameters" : [ {
             "id" : 2,
+            "data" : "0.04",
             "isDate" : false
           } ],
           "operator" : "LE",
@@ -419,6 +437,7 @@
         }, {
           "parameters" : [ {
             "id" : 3,
+            "data" : "24",
             "isDate" : false
           } ],
           "operator" : "LT",
@@ -429,6 +448,7 @@
         }, {
           "parameters" : [ {
             "id" : 4,
+            "data" : "1998-01-01",
             "isDate" : true
           } ],
           "operator" : "LT",
@@ -438,7 +458,7 @@
           "type" : "UNI_FILTER_OPERATION"
         } ]
       },
-      "probability" : 0.01904131080122942,
+      "probability" : 0.01904131080,
       "columns" : [ "tpch.lineitem.l_discount", "tpch.lineitem.l_quantity", "tpch.lineitem.l_shipdate" ]
     } ]
   } ],
@@ -452,6 +472,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 0,
+            "data" : "1994-09-01",
             "isDate" : true
           } ],
           "operator" : "GE",
@@ -462,6 +483,7 @@
         }, {
           "parameters" : [ {
             "id" : 1,
+            "data" : "1994-10-01",
             "isDate" : true
           } ],
           "operator" : "LT",
@@ -471,7 +493,7 @@
           "type" : "UNI_FILTER_OPERATION"
         } ]
       },
-      "probability" : 0.012548458937065245,
+      "probability" : 0.01254845894,
       "columns" : [ "tpch.lineitem.l_shipdate" ]
     } ]
   }, {
@@ -502,7 +524,7 @@
           "type" : "ISNULL_FILTER_OPERATION"
         } ]
       },
-      "probability" : 0.0,
+      "probability" : 0,
       "columns" : [ ]
     } ]
   } ],
@@ -516,6 +538,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 0,
+            "data" : "1998-09-28",
             "isDate" : true
           } ],
           "operator" : "LE",
@@ -525,7 +548,7 @@
           "type" : "UNI_FILTER_OPERATION"
         } ]
       },
-      "probability" : 0.9928309517322742,
+      "probability" : 0.9928309517,
       "columns" : [ "tpch.lineitem.l_shipdate" ]
     } ]
   } ],
@@ -539,6 +562,7 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 0,
+            "data" : "1994-09-01",
             "isDate" : true
           } ],
           "operator" : "GE",
@@ -549,6 +573,7 @@
         }, {
           "parameters" : [ {
             "id" : 1,
+            "data" : "1994-12-01",
             "isDate" : true
           } ],
           "operator" : "LT",
@@ -558,7 +583,7 @@
           "type" : "UNI_FILTER_OPERATION"
         } ]
       },
-      "probability" : 0.037677333333333334,
+      "probability" : 0.03767733333,
       "columns" : [ "tpch.orders.o_orderdate" ]
     }, {
       "tableName" : "tpch.orders",
@@ -608,9 +633,11 @@
         "children" : [ {
           "parameters" : [ {
             "id" : 0,
+            "data" : "ha",
             "isDate" : false
           }, {
             "id" : 1,
+            "data" : "hb",
             "isDate" : false
           } ],
           "operator" : "IN",
@@ -621,6 +648,7 @@
         }, {
           "parameters" : [ {
             "id" : 2,
+            "data" : "%ha%",
             "isDate" : false
           } ],
           "operator" : "LIKE",
