@@ -1,5 +1,7 @@
 package ecnu.db.schema.column;
 
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -39,5 +41,21 @@ public class DateColumn extends AbstractColumn {
     @Override
     public int getNdv() {
         return -1;
+    }
+
+    @Override
+    protected String generateRandomData(BigDecimal minProbability, BigDecimal maxProbability) {
+        Duration duration = Duration.between(begin, end);
+        BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
+        BigDecimal probability = BigDecimal.valueOf(Math.random() * (maxProbability.doubleValue() - minProbability.doubleValue()) + minProbability.doubleValue());
+        duration = Duration.ofSeconds(seconds.multiply(probability).longValue());
+        return FMT.format(begin.plus(duration));
+    }
+
+    public LocalDate generateData(BigDecimal probability) {
+        Duration duration = Duration.between(begin, end);
+        BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
+        duration = Duration.ofSeconds(seconds.multiply(probability).longValue());
+        return begin.plus(duration);
     }
 }

@@ -1,5 +1,7 @@
 package ecnu.db.schema.column;
 
+import java.math.BigDecimal;
+
 /**
  * @author qingshuai.wang
  */
@@ -37,7 +39,16 @@ public class IntColumn extends AbstractColumn {
         return this.ndv;
     }
 
+    @Override
+    protected String generateRandomData(BigDecimal minProbability, BigDecimal maxProbability) {
+        return Integer.toString((int) (Math.random() * (maxProbability.doubleValue() - minProbability.doubleValue()) * (this.max - this.min)) + minProbability.intValue());
+    }
+
     public void setNdv(int ndv) {
         this.ndv = ndv;
+    }
+
+    public int generateData(BigDecimal probability) {
+        return BigDecimal.valueOf(getMax() - getMin()).multiply(probability).intValue() + getMin();
     }
 }

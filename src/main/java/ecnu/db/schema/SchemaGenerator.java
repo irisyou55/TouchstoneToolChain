@@ -91,11 +91,12 @@ public class SchemaGenerator {
                 case DATETIME:
                 case DECIMAL:
                 case INTEGER:
-                    sql.append("min(").append(tableName).append(".").append(column.getColumnName())
-                            .append("),max(").append(tableName).append(".").append(column.getColumnName()).append("),");
+                    sql.append(String.format("min(%s.%s),", tableName, column.getColumnName()));
+                    sql.append(String.format("max(%s.%s),", tableName, column.getColumnName()));
                     break;
                 case VARCHAR:
-                    sql.append("max(length(").append(tableName).append(".").append(column.getColumnName()).append(")),");
+                    sql.append(String.format("max(length(%s.%s)),", tableName, column.getColumnName()));
+                    sql.append(String.format("min(length(%s.%s)),", tableName, column.getColumnName()));
                     break;
                 case BOOL:
                     break;

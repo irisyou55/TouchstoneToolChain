@@ -1,6 +1,8 @@
 package ecnu.db.schema.column;
 
 
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -55,11 +57,29 @@ public class DateTimeColumn extends AbstractColumn {
         return -1;
     }
 
+    @Override
+    protected String generateRandomData(BigDecimal minProbability, BigDecimal maxProbability) {
+        Duration duration = Duration.between(getBegin(), getEnd());
+        BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
+        BigDecimal nano = BigDecimal.valueOf(duration.getNano());
+        BigDecimal probability = BigDecimal.valueOf(Math.random() * (maxProbability.doubleValue() - minProbability.doubleValue()) + minProbability.doubleValue());
+        duration = Duration.ofSeconds(seconds.multiply(probability).longValue(), nano.multiply(probability).intValue());
+        return FMT.format(begin.plus(duration));
+    }
+
     public int getPrecision() {
         return precision;
     }
 
     public void setPrecision(int precision) {
         this.precision = precision;
+    }
+
+    public LocalDateTime generateData(BigDecimal probability) {
+        Duration duration = Duration.between(getBegin(), getEnd());
+        BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
+        BigDecimal nano = BigDecimal.valueOf(duration.getNano());
+        duration = Duration.ofSeconds(seconds.multiply(probability).longValue(), nano.multiply(probability).intValue());
+        return begin.plus(duration);
     }
 }

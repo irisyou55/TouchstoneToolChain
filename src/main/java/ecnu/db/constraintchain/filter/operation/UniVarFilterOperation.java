@@ -10,12 +10,6 @@ import ecnu.db.schema.column.*;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -25,15 +19,14 @@ import java.util.stream.Stream;
 
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.*;
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.*;
-import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.RANGE;
-import static ecnu.db.schema.column.ColumnType.*;
+import static ecnu.db.utils.CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION;
 
 /**
  * @author wangqingshuai
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UniVarFilterOperation extends AbstractFilterOperation {
-    private String columnName;
+    protected String columnName;
     private Boolean hasNot = false;
 
     public UniVarFilterOperation() {
@@ -100,51 +93,11 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
         }
     }
 
-    /**
-     *
-     */
     @Override
     public void instantiateParameter(Map<String, AbstractColumn> columns) {
         AbstractColumn absColumn = columns.get(columnName);
         if (operator.getType() == LESS || operator.getType() == GREATER) {
-            probability = operator.getType() == LESS ? probability : BigDecimal.ONE.subtract(probability);
-            if (absColumn.getColumnType() == INTEGER) {
-                IntColumn column = (IntColumn) absColumn;
-                int value =  BigDecimal.valueOf(column.getMax() - column.getMin()).multiply(probability).intValue();
-                parameters.forEach((param) -> param.setData(Integer.toString(value)));
-                column.adjustNonEqProbabilityBucket(probability, Integer.toString(value));
-            }
-            else if (absColumn.getColumnType() == DECIMAL) {
-                DecimalColumn column = (DecimalColumn) absColumn;
-                BigDecimal value =  BigDecimal.valueOf(column.getMax() - column.getMin()).multiply(probability);
-                parameters.forEach((param) -> param.setData(value.toString()));
-                column.adjustNonEqProbabilityBucket(probability, value.toString());
-            }
-            else if (absColumn.getColumnType() == DATETIME) {
-                DateTimeColumn column = (DateTimeColumn) absColumn;
-                Duration duration = Duration.between(column.getBegin(), column.getEnd());
-                BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
-                BigDecimal nano = BigDecimal.valueOf(duration.getNano());
-                duration = Duration.ofSeconds(seconds.multiply(probability).longValue(), nano.multiply(probability).intValue());
-                LocalDateTime newDateTime = column.getBegin().plus(duration);
-                DateTimeFormatter formatter = new DateTimeFormatterBuilder()
-                        .appendPattern("yyyy-MM-dd HH:mm:ss").appendFraction(ChronoField.MICRO_OF_SECOND, 0, column.getPrecision(), true).toFormatter();
-                parameters.forEach((param) -> param.setData(formatter.format(newDateTime)));
-                column.adjustNonEqProbabilityBucket(probability, formatter.format(newDateTime));
-            }
-            else if (absColumn.getColumnType() == DATE) {
-                DateColumn column = (DateColumn) absColumn;
-                Duration duration = Duration.between(column.getBegin(), column.getEnd());
-                BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
-                duration = Duration.ofSeconds(seconds.multiply(probability).longValue());
-                LocalDate newDate = column.getBegin().plus(duration);
-                DateTimeFormatter formatter = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd").toFormatter();
-                parameters.forEach((param) -> param.setData(formatter.format(newDate)));
-                column.adjustNonEqProbabilityBucket(probability, formatter.format(newDate));
-            }
-            else {
-                throw new UnsupportedOperationException();
-            }
+            instantiateUniParamCompParameter(absColumn);
         }
         else if (operator.getType() == EQUAL) {
             if (operator == EQ) {
@@ -162,9 +115,6 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
             else {
                 throw new UnsupportedOperationException();
             }
-        }
-        else if (operator.getType() == RANGE) {
-
         }
     }
 
@@ -197,5 +147,52 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
             return String.format("not(%s(%s))", operator.toString().toLowerCase(), String.join(", ", content));
         }
         return String.format("%s(%s)", operator.toString().toLowerCase(), String.join(", ", content));
+    }
+
+    public void instantiateUniParamCompParameter(AbstractColumn absColumn) {
+        instantiateUniParamCompParameter(absColumn, operator, parameters);
+    }
+
+    protected void instantiateUniParamCompParameter(AbstractColumn column, CompareOperator operator, List<Parameter> parameters) {
+        if (operator.getType() != LESS && operator.getType() != GREATER) {
+            throw new UnsupportedOperationException();
+        }
+        probability = operator.getType() == LESS ? probability : BigDecimal.ONE.subtract(probability);
+        // todo currently we are regarding (lt, le) as the lt, same goes for (gt, ge), @link{https://youtrack.biui.me/issue/TOUCHSTONE-18}
+        operator = LT;
+        String data = column.genData(probability);
+        if (column.hasNotMetCondition(operator + data)) { // for integer we use operator and generated value as identifier
+            parameters.forEach((param) -> param.setData(data));
+            column.adjustNonEqProbabilityBucket(probability, operator, data);
+            column.addCondition(operator + data);
+        }
+    }
+
+    public void instantiateEqualParameter(AbstractColumn column) {
+        if (operator == EQ || operator == IN) {
+            probability = probability.divide(BigDecimal.valueOf(parameters.size()), BIG_DECIMAL_DEFAULT_PRECISION);
+            for (Parameter parameter : parameters) {
+                if (column.hasNotMetCondition(operator + parameter.getData())) {
+                    column.addCondition(operator + parameter.getData());
+                    column.insertEqualProbability(probability, parameter);
+                }
+            }
+        }
+        else if (operator == NE) {
+            if (column.hasNotMetCondition(NE + parameters.get(0).getData())) {
+                column.addCondition(NE + parameters.get(0).getData());
+                column.insertEqualProbability(BigDecimal.ONE.subtract(probability), parameters.get(0));
+            }
+        }
+        else if (operator == LIKE) {
+            if (column.hasNotMetCondition(LIKE + parameters.get(0).getData())) { // for like we use operator and original value as identifier
+                column.addCondition(LIKE + parameters.get(0).getData());
+                String value = ((StringColumn) column).generateLikeData(parameters.get(0).getData());
+                parameters.forEach((p) -> p.setData(value));
+            }
+        }
+        else {
+            throw new UnsupportedOperationException();
+        }
     }
 }

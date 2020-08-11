@@ -3,14 +3,15 @@ package ecnu.db.constraintchain.arithmetic.value;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
 import ecnu.db.exception.TouchstoneToolChainException;
-
-import java.util.concurrent.ThreadLocalRandom;
+import ecnu.db.schema.column.AbstractColumn;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * @author wangqingshuai
  */
 public class ColumnNode extends ArithmeticNode {
-    private String columnName;
+    private String canonicalTableName;
+    private AbstractColumn column;
     private float min;
     private float max;
 
@@ -18,9 +19,9 @@ public class ColumnNode extends ArithmeticNode {
         super(ArithmeticNodeType.COLUMN);
     }
 
-    public ColumnNode(String columnName) {
+    public ColumnNode(AbstractColumn column) {
         super(ArithmeticNodeType.COLUMN);
-        this.columnName = columnName;
+        this.column = column;
     }
 
     public void setMinMax(float min, float max) throws TouchstoneToolChainException {
@@ -31,28 +32,38 @@ public class ColumnNode extends ArithmeticNode {
         this.max = max;
     }
 
-    public String getColumnName() {
-        return columnName;
+    public AbstractColumn getColumn() {
+        return column;
     }
 
-    public void setColumnName(String columnName) {
-        this.columnName = columnName;
+    public void setColumn(AbstractColumn column) {
+        this.column = column;
+    }
+
+    public String getCanonicalTableName() {
+        return canonicalTableName;
+    }
+
+    public void setCanonicalTableName(String canonicalTableName) {
+        this.canonicalTableName = canonicalTableName;
     }
 
     @Override
     public float[] getVector() {
-        int size = ArithmeticNode.size;
-        float[] value = new float[size];
-        float bound = max - min;
-        ThreadLocalRandom threadLocalRandom = ThreadLocalRandom.current();
-        for (int i = 0; i < size; i++) {
-            value[i] = threadLocalRandom.nextFloat() * bound + min;
-        }
-        return value;
+        throw new NotImplementedException();
+        //        List<EqBucket> eqBucketList = column.getEqBuckets();
+//        int size = ArithmeticNode.size;
+//        float[] value = new float[size];
+//        float bound = max - min;
+//        ThreadLocalRandom threadLocalRandom = ThreadLocalRandom.current();
+//        for (int i = 0; i < size; i++) {
+//            value[i] = threadLocalRandom.nextFloat() * bound + min;
+//        }
+//        return value;
     }
 
     @Override
     public String toString() {
-        return columnName;
+        return String.format("%s.%s", canonicalTableName, column.getColumnName());
     }
 }

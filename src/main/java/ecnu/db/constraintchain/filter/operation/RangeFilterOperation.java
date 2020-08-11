@@ -3,12 +3,12 @@ package ecnu.db.constraintchain.filter.operation;
 import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.schema.column.AbstractColumn;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author alan
@@ -24,7 +24,6 @@ public class RangeFilterOperation extends UniVarFilterOperation {
 
     @Override
     public void instantiateParameter(Map<String, AbstractColumn> columns) {
-        throw new NotImplementedException();
     }
 
     @Override
@@ -79,5 +78,24 @@ public class RangeFilterOperation extends UniVarFilterOperation {
 
     public void setGreaterOperator(CompareOperator greaterOperator) {
         this.greaterOperator = greaterOperator;
+    }
+
+    @Override
+    public void instantiateUniParamCompParameter(AbstractColumn absColumn) {
+        if (lessParameters.size() == 0 && greaterParameters.size() > 0) {
+            instantiateUniParamCompParameter(absColumn, lessOperator, lessParameters);
+        }
+        else if (greaterParameters.size() == 0 && lessParameters.size() > 0) {
+            instantiateUniParamCompParameter(absColumn, lessOperator, lessParameters);
+        }
+    }
+
+    public void instantiateBetweenParameter(AbstractColumn absColumn) {
+        String lessParamStr = lessParameters.stream().map(Parameter::getData).collect(Collectors.joining()),
+                greaterParamStr = greaterParameters.stream().map(Parameter::getData).collect(Collectors.joining());
+        if (absColumn.hasNotMetCondition(lessOperator + lessParamStr + greaterOperator + greaterParamStr)) {
+            absColumn.addCondition(lessOperator + lessParamStr + greaterOperator + greaterParamStr);
+            absColumn.insertBetweenProbability(probability, lessParameters, greaterParameters);
+        }
     }
 }

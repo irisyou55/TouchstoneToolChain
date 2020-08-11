@@ -46,7 +46,7 @@ public class MultiVarFilterOperation extends AbstractFilterOperation {
             return;
         }
         if (node.getType() == ArithmeticNodeType.COLUMN) {
-            colNames.add(((ColumnNode) node).getColumnName());
+            colNames.add(String.format("%s.%s", ((ColumnNode) node).getCanonicalTableName(), ((ColumnNode) node).getColumn().getColumnName()));
         }
         getColNames(node.getLeftNode(), colNames);
         getColNames(node.getRightNode(), colNames);
@@ -102,5 +102,9 @@ public class MultiVarFilterOperation extends AbstractFilterOperation {
 
     public ArithmeticNode getArithmeticTree() {
         return arithmeticTree;
+    }
+
+    public void instantiateMultiVarParameter(Map<String, AbstractColumn> columns) {
+
     }
 }
