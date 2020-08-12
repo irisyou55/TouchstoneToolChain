@@ -2,9 +2,17 @@ package ecnu.db.constraintchain.arithmetic.value;
 
 import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
+import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.schema.column.AbstractColumn;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import ecnu.db.schema.column.bucket.EqBucket;
+
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author wangqingshuai
@@ -50,16 +58,30 @@ public class ColumnNode extends ArithmeticNode {
 
     @Override
     public float[] getVector() {
-        throw new NotImplementedException();
-        //        List<EqBucket> eqBucketList = column.getEqBuckets();
-//        int size = ArithmeticNode.size;
-//        float[] value = new float[size];
-//        float bound = max - min;
-//        ThreadLocalRandom threadLocalRandom = ThreadLocalRandom.current();
-//        for (int i = 0; i < size; i++) {
-//            value[i] = threadLocalRandom.nextFloat() * bound + min;
-//        }
-//        return value;
+        List<EqBucket> eqBuckets = column.getEqBuckets();
+        eqBuckets.sort(Comparator.comparing(o -> o.leftBorder));
+        TreeMap<Double, Float> cumulativeProbability2Param = new TreeMap<>();
+        BigDecimal cumProbability = BigDecimal.ZERO;
+        for (EqBucket eqBucket : eqBuckets) {
+            for (Map.Entry<BigDecimal, Parameter> entry : eqBucket.eqConditions.entries()) {
+                cumProbability = cumProbability.add(entry.getKey());
+                cumulativeProbability2Param.put(cumProbability.doubleValue(), Float.parseFloat(entry.getValue().getData()));
+            }
+        }
+        int size = ArithmeticNode.size;
+        float[] value = new float[size];
+        float bound = max - min;
+        ThreadLocalRandom threadLocalRandom = ThreadLocalRandom.current();
+        for (int i = 0; i < size; i++) {
+            double probability = 1 - threadLocalRandom.nextDouble();
+            Map.Entry<Double, Float> entry = cumulativeProbability2Param.ceilingEntry(probability);
+            if (entry != null) {
+                value[i] = entry.getValue();
+            } else {
+                value[i] = threadLocalRandom.nextFloat() * bound + min;
+            }
+        }
+        return value;
     }
 
     @Override

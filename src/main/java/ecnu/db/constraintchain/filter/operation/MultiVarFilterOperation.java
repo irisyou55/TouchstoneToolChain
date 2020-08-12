@@ -6,13 +6,11 @@ import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
 import ecnu.db.constraintchain.arithmetic.value.ColumnNode;
 import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
-import ecnu.db.schema.column.AbstractColumn;
 import ecnu.db.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -52,38 +50,6 @@ public class MultiVarFilterOperation extends AbstractFilterOperation {
         getColNames(node.getRightNode(), colNames);
     }
 
-    /**
-     * todo 通过计算树计算概率，暂时不考虑其他FilterOperation对于此操作的阈值影响
-     */
-    @Override
-    public void instantiateParameter(Map<String, AbstractColumn> columns) {
-        if (operator.getType() == CompareOperator.TYPE.LESS || operator.getType() == CompareOperator.TYPE.GREATER) {
-            float[] vector = arithmeticTree.getVector();
-            int pos = probability.multiply(BigDecimal.valueOf(vector.length)).intValue();
-            Arrays.sort(vector);
-            parameters.forEach(param -> {
-                if (CommonUtils.isInteger(param.getData())) {
-                    param.setData(Integer.toString((int) vector[pos]));
-                } else if (CommonUtils.isFloat(param.getData())) {
-                    param.setData(Float.toString(vector[pos]));
-                } else {
-                    throw new UnsupportedOperationException();
-                }
-            });
-        }
-        else if (operator.getType() == CompareOperator.TYPE.EQUAL) {
-            if (operator == CompareOperator.EQ) {
-
-            }
-            else if (operator == CompareOperator.NE) {
-
-            }
-            else {
-                throw new UnsupportedOperationException();
-            }
-        }
-    }
-
     @Override
     public BoolExprType getType() {
         return BoolExprType.MULTI_FILTER_OPERATION;
@@ -104,7 +70,21 @@ public class MultiVarFilterOperation extends AbstractFilterOperation {
         return arithmeticTree;
     }
 
-    public void instantiateMultiVarParameter(Map<String, AbstractColumn> columns) {
-
+    /**
+     * todo 通过计算树计算概率，暂时不考虑其他FilterOperation对于此操作的阈值影响
+     */
+    public void instantiateMultiVarParameter() {
+        float[] vector = arithmeticTree.getVector();
+        int pos = probability.multiply(BigDecimal.valueOf(vector.length)).intValue();
+        Arrays.sort(vector);
+        parameters.forEach(param -> {
+            if (CommonUtils.isInteger(param.getData())) {
+                param.setData(Integer.toString((int) vector[pos]));
+            } else if (CommonUtils.isFloat(param.getData())) {
+                param.setData(Float.toString(vector[pos]));
+            } else {
+                throw new UnsupportedOperationException();
+            }
+        });
     }
 }

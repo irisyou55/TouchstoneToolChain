@@ -40,8 +40,12 @@ public class IntColumn extends AbstractColumn {
     }
 
     @Override
-    protected String generateRandomData(BigDecimal minProbability, BigDecimal maxProbability) {
-        return Integer.toString((int) (Math.random() * (maxProbability.doubleValue() - minProbability.doubleValue()) * (this.max - this.min)) + minProbability.intValue());
+    protected String generateEqData(BigDecimal minProbability, BigDecimal maxProbability) {
+        String data;
+        do {
+            data = Integer.toString((int) (Math.random() * (maxProbability.doubleValue() - minProbability.doubleValue()) * (this.max - this.min)) + minProbability.intValue());
+        } while (eqCandidates.contains(data));
+        return data;
     }
 
     public void setNdv(int ndv) {

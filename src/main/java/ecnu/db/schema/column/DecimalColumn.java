@@ -39,8 +39,12 @@ public class DecimalColumn extends AbstractColumn {
     }
 
     @Override
-    protected String generateRandomData(BigDecimal minProbability, BigDecimal maxProbability) {
-        return BigDecimal.valueOf(Math.random() * (maxProbability.doubleValue() - minProbability.doubleValue()) + minProbability.doubleValue()).toString();
+    protected String generateEqData(BigDecimal minProbability, BigDecimal maxProbability) {
+        String data;
+        do {
+            data = BigDecimal.valueOf(Math.random() * (maxProbability.doubleValue() - minProbability.doubleValue()) + minProbability.doubleValue()).toString();
+        } while (eqCandidates.contains(data));
+        return data;
     }
 
     public BigDecimal generateData(BigDecimal probability) {

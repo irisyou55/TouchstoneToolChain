@@ -10,6 +10,13 @@ public class NonEqBucket {
     public String value;
     public NonEqBucket leftBucket;
     public NonEqBucket rightBucket;
+    public EqBucket child;
+
+    /**
+     * 找到大于{@code probability}的区间
+     * @param probability 需要查询的概率
+     * @return 区间
+     */
     public NonEqBucket search(BigDecimal probability) {
         if (this.probability == null) {
             return this;

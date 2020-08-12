@@ -22,8 +22,11 @@ public class BoolColumn extends AbstractColumn {
     }
 
     @Override
-    protected String generateRandomData(BigDecimal minProbability, BigDecimal maxProbability) {
-        BigDecimal probability = BigDecimal.valueOf(Math.random() * (maxProbability.subtract(minProbability).doubleValue())).add(minProbability);
-        return Boolean.toString(probability.doubleValue()  > 0.5);
+    protected String generateEqData(BigDecimal minProbability, BigDecimal maxProbability) {
+        String data;
+        do {
+            data = Boolean.toString(BigDecimal.valueOf(Math.random() * (maxProbability.subtract(minProbability).doubleValue())).add(minProbability).doubleValue() > 0.5);
+        } while (eqCandidates.contains(data));
+        return data;
     }
 }

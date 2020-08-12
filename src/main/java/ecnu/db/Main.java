@@ -7,6 +7,7 @@ import com.google.common.collect.Multimap;
 import ecnu.db.analyzer.online.AbstractAnalyzer;
 import ecnu.db.analyzer.online.ExecutionNode;
 import ecnu.db.analyzer.statical.QueryReader;
+import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
 import ecnu.db.constraintchain.chain.ConstraintChain;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.dbconnector.DatabaseConnectorInterface;
@@ -94,6 +95,7 @@ public class Main {
         String staticalDbType = databaseInfo.getStaticalDbVersion();
         boolean needLog = false;
         logger.info("开始获取查询计划");
+        ArithmeticNode.setSize(config.getSampleSize());
         for (File sqlFile : files) {
             if (sqlFile.isFile() && sqlFile.getName().endsWith(".sql")) {
                 List<String> queries = QueryReader.getQueriesFromFile(sqlFile.getPath(), staticalDbType);

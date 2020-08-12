@@ -2,11 +2,9 @@ package ecnu.db.constraintchain.filter.operation;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import ecnu.db.constraintchain.filter.BoolExprType;
-import ecnu.db.schema.column.AbstractColumn;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -29,11 +27,6 @@ public class IsNullFilterOperation extends AbstractFilterOperation {
 
     @Override
     public List<AbstractFilterOperation> pushDownProbability(BigDecimal probability, Set<String> columns) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void instantiateParameter(Map<String, AbstractColumn> columns) {
         throw new UnsupportedOperationException();
     }
 

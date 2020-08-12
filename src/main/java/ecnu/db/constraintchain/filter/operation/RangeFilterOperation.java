@@ -7,23 +7,18 @@ import ecnu.db.schema.column.AbstractColumn;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * @author alan
  */
 public class RangeFilterOperation extends UniVarFilterOperation {
-    private List<Parameter> lessParameters = new ArrayList<>();
+    private final List<Parameter> lessParameters = new ArrayList<>();
     private CompareOperator lessOperator;
-    private List<Parameter> greaterParameters = new ArrayList<>();
+    private final List<Parameter> greaterParameters = new ArrayList<>();
     private CompareOperator greaterOperator;
     public RangeFilterOperation(String columnName) {
         super(columnName, CompareOperator.RANGE);
-    }
-
-    @Override
-    public void instantiateParameter(Map<String, AbstractColumn> columns) {
     }
 
     @Override

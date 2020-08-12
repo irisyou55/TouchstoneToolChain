@@ -44,12 +44,16 @@ public class DateColumn extends AbstractColumn {
     }
 
     @Override
-    protected String generateRandomData(BigDecimal minProbability, BigDecimal maxProbability) {
-        Duration duration = Duration.between(begin, end);
-        BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
-        BigDecimal probability = BigDecimal.valueOf(Math.random() * (maxProbability.doubleValue() - minProbability.doubleValue()) + minProbability.doubleValue());
-        duration = Duration.ofSeconds(seconds.multiply(probability).longValue());
-        return FMT.format(begin.plus(duration));
+    protected String generateEqData(BigDecimal minProbability, BigDecimal maxProbability) {
+        String data;
+        do {
+            Duration duration = Duration.between(begin, end);
+            BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
+            BigDecimal probability = BigDecimal.valueOf(Math.random() * (maxProbability.doubleValue() - minProbability.doubleValue()) + minProbability.doubleValue());
+            duration = Duration.ofSeconds(seconds.multiply(probability).longValue());
+            data = FMT.format(begin.plus(duration));
+        } while (eqCandidates.contains(data));
+        return data;
     }
 
     public LocalDate generateData(BigDecimal probability) {

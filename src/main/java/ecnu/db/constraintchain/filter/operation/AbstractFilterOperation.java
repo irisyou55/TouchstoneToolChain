@@ -3,12 +3,10 @@ package ecnu.db.constraintchain.filter.operation;
 import com.google.common.collect.Lists;
 import ecnu.db.constraintchain.filter.BoolExprNode;
 import ecnu.db.constraintchain.filter.Parameter;
-import ecnu.db.schema.column.AbstractColumn;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -27,13 +25,6 @@ public abstract class AbstractFilterOperation implements BoolExprNode {
      * 此filter operation的过滤比
      */
     protected BigDecimal probability;
-
-    /**
-     * @param columns 计算所需的columns信息
-     *
-     * 计算Filter Operation实例化的参数
-     */
-    public abstract void instantiateParameter(Map<String, AbstractColumn> columns);
 
     @Override
     public List<AbstractFilterOperation> pushDownProbability(BigDecimal probability, Set<String> columns) {

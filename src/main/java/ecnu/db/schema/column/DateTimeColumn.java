@@ -58,13 +58,17 @@ public class DateTimeColumn extends AbstractColumn {
     }
 
     @Override
-    protected String generateRandomData(BigDecimal minProbability, BigDecimal maxProbability) {
-        Duration duration = Duration.between(getBegin(), getEnd());
-        BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
-        BigDecimal nano = BigDecimal.valueOf(duration.getNano());
-        BigDecimal probability = BigDecimal.valueOf(Math.random() * (maxProbability.doubleValue() - minProbability.doubleValue()) + minProbability.doubleValue());
-        duration = Duration.ofSeconds(seconds.multiply(probability).longValue(), nano.multiply(probability).intValue());
-        return FMT.format(begin.plus(duration));
+    protected String generateEqData(BigDecimal minProbability, BigDecimal maxProbability) {
+        String data;
+        do {
+            Duration duration = Duration.between(getBegin(), getEnd());
+            BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
+            BigDecimal nano = BigDecimal.valueOf(duration.getNano());
+            BigDecimal probability = BigDecimal.valueOf(Math.random() * (maxProbability.doubleValue() - minProbability.doubleValue()) + minProbability.doubleValue());
+            duration = Duration.ofSeconds(seconds.multiply(probability).longValue(), nano.multiply(probability).intValue());
+            data = FMT.format(begin.plus(duration));
+        } while (eqCandidates.contains(data));
+        return data;
     }
 
     public int getPrecision() {

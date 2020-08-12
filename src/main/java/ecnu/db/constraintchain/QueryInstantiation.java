@@ -2,7 +2,6 @@ package ecnu.db.constraintchain;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
 import ecnu.db.constraintchain.chain.*;
 import ecnu.db.constraintchain.filter.operation.AbstractFilterOperation;
 import ecnu.db.constraintchain.filter.operation.MultiVarFilterOperation;
@@ -26,7 +25,6 @@ public class QueryInstantiation {
         //        对于bet操作，先记录阈值，然后选择合适的区间插入，等值约束也需选择合适的区间
         //        每个filter operation内部保存自己实例化后的结果
         //     2. 对于字符型的filter, 只有like和eq的运算，直接计算即可
-        ArithmeticNode.setSize(10_000);
         Multimap<Schema, AbstractFilterOperation> schema2filters = ArrayListMultimap.create();
         for (ConstraintChain constraintChain : constraintChains) {
             Schema schema = schemas.get(constraintChain.getTableName());
@@ -70,11 +68,7 @@ public class QueryInstantiation {
             }
         }
         // generate column bucket
-        for (Schema schema : schemas.values()) {
-            for (AbstractColumn column : schema.getColumns().values()) {
-                column.initEqProbabilityBucket();
-            }
-        }
+        schemas.values().forEach((s) -> s.getColumns().values().forEach(AbstractColumn::initEqProbabilityBucket));
         // uni-var bet
         for (Map.Entry<Schema, AbstractFilterOperation> entry : schema2filters.entries()) {
             Schema schema = entry.getKey();
@@ -84,12 +78,13 @@ public class QueryInstantiation {
                 operation.instantiateBetweenParameter(column);
             }
         }
+        // uni-var eq params init
+        schemas.values().forEach((s) -> s.getColumns().values().forEach(AbstractColumn::initEqParameter));
         // multi-var non-eq
         for (Map.Entry<Schema, AbstractFilterOperation> entry : schema2filters.entries()) {
-            Schema schema = entry.getKey();
             if (entry.getValue() instanceof MultiVarFilterOperation) {
                 MultiVarFilterOperation operation = (MultiVarFilterOperation) entry.getValue();
-                operation.instantiateMultiVarParameter(schema.getColumns());
+                operation.instantiateMultiVarParameter();
             }
         }
 

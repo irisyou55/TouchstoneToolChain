@@ -43,7 +43,7 @@ public class StringColumn extends AbstractColumn {
     }
 
     @Override
-    protected String generateRandomData(BigDecimal minProbability, BigDecimal maxProbability) {
+    protected String generateEqData(BigDecimal minProbability, BigDecimal maxProbability) {
         throw new UnsupportedOperationException();
     }
 

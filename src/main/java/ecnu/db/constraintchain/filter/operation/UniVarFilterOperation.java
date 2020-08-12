@@ -6,19 +6,20 @@ import com.google.common.collect.Multimaps;
 import ecnu.db.constraintchain.filter.BoolExprNode;
 import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
-import ecnu.db.schema.column.*;
+import ecnu.db.schema.column.AbstractColumn;
+import ecnu.db.schema.column.StringColumn;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.*;
-import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.*;
+import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.GREATER;
+import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.LESS;
 import static ecnu.db.utils.CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION;
 
 /**
@@ -94,31 +95,6 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
     }
 
     @Override
-    public void instantiateParameter(Map<String, AbstractColumn> columns) {
-        AbstractColumn absColumn = columns.get(columnName);
-        if (operator.getType() == LESS || operator.getType() == GREATER) {
-            instantiateUniParamCompParameter(absColumn);
-        }
-        else if (operator.getType() == EQUAL) {
-            if (operator == EQ) {
-
-            }
-            else if (operator == NE) {
-
-            }
-            else if (operator == LIKE) {
-
-            }
-            else if (operator == IN) {
-
-            }
-            else {
-                throw new UnsupportedOperationException();
-            }
-        }
-    }
-
-    @Override
     public BoolExprType getType() {
         return BoolExprType.UNI_FILTER_OPERATION;
     }
@@ -149,25 +125,41 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
         return String.format("%s(%s)", operator.toString().toLowerCase(), String.join(", ", content));
     }
 
+    /**
+     * 初始化lt,gt,le,ge等比较的filter
+     * @param absColumn 需要用到的column
+     */
     public void instantiateUniParamCompParameter(AbstractColumn absColumn) {
         instantiateUniParamCompParameter(absColumn, operator, parameters);
     }
 
+    /**
+     * {@link #instantiateUniParamCompParameter(AbstractColumn) instantiateUniParamCompParameter(AbstractColumn)}的内部方法，与
+     * {@linkplain ecnu.db.constraintchain.filter.operation.RangeFilterOperation#instantiateBetweenParameter(AbstractColumn)
+     * ecnu.db.constraintchain.filter.operation.RangeFilterOperation#instantiateBetweenParameter(AbstractColumn)}共享逻辑
+     * @param column 需要的column
+     * @param operator 涉及的操作符
+     * @param parameters 涉及的参数
+     */
     protected void instantiateUniParamCompParameter(AbstractColumn column, CompareOperator operator, List<Parameter> parameters) {
         if (operator.getType() != LESS && operator.getType() != GREATER) {
             throw new UnsupportedOperationException();
         }
         probability = operator.getType() == LESS ? probability : BigDecimal.ONE.subtract(probability);
-        // todo currently we are regarding (lt, le) as the lt, same goes for (gt, ge), @link{https://youtrack.biui.me/issue/TOUCHSTONE-18}
+        // todo currently we are regarding (lt, le) as the lt, same goes for (gt, ge), see <a href="https://youtrack.biui.me/issue/TOUCHSTONE-18">TOUCHSTONE-18</a>
         operator = LT;
         String data = column.genData(probability);
         if (column.hasNotMetCondition(operator + data)) { // for integer we use operator and generated value as identifier
             parameters.forEach((param) -> param.setData(data));
-            column.adjustNonEqProbabilityBucket(probability, operator, data);
+            column.insertNonEqProbability(probability, operator, data);
             column.addCondition(operator + data);
         }
     }
 
+    /**
+     * 初始化等值filter的参数
+     * @param column 涉及的column
+     */
     public void instantiateEqualParameter(AbstractColumn column) {
         if (operator == EQ || operator == IN) {
             probability = probability.divide(BigDecimal.valueOf(parameters.size()), BIG_DECIMAL_DEFAULT_PRECISION);

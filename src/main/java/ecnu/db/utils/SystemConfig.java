@@ -25,6 +25,7 @@ public class SystemConfig {
     private String loadDirectory;
     private String dumpDirectory;
     private String logDirectory;
+    private int sampleSize;
 
     private Double skipNodeThreshold;
 
@@ -160,5 +161,13 @@ public class SystemConfig {
 
     public void setLogDirectory(String logDirectory) {
         this.logDirectory = logDirectory;
+    }
+
+    public int getSampleSize() {
+        return sampleSize;
+    }
+
+    public void setSampleSize(int sampleSize) {
+        this.sampleSize = sampleSize;
     }
 }
