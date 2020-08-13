@@ -10,6 +10,7 @@ import ecnu.db.constraintchain.filter.operation.UniVarFilterOperation;
 import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.schema.Schema;
 import ecnu.db.schema.column.AbstractColumn;
+import ecnu.db.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -33,15 +34,15 @@ public class QueryInstantiation {
                     List<AbstractFilterOperation> operations = ((ConstraintChainFilterNode) node).pushDownProbability();
                     schema2filters.putAll(schema, operations);
                 }
-                else if (node instanceof ConstraintChainPkJoinNode) {
-                    throw new UnsupportedOperationException();
-                }
-                else if (node instanceof ConstraintChainFkJoinNode) {
-                    throw new UnsupportedOperationException();
-                }
-                else {
-                    throw new UnsupportedOperationException();
-                }
+//                else if (node instanceof ConstraintChainPkJoinNode) {
+//                    throw new UnsupportedOperationException();
+//                }
+//                else if (node instanceof ConstraintChainFkJoinNode) {
+//                    throw new UnsupportedOperationException();
+//                }
+//                else {
+//                    throw new UnsupportedOperationException();
+//                }
             }
         }
         // uni-var non-eq
@@ -50,7 +51,8 @@ public class QueryInstantiation {
             if (entry.getValue() instanceof UniVarFilterOperation
                     && (entry.getValue().getOperator().getType() == LESS || entry.getValue().getOperator().getType() == GREATER)) {
                 UniVarFilterOperation operation = (UniVarFilterOperation) entry.getValue();
-                AbstractColumn column = schema.getColumn(operation.getColumnName());
+                String columnName = CommonUtils.extractSimpleColumnName(operation.getColumnName());
+                AbstractColumn column = schema.getColumn(columnName);
                 operation.instantiateUniParamCompParameter(column);
             }
         }
@@ -63,7 +65,8 @@ public class QueryInstantiation {
             if (entry.getValue() instanceof UniVarFilterOperation
                     && (entry.getValue().getOperator().getType() == EQUAL)) {
                 UniVarFilterOperation operation = (UniVarFilterOperation) entry.getValue();
-                AbstractColumn column = schema.getColumn(operation.getColumnName());
+                String columnName = CommonUtils.extractSimpleColumnName(operation.getColumnName());
+                AbstractColumn column = schema.getColumn(columnName);
                 operation.instantiateEqualParameter(column);
             }
         }
@@ -74,7 +77,8 @@ public class QueryInstantiation {
             Schema schema = entry.getKey();
             if (entry.getValue() instanceof RangeFilterOperation) {
                 RangeFilterOperation operation = (RangeFilterOperation) entry.getValue();
-                AbstractColumn column = schema.getColumn(operation.getColumnName());
+                String columnName = CommonUtils.extractSimpleColumnName(operation.getColumnName());
+                AbstractColumn column = schema.getColumn(columnName);
                 operation.instantiateBetweenParameter(column);
             }
         }
@@ -89,4 +93,5 @@ public class QueryInstantiation {
         }
 
     }
+
 }

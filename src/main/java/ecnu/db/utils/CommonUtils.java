@@ -78,4 +78,8 @@ public class CommonUtils {
         }
         return true;
     }
+
+    public static String extractSimpleColumnName(String canonicalColumnName) {
+        return canonicalColumnName.split("\\.")[2];
+    }
 }

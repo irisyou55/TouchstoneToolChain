@@ -2,6 +2,8 @@ package ecnu.db.schema.column;
 
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.constraintchain.filter.operation.CompareOperator;
@@ -26,6 +28,7 @@ import static ecnu.db.schema.column.ColumnType.*;
 /**
  * @author qingshuai.wang
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class AbstractColumn {
     private final ColumnType columnType;
     protected float nullPercentage;
@@ -35,6 +38,7 @@ public abstract class AbstractColumn {
     // 已经处理过的约束
     protected Set<String> metConditions = new HashSet<>();
     // 所有的非等值约束划分而成的等值约束的区间
+    @JsonIgnore
     protected List<EqBucket> eqBuckets = new ArrayList<>();
     // 生成的等于约束参数数据
     protected Set<String> eqCandidates = new HashSet<>();
@@ -43,7 +47,6 @@ public abstract class AbstractColumn {
         this.columnName = columnName;
         this.columnType = columnType;
         bucket = new NonEqBucket();
-        bucket.probability = BigDecimal.ONE;
     }
 
     /**
@@ -137,7 +140,7 @@ public abstract class AbstractColumn {
             if (bucket.leftBucket == null && bucket.rightBucket == null) {
                 EqBucket eqBucket = new EqBucket();
                 eqBucket.parent = bucket;
-                eqBucket.capacity = bucket.probability;
+                eqBucket.capacity = max.subtract(min);
                 eqBucket.leftBorder = min;
                 eqBucket.rightBorder = max;
                 bucket.child = eqBucket;
@@ -176,7 +179,7 @@ public abstract class AbstractColumn {
     }
 
     private EqBucket fitProbability(BigDecimal probability) {
-        int low = 0, high = eqBuckets.size();
+        int low = 0, high = eqBuckets.size() - 1;
         while (low < high) {
             EqBucket bucket = eqBuckets.get((low + high) / 2);
             if (bucket.capacity.compareTo(probability) > 0) {
@@ -259,8 +262,13 @@ public abstract class AbstractColumn {
         else if (getColumnType() == DATETIME) {
             DateTimeColumn column = (DateTimeColumn) this;
             LocalDateTime newDateTime = column.generateData(probability);
-            DateTimeFormatter formatter = new DateTimeFormatterBuilder()
-                    .appendPattern("yyyy-MM-dd HH:mm:ss").appendFraction(ChronoField.MICRO_OF_SECOND, 0, column.getPrecision(), true).toFormatter();
+            DateTimeFormatterBuilder builder;
+            builder = new DateTimeFormatterBuilder()
+                    .appendPattern("yyyy-MM-dd HH:mm:ss");
+            if (column.getPrecision() > 0) {
+                builder.appendFraction(ChronoField.MICRO_OF_SECOND, 0, column.getPrecision(), true);
+            }
+            DateTimeFormatter formatter = builder.toFormatter();
             return formatter.format(newDateTime);
         }
         else if (getColumnType() == DATE) {

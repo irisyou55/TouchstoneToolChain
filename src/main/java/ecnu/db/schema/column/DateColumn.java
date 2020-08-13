@@ -1,5 +1,7 @@
 package ecnu.db.schema.column;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -26,10 +28,12 @@ public class DateColumn extends AbstractColumn {
         return begin;
     }
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     public void setBegin(LocalDate begin) {
         this.begin = begin;
     }
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     public LocalDate getEnd() {
         return end;
     }

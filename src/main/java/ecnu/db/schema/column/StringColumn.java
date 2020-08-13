@@ -1,7 +1,9 @@
 package ecnu.db.schema.column;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -12,6 +14,7 @@ public class StringColumn extends AbstractColumn {
     private int minLength;
     private int maxLength;
     private int ndv;
+    private final Set<String> likeCandidates = new HashSet<>();
 
     public StringColumn() {
         super(null, ColumnType.VARCHAR);
@@ -44,7 +47,14 @@ public class StringColumn extends AbstractColumn {
 
     @Override
     protected String generateEqData(BigDecimal minProbability, BigDecimal maxProbability) {
-        throw new UnsupportedOperationException();
+        String eqCandidate;
+        do {
+            byte[] array = new byte[new Random().nextInt(maxLength - minLength) + minLength];
+            new Random().nextBytes(array);
+            eqCandidate = new String(array, UTF_8);
+        } while (eqCandidates.contains(eqCandidate));
+        eqCandidates.add(eqCandidate);
+        return eqCandidate;
     }
 
     public String generateLikeData(String likeStr) {
@@ -55,9 +65,14 @@ public class StringColumn extends AbstractColumn {
         if (likeStr.endsWith("%")) {
             postfix = "%";
         }
-        byte[] array = new byte[new Random().nextInt(maxLength - minLength) + minLength];
-        new Random().nextBytes(array);
-        return String.format("%s%s%s", prefix, new String(array, UTF_8), postfix);
+        String likeCandidate;
+        do {
+            byte[] array = new byte[new Random().nextInt(maxLength - minLength) + minLength];
+            new Random().nextBytes(array);
+            likeCandidate = String.format("%s%s%s", prefix, new String(array, UTF_8), postfix);
+        } while (likeCandidates.contains(likeCandidate));
+        likeCandidates.add(likeCandidate);
+        return likeCandidate;
     }
 
     public void setNdv(int ndv) {

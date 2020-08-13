@@ -4,15 +4,16 @@ import com.alibaba.druid.sql.SQLUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 import ecnu.db.constraintchain.chain.ConstraintChain;
+import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.schema.Schema;
 import ecnu.db.schema.column.AbstractColumn;
 import ecnu.db.schema.column.ColumnDeserializer;
-import ecnu.db.exception.TouchstoneToolChainException;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -36,6 +37,7 @@ public class StorageManager {
     private final File loadDir;
     private final File logDir;
     private final File logQueryDir;
+    private final ObjectMapper mapper;
 
     public StorageManager(String resultDirPath, String dumpDirPath, String loadDirPath, String logPath) {
         retDir = new File(resultDirPath);
@@ -45,6 +47,9 @@ public class StorageManager {
         loadDir = Optional.ofNullable(loadDirPath).map(File::new).orElse(null);
         logDir = new File(logPath);
         logQueryDir = Optional.of(logPath).map((dir) -> (new File(dir, "query"))).orElse(null);
+        mapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .registerModule(new SimpleModule().addDeserializer(AbstractColumn.class, new ColumnDeserializer()));
     }
 
     public void storeSqlResult(File sqlFile, String sql, String dbType) throws IOException {
@@ -53,12 +58,12 @@ public class StorageManager {
     }
 
     public void storeSchemaResult(Map<String, Schema> schemas) throws IOException {
-        String content = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(schemas);
+        String content = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schemas);
         FileUtils.writeStringToFile(new File(retDir.getPath(), "schema.json"), content, UTF_8);
     }
 
     public void storeConstrainChainResult(Map<String, List<ConstraintChain>> queryInfos) throws IOException {
-        String content = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(queryInfos);
+        String content = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(queryInfos);
         FileUtils.writeStringToFile(new File(retDir.getPath(), "constraintChain.json"), content, UTF_8);
     }
 
@@ -80,13 +85,13 @@ public class StorageManager {
 
     private void storeStaticInfo(File dumpDir, Map<String, Integer> multiColNdvMap, Map<String, Schema> schemas, List<String> tableNames) throws IOException {
         File multiColMapFile = new File(dumpDir.getPath(), String.format("multiColNdv.%s", DUMP_FILE_POSTFIX));
-        String multiColContent = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(multiColNdvMap);
+        String multiColContent = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(multiColNdvMap);
         FileUtils.writeStringToFile(multiColMapFile, multiColContent, UTF_8);
         File schemaFile = new File(dumpDir, String.format("schemas.%s", DUMP_FILE_POSTFIX));
         for (Schema schema : schemas.values()) {
             schema.setJoinTag(1);
         }
-        String schemasContent = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(schemas);
+        String schemasContent = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schemas);
         FileUtils.writeStringToFile(schemaFile, schemasContent, UTF_8);
         String tableNamesContent = String.join(System.lineSeparator(), tableNames);
         File tableNameFile = new File(dumpDir.getPath(), String.format("tableNames.%s", DUMP_FILE_POSTFIX));
@@ -113,10 +118,6 @@ public class StorageManager {
         if (!schemaFile.isFile()) {
             throw new TouchstoneToolChainException(String.format("找不到%s", schemaFile.getAbsolutePath()));
         }
-        ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addDeserializer(AbstractColumn.class, new ColumnDeserializer());
-        mapper.registerModule(module);
         schemas = mapper.readValue(FileUtils.readFileToString(schemaFile, UTF_8), new TypeReference<HashMap<String, Schema>>() {
         });
         return schemas;
@@ -128,7 +129,7 @@ public class StorageManager {
         if (!multiColNdvFile.isFile()) {
             throw new TouchstoneToolChainException(String.format("找不到%s", multiColNdvFile.getAbsolutePath()));
         }
-        multiColNdvMap = new ObjectMapper().readValue(FileUtils.readFileToString(multiColNdvFile, UTF_8), new TypeReference<HashMap<String, Integer>>() {
+        multiColNdvMap = mapper.readValue(FileUtils.readFileToString(multiColNdvFile, UTF_8), new TypeReference<HashMap<String, Integer>>() {
         });
         return multiColNdvMap;
     }

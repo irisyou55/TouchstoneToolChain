@@ -1,6 +1,8 @@
 package ecnu.db.schema.column;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -36,6 +38,7 @@ public class DateTimeColumn extends AbstractColumn {
         super(columnName, ColumnType.DATETIME);
     }
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
     public LocalDateTime getBegin() {
         return begin;
     }
@@ -44,6 +47,7 @@ public class DateTimeColumn extends AbstractColumn {
         this.begin = begin;
     }
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
     public LocalDateTime getEnd() {
         return end;
     }

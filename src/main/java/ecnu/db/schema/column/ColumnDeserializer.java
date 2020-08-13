@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
 
@@ -25,6 +26,7 @@ public class ColumnDeserializer extends StdDeserializer<AbstractColumn> {
     public AbstractColumn deserialize(JsonParser parser, DeserializationContext deserializationContext) throws IOException {
         JsonNode node = parser.getCodec().readTree(parser);
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
         switch (ColumnType.valueOf(node.get("columnType").asText())) {
             case INTEGER:
                 return mapper.readValue(node.toString(), IntColumn.class);

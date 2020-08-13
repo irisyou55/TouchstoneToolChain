@@ -90,13 +90,18 @@ public class SchemaGenerator {
                 case DATE:
                 case DATETIME:
                 case DECIMAL:
+                    sql.append(String.format("min(%s.%s),", tableName, column.getColumnName()));
+                    sql.append(String.format("max(%s.%s),", tableName, column.getColumnName()));
+                    break;
                 case INTEGER:
                     sql.append(String.format("min(%s.%s),", tableName, column.getColumnName()));
                     sql.append(String.format("max(%s.%s),", tableName, column.getColumnName()));
+                    sql.append(String.format("count(distinct %s.%s),", tableName, column.getColumnName()));
                     break;
                 case VARCHAR:
                     sql.append(String.format("max(length(%s.%s)),", tableName, column.getColumnName()));
                     sql.append(String.format("min(length(%s.%s)),", tableName, column.getColumnName()));
+                    sql.append(String.format("count(distinct %s.%s),", tableName, column.getColumnName()));
                     break;
                 case BOOL:
                     break;
@@ -121,9 +126,12 @@ public class SchemaGenerator {
                 case INTEGER:
                     ((IntColumn) column).setMin(Integer.parseInt(sqlResult[index++]));
                     ((IntColumn) column).setMax(Integer.parseInt(sqlResult[index++]));
+                    ((IntColumn) column).setNdv(Integer.parseInt(sqlResult[index++]));
                     break;
                 case VARCHAR:
                     ((StringColumn) column).setMaxLength(Integer.parseInt(sqlResult[index++]));
+                    ((StringColumn) column).setMinLength(Integer.parseInt(sqlResult[index++]));
+                    ((StringColumn) column).setNdv(Integer.parseInt(sqlResult[index++]));
                     break;
                 case DECIMAL:
                     ((DecimalColumn) column).setMin(Double.parseDouble(sqlResult[index++]));
