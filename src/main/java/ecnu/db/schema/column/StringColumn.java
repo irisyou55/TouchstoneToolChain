@@ -49,7 +49,7 @@ public class StringColumn extends AbstractColumn {
     protected String generateEqData(BigDecimal minProbability, BigDecimal maxProbability) {
         String eqCandidate;
         do {
-            byte[] array = new byte[new Random().nextInt(maxLength - minLength) + minLength];
+            byte[] array = new byte[(maxLength > minLength ? new Random().nextInt(maxLength - minLength) : 0) + minLength];
             new Random().nextBytes(array);
             eqCandidate = new String(array, UTF_8);
         } while (eqCandidates.contains(eqCandidate));

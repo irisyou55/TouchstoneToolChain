@@ -86,11 +86,10 @@ public class RangeFilterOperation extends UniVarFilterOperation {
     }
 
     public void instantiateBetweenParameter(AbstractColumn absColumn) {
-        String lessParamStr = lessParameters.stream().map(Parameter::getData).collect(Collectors.joining()),
-                greaterParamStr = greaterParameters.stream().map(Parameter::getData).collect(Collectors.joining());
-        if (absColumn.hasNotMetCondition(lessOperator + lessParamStr + greaterOperator + greaterParamStr)) {
-            absColumn.addCondition(lessOperator + lessParamStr + greaterOperator + greaterParamStr);
-            absColumn.insertBetweenProbability(probability, lessParameters, greaterParameters);
+        if (lessParameters.size() > 0 && greaterParameters.size() > 0) {
+            String lessParamStr = lessParameters.stream().map(Parameter::getData).collect(Collectors.joining()),
+                    greaterParamStr = greaterParameters.stream().map(Parameter::getData).collect(Collectors.joining());
+            absColumn.insertBetweenProbability(probability, lessOperator, lessParameters, greaterOperator, greaterParameters);
         }
     }
 }

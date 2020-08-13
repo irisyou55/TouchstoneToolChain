@@ -149,10 +149,9 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
         // todo currently we are regarding (lt, le) as the lt, same goes for (gt, ge), see <a href="https://youtrack.biui.me/issue/TOUCHSTONE-18">TOUCHSTONE-18</a>
         operator = LT;
         String data = column.genData(probability);
-        if (column.hasNotMetCondition(operator + data)) { // for integer we use operator and generated value as identifier
-            parameters.forEach((param) -> param.setData(data));
-            column.insertNonEqProbability(probability, operator, data);
-            column.addCondition(operator + data);
+        parameters.forEach((param) -> param.setData(data));
+        if (column.hasNotMetCondition(operator + data)) { // for uni compare we use operator and generated value as identifier
+            column.insertNonEqProbability(probability, operator, parameters.get(0));
         }
     }
 
@@ -162,26 +161,24 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
      */
     public void instantiateEqualParameter(AbstractColumn column) {
         if (operator == EQ || operator == IN) {
+            if (hasNot) {
+                probability = BigDecimal.valueOf(1 - column.getNullPercentage()).subtract(probability);
+            }
             probability = probability.divide(BigDecimal.valueOf(parameters.size()), BIG_DECIMAL_DEFAULT_PRECISION);
             for (Parameter parameter : parameters) {
-                if (column.hasNotMetCondition(operator + parameter.getData())) {
-                    column.addCondition(operator + parameter.getData());
-                    column.insertEqualProbability(probability, parameter);
-                }
+                column.insertEqualProbability(probability, EQ, parameter);
             }
         }
         else if (operator == NE) {
-            if (column.hasNotMetCondition(NE + parameters.get(0).getData())) {
-                column.addCondition(NE + parameters.get(0).getData());
-                column.insertEqualProbability(BigDecimal.ONE.subtract(probability), parameters.get(0));
-            }
+            column.insertEqualProbability(BigDecimal.valueOf(1 - column.getNullPercentage()).subtract(probability), EQ, parameters.get(0));
         }
         else if (operator == LIKE) {
-            if (column.hasNotMetCondition(LIKE + parameters.get(0).getData())) { // for like we use operator and original value as identifier
-                column.addCondition(LIKE + parameters.get(0).getData());
-                String value = ((StringColumn) column).generateLikeData(parameters.get(0).getData());
-                parameters.forEach((p) -> p.setData(value));
+            String identifier = LIKE + parameters.get(0).getData();
+            if (hasNot) {
+                probability = BigDecimal.valueOf(1 - column.getNullPercentage()).subtract(probability);
             }
+            String value = ((StringColumn) column).generateLikeData(parameters.get(0).getData());
+            parameters.get(0).setData(value);
         }
         else {
             throw new UnsupportedOperationException();

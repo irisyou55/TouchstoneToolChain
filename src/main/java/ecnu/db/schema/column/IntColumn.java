@@ -42,8 +42,9 @@ public class IntColumn extends AbstractColumn {
     @Override
     protected String generateEqData(BigDecimal minProbability, BigDecimal maxProbability) {
         String data;
+        double minP = minProbability.doubleValue(), maxP = maxProbability.doubleValue();
         do {
-            data = Integer.toString((int) (Math.random() * (maxProbability.doubleValue() - minProbability.doubleValue()) * (this.max - this.min)) + minProbability.intValue());
+            data = Integer.toString((int) (Math.random() * (maxP - minP) * (max - min) + minP * (max - min) + min));
         } while (eqCandidates.contains(data));
         return data;
     }

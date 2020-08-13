@@ -96,7 +96,6 @@ public class TidbAnalyzer extends AbstractAnalyzer {
      * @throws TouchstoneToolChainException 构建查询树失败
      */
     private ExecutionNode buildExecutionTree(RawNode rawNode) throws TouchstoneToolChainException {
-        parameterId = 0;                                                                       // parameterId重新开始
         if (rawNode == null) {
             return null;
         }

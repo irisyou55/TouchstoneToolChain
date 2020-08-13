@@ -1,6 +1,5 @@
 package ecnu.db.constraintchain.chain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import ecnu.db.constraintchain.filter.Parameter;
 
 import java.util.ArrayList;
@@ -12,8 +11,8 @@ import java.util.List;
 public class ConstraintChain {
 
     private String tableName;
-    private final List<ConstraintChainNode> nodes = new ArrayList<>();
     private List<Parameter> parameters = new ArrayList<>();
+    private final List<ConstraintChainNode> nodes = new ArrayList<>();
 
     public ConstraintChain() {}
 
@@ -45,7 +44,6 @@ public class ConstraintChain {
         this.parameters = parameters;
     }
 
-    @JsonIgnore
     public List<Parameter> getParameters() {
         return parameters;
     }

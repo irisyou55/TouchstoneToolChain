@@ -50,10 +50,11 @@ public class DateColumn extends AbstractColumn {
     @Override
     protected String generateEqData(BigDecimal minProbability, BigDecimal maxProbability) {
         String data;
+        double minP = minProbability.doubleValue(), maxP = maxProbability.doubleValue();
         do {
             Duration duration = Duration.between(begin, end);
             BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
-            BigDecimal probability = BigDecimal.valueOf(Math.random() * (maxProbability.doubleValue() - minProbability.doubleValue()) + minProbability.doubleValue());
+            BigDecimal probability = BigDecimal.valueOf(Math.random() * (maxP - minP) + minP);
             duration = Duration.ofSeconds(seconds.multiply(probability).longValue());
             data = FMT.format(begin.plus(duration));
         } while (eqCandidates.contains(data));

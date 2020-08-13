@@ -34,4 +34,8 @@ public class EqBucket implements Comparable<EqBucket> {
     public int compareTo(EqBucket bucket) {
         return bucket.capacity.compareTo(capacity);
     }
+
+    public boolean hasSpaceFor(BigDecimal probability) {
+        return leftBorder.add(capacity).compareTo(probability) >= 0;
+    }
 }

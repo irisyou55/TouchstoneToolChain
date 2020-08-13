@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.constraintchain.filter.operation.CompareOperator;
 import ecnu.db.schema.column.bucket.EqBucket;
@@ -19,6 +21,7 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.util.*;
 
+import static ecnu.db.constraintchain.filter.operation.CompareOperator.EQ;
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.LT;
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.GREATER;
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.LESS;
@@ -36,7 +39,7 @@ public abstract class AbstractColumn {
     // 非等值约束
     protected NonEqBucket bucket;
     // 已经处理过的约束
-    protected Set<String> metConditions = new HashSet<>();
+    protected Multimap<String, Parameter> metConditions = ArrayListMultimap.create();
     // 所有的非等值约束划分而成的等值约束的区间
     @JsonIgnore
     protected List<EqBucket> eqBuckets = new ArrayList<>();
@@ -87,18 +90,19 @@ public abstract class AbstractColumn {
      * 插入非等值约束概率，按照lt来计算
      * @param probability 非等值约束概率
      * @param operator 操作符
-     * @param value 参数对应的数据
+     * @param parameter 参数
      */
-    public void insertNonEqProbability(BigDecimal probability, CompareOperator operator, String value) {
-        if (metConditions.contains(operator + value)) {
+    public void insertNonEqProbability(BigDecimal probability, CompareOperator operator, Parameter parameter) {
+        // 非等值比较概率无需记录重复的parameter
+        if (metConditions.containsKey(operator + parameter.getData())) {
             return;
         }
-        metConditions.add(operator + value);
+        metConditions.put(operator + parameter.getData(), parameter);
         if (operator.getType() != LESS && operator.getType() != GREATER) {
             throw new UnsupportedOperationException();
         }
         NonEqBucket bucket = this.bucket.search(probability);
-        bucket.value = value;
+        bucket.value = parameter.getData();
         bucket.probability = probability;
         bucket.leftBucket = new NonEqBucket();
         bucket.rightBucket = new NonEqBucket();
@@ -125,6 +129,24 @@ public abstract class AbstractColumn {
                 eqBuckets.add(bucket.rightBucket.child);
             }
         }
+    }
+
+    public void insertEqualProbability(BigDecimal probability, CompareOperator operator, Parameter parameter) {
+        if (metConditions.containsKey(operator + parameter.getData())) {
+            // 等值的比较需要记录parameter
+            metConditions.put(operator + parameter.getData(), parameter);
+            return;
+        }
+        metConditions.put(operator + parameter.getData(), parameter);
+        EqBucket eqBucket = fitProbability(probability);
+        if (eqBucket.capacity.compareTo(probability) >= 0) {
+            eqBucket.eqConditions.put(probability, parameter);
+            eqBucket.capacity = eqBucket.capacity.subtract(probability);
+        } else {
+            eqBucket.eqConditions.put(eqBucket.capacity, parameter);
+            eqBucket.capacity = BigDecimal.ZERO;
+        }
+        eqBuckets.sort(Comparator.comparing(o -> o.capacity));
     }
 
     /**
@@ -161,21 +183,11 @@ public abstract class AbstractColumn {
         for (EqBucket eqBucket : eqBuckets) {
             eqBucket.eqConditions.forEach((b, param) -> {
                 String data = generateEqData(eqBucket.leftBorder, eqBucket.rightBorder);
-                param.setData(data);
+                metConditions.get(EQ + param.getData()).forEach((p) -> {
+                    p.setData(data);
+                });
             });
         }
-    }
-
-    public void insertEqualProbability(BigDecimal probability, Parameter parameter) {
-        EqBucket eqBucket = fitProbability(probability);
-        if (eqBucket.capacity.compareTo(probability) >= 0) {
-            eqBucket.eqConditions.put(probability, parameter);
-            eqBucket.capacity = eqBucket.capacity.subtract(probability);
-        } else {
-            eqBucket.eqConditions.put(eqBucket.capacity, parameter);
-            eqBucket.capacity = BigDecimal.ZERO;
-        }
-        eqBuckets.sort(Comparator.comparing(o -> o.capacity));
     }
 
     private EqBucket fitProbability(BigDecimal probability) {
@@ -197,21 +209,27 @@ public abstract class AbstractColumn {
 
     protected abstract String generateEqData(BigDecimal minProbability, BigDecimal maxProbability);
 
-    public void addCondition(String condition) {
-        metConditions.add(condition);
-    }
-
     public boolean hasNotMetCondition(String condition) {
-        return !metConditions.contains(condition);
+        return !metConditions.containsKey(condition);
     }
 
     /**
      * 插入between的概率
+     * 目前的实现方式:
+     * 仅在eq bucket里还没有被使用的capacity里插入，即假设插入between a and b，那么结果应该如
+     * *****************************************************
+     * *       a        between         b                  *
+     * *       __________________________                  *
+     * *      |                         |                  *
+     * *   [capacity|eq1|eq2|...]...[capacity|eq1|eq2|...] *
+     * *****************************************************
+     * 也就是说，我们目前不会考虑a处在eq1和eq2之间这样的情况，或者处在capacity与eq边界的情况。
+     * 同时我们假设capacity在between插入前是一体的，不存在形如[capacity1|eq1|capacity2|...]的情况
      * @param probability between的概率
      * @param lessParameters 代表between的小于条件的参数
      * @param greaterParameters 代表between的大于条件的参数
      */
-    public void insertBetweenProbability(BigDecimal probability, List<Parameter> lessParameters, List<Parameter> greaterParameters) {
+    public void insertBetweenProbability(BigDecimal probability, CompareOperator lessOperator, List<Parameter> lessParameters, CompareOperator greaterOperator, List<Parameter> greaterParameters) {
         BigDecimal minDeviation = BigDecimal.ONE, deviation;
         eqBuckets.sort(Comparator.comparing(b -> b.leftBorder));
         int i = 0, minIndex = 0;
@@ -219,7 +237,8 @@ public abstract class AbstractColumn {
             EqBucket eqBucket = eqBuckets.get(i);
             BigDecimal rightBorder = eqBucket.leftBorder.add(probability);
             EqBucket rightBucket = fitProbability(rightBorder);
-            if (rightBucket.leftBorder.add(rightBucket.capacity).compareTo(probability) >= 0) {
+            // 判断右边的eq bucket是否有足够空间容下probability
+            if (rightBucket.hasSpaceFor(probability)) {
                 minIndex = i;
                 break;
             } else {
@@ -230,16 +249,33 @@ public abstract class AbstractColumn {
                 }
             }
         }
-        EqBucket eqBucket = eqBuckets.get(minIndex);
-        BigDecimal rightBorder = eqBucket.leftBorder.add(probability);
+        EqBucket leftBucket = eqBuckets.get(minIndex);
+        BigDecimal rightBorder = leftBucket.leftBorder.add(probability);
         EqBucket rightBucket = fitProbability(rightBorder);
-        double left = Double.min(eqBucket.capacity.doubleValue(), rightBucket.capacity.doubleValue());
-        BigDecimal leftProbability = BigDecimal.valueOf((1 - Math.random()) * left), rightProbability = leftProbability.add(probability);
+        BigDecimal leftProbability, rightProbability;
+        if (rightBucket.hasSpaceFor(probability)) {
+            double leftBorderFreedom;
+            // 如果左右是一个bucket，那么左边界的自由度就是这个bucket的capacity减去probability得到
+            if (rightBucket == leftBucket) {
+                leftBorderFreedom = leftBucket.capacity.subtract(probability).doubleValue();
+            }
+            // 正常情况下，取左右边界所在的bucket的capacity的较小的那一个
+            else {
+                leftBorderFreedom = Double.min(leftBucket.capacity.doubleValue(), rightBucket.capacity.doubleValue());
+            }
+            leftProbability = BigDecimal.valueOf((1 - Math.random()) * leftBorderFreedom);
+            rightProbability = leftProbability.add(probability);
+        } else {
+            // 对于空间不足的情况，左右是否为一个bucket，没有区别
+            leftProbability = leftBucket.leftBorder;
+            rightProbability = rightBucket.leftBorder.add(rightBucket.capacity);
+        }
         String leftData = genData(leftProbability), rightData = genData(rightProbability);
         lessParameters.forEach((p) -> p.setData(leftData));
         greaterParameters.forEach((p) -> p.setData(rightData));
-        insertNonEqProbability(leftProbability, LT, leftData);
-        insertNonEqProbability(rightProbability, LT, rightData);
+        // todo 当前仅使用LT
+        insertNonEqProbability(leftProbability, LT, lessParameters.get(0));
+        insertNonEqProbability(rightProbability, LT, greaterParameters.get(0));
     }
 
     /**

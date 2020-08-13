@@ -421,7 +421,9 @@
     },
     "tableSize" : 6001215,
     "primaryKeys" : null,
-    "foreignKeys" : null,
+    "foreignKeys" : {
+      "l_orderkey" : "tpch.orders.o_orderkey"
+    },
     "metaDataFks" : { },
     "joinTag" : 2
   },
@@ -570,7 +572,7 @@
       }
     },
     "tableSize" : 10000,
-    "primaryKeys" : "s_suppkey",
+    "primaryKeys" : null,
     "foreignKeys" : null,
     "metaDataFks" : { },
     "joinTag" : 2

@@ -10,23 +10,38 @@ import ecnu.db.constraintchain.chain.ConstraintChain;
 import ecnu.db.constraintchain.chain.ConstraintChainFilterNode;
 import ecnu.db.constraintchain.chain.ConstraintChainNode;
 import ecnu.db.constraintchain.chain.ConstraintChainReader;
+import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.constraintchain.filter.operation.AbstractFilterOperation;
 import ecnu.db.schema.Schema;
 import ecnu.db.schema.column.AbstractColumn;
 import ecnu.db.schema.column.ColumnDeserializer;
+import ecnu.db.schema.column.DateTimeColumn;
+import ecnu.db.schema.column.IntColumn;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static ecnu.db.utils.CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class Container {
+    public List<Parameter> params;
+    public Container() {}
+    public Container(List<Parameter> params) {
+        this.params = params;
+    }
+}
 
 class QueryInstantiationTest {
     @Test
@@ -79,5 +94,31 @@ class QueryInstantiationTest {
                 FileUtils.readFileToString(new File("src/test/resources/data/query-instantiation/schema.json"), UTF_8),
                 new TypeReference<HashMap<String, Schema>>() {});
         QueryInstantiation.compute(query2chains.values().stream().flatMap(Collection::stream).collect(Collectors.toList()), schemas);
+        Map<Integer, Parameter> id2Parameter = new HashMap<>();
+        for (String key : query2chains.keySet()) {
+            List<Parameter> parameters = query2chains.get(key).stream().flatMap((l) -> l.getParameters().stream()).collect(Collectors.toList());
+            parameters.forEach((param) -> {
+                id2Parameter.put(param.getId(), param);
+            });
+            System.out.println(key);
+            System.out.println(parameters);
+        }
+        // 2.sql_1 simple eq
+        IntColumn col = (IntColumn) schemas.get("tpch.part").getColumn("p_size");
+        assertTrue( Integer.parseInt(id2Parameter.get(18).getData()) >= col.getMin(),
+                String.format("'%s' should be greater than or equal to '%d'", id2Parameter.get(18).getData(), col.getMin()));
+        assertTrue( Integer.parseInt(id2Parameter.get(18).getData()) <= col.getMax(),
+                String.format("'%s' should be less than '%d'", id2Parameter.get(18).getData(), col.getMax()));
+        assertThat(id2Parameter.get(19).getData(), startsWith("%"));
+        assertEquals(id2Parameter.get(20).getData(), id2Parameter.get(21).getData());
+        // 6.sql_1 between
+        LocalDateTime left = LocalDateTime.parse(id2Parameter.get(28).getData(), DateTimeColumn.FMT),
+                right = LocalDateTime.parse(id2Parameter.get(25).getData(), DateTimeColumn.FMT);
+        Duration duration = Duration.between(left, right),
+                wholeDuration = Duration.between(
+                        LocalDateTime.parse("1992-01-02 00:00:00", DateTimeColumn.FMT),
+                        LocalDateTime.parse("1998-12-01 00:00:00", DateTimeColumn.FMT));
+        double rate = duration.getSeconds() * 1.0 / wholeDuration.getSeconds();
+        assertEquals(rate, 0.267, 0.001);
     }
 }
