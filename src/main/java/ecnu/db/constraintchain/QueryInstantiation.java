@@ -14,6 +14,7 @@ import ecnu.db.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.*;
 
@@ -45,53 +46,52 @@ public class QueryInstantiation {
                 }
             }
         }
-        // uni-var non-eq
-        for (Map.Entry<Schema, AbstractFilterOperation> entry : schema2filters.entries()) {
-            Schema schema = entry.getKey();
-            if (entry.getValue() instanceof UniVarFilterOperation
-                    && (entry.getValue().getOperator().getType() == LESS || entry.getValue().getOperator().getType() == GREATER)) {
-                UniVarFilterOperation operation = (UniVarFilterOperation) entry.getValue();
+        for (Schema schema : schema2filters.keySet()) {
+            // uni-var non-eq
+            List<UniVarFilterOperation> uniVarFilters = schema2filters.get(schema).stream()
+                    .filter((f) -> f instanceof UniVarFilterOperation)
+                    .filter((f) -> f.getOperator().getType() == LESS || f.getOperator().getType() == GREATER)
+                    .map((f) -> (UniVarFilterOperation) f)
+                    .collect(Collectors.toList());
+            for (UniVarFilterOperation operation : uniVarFilters) {
                 String columnName = CommonUtils.extractSimpleColumnName(operation.getColumnName());
                 AbstractColumn column = schema.getColumn(columnName);
                 operation.instantiateUniParamCompParameter(column);
             }
-        }
-        schemas.forEach((s1, schema) -> {
+            // init eq bucket
             schema.getColumns().forEach((s2, col) -> {col.initEqProbabilityBucket();});
-        });
-        // uni-var eq
-        for (Map.Entry<Schema, AbstractFilterOperation> entry : schema2filters.entries()) {
-            Schema schema = entry.getKey();
-            if (entry.getValue() instanceof UniVarFilterOperation
-                    && (entry.getValue().getOperator().getType() == EQUAL)) {
-                UniVarFilterOperation operation = (UniVarFilterOperation) entry.getValue();
+            // uni-var eq
+            uniVarFilters = schema2filters.get(schema).stream()
+                    .filter((f) -> f instanceof UniVarFilterOperation)
+                    .filter((f) -> f.getOperator().getType() == EQUAL)
+                    .map((f) -> (UniVarFilterOperation) f)
+                    .collect(Collectors.toList());
+            for (UniVarFilterOperation operation : uniVarFilters) {
                 String columnName = CommonUtils.extractSimpleColumnName(operation.getColumnName());
                 AbstractColumn column = schema.getColumn(columnName);
                 operation.instantiateEqualParameter(column);
             }
-        }
-        // generate column bucket
-        schemas.values().forEach((s) -> s.getColumns().values().forEach(AbstractColumn::initEqProbabilityBucket));
-        // uni-var bet
-        for (Map.Entry<Schema, AbstractFilterOperation> entry : schema2filters.entries()) {
-            Schema schema = entry.getKey();
-            if (entry.getValue() instanceof RangeFilterOperation) {
-                RangeFilterOperation operation = (RangeFilterOperation) entry.getValue();
+            // uni-var bet
+            List<RangeFilterOperation> rangeFilters = schema2filters.get(schema).stream()
+                    .filter((f) -> f instanceof RangeFilterOperation)
+                    .map((f) -> (RangeFilterOperation) f)
+                    .collect(Collectors.toList());
+            for (RangeFilterOperation operation : rangeFilters) {
                 String columnName = CommonUtils.extractSimpleColumnName(operation.getColumnName());
                 AbstractColumn column = schema.getColumn(columnName);
                 operation.instantiateBetweenParameter(column);
             }
-        }
-        // uni-var eq params init
-        schemas.values().forEach((s) -> s.getColumns().values().forEach(AbstractColumn::initEqParameter));
-        // multi-var non-eq
-        for (Map.Entry<Schema, AbstractFilterOperation> entry : schema2filters.entries()) {
-            if (entry.getValue() instanceof MultiVarFilterOperation) {
-                MultiVarFilterOperation operation = (MultiVarFilterOperation) entry.getValue();
+            // init eq params
+            schema.getColumns().values().forEach(AbstractColumn::initEqParameter);
+            // multi-var non-eq
+            List<MultiVarFilterOperation> multiVarFilters = schema2filters.get(schema).stream()
+                    .filter((f) ->  f instanceof MultiVarFilterOperation)
+                    .map((f) -> (MultiVarFilterOperation) f)
+                    .collect(Collectors.toList());
+            for (MultiVarFilterOperation operation : multiVarFilters) {
                 operation.instantiateMultiVarParameter();
             }
         }
-
     }
 
 }
