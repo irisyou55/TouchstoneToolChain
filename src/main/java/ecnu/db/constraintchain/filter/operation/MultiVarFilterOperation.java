@@ -6,6 +6,7 @@ import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
 import ecnu.db.constraintchain.arithmetic.value.ColumnNode;
 import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
+import ecnu.db.exception.InstantiateParameterException;
 import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.schema.Schema;
 import ecnu.db.utils.CommonUtils;
@@ -14,6 +15,9 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.stream.Collectors;
+
+import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.GREATER;
+import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.LESS;
 
 /**
  * @author wangqingshuai
@@ -76,8 +80,22 @@ public class MultiVarFilterOperation extends AbstractFilterOperation {
      * todo 通过计算树计算概率，暂时不考虑其他FilterOperation对于此操作的阈值影响
      */
     public void instantiateMultiVarParameter(Schema schema) throws TouchstoneToolChainException {
+        int pos;
+        BigDecimal nonNullProbability = BigDecimal.ONE;
+        // 假定null都是均匀独立分布的
+        for (String columnName : getColNames()) {
+            String simpleColumnName = CommonUtils.extractSimpleColumnName(columnName);
+            BigDecimal colNullProbability = BigDecimal.valueOf(schema.getColumn(simpleColumnName).getNullPercentage());
+            nonNullProbability = nonNullProbability.multiply(BigDecimal.ONE.subtract(colNullProbability));
+        }
+        if (operator.getType() == GREATER) {
+            probability = nonNullProbability.subtract(probability);
+        }
+        else if (operator.getType() != LESS){
+            throw new InstantiateParameterException("多变量计算节点仅接受非等值约束");
+        }
         float[] vector = arithmeticTree.getVector(schema);
-        int pos = probability.multiply(BigDecimal.valueOf(vector.length)).intValue();
+        pos = probability.multiply(BigDecimal.valueOf(vector.length)).intValue();
         Arrays.sort(vector);
         parameters.forEach(param -> {
             if (CommonUtils.isInteger(param.getData())) {

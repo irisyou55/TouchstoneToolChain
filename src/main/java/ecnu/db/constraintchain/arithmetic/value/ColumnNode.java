@@ -3,9 +3,12 @@ package ecnu.db.constraintchain.arithmetic.value;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
 import ecnu.db.constraintchain.filter.Parameter;
-import ecnu.db.exception.CannotFindColumnException;
+import ecnu.db.exception.InstantiateParameterException;
 import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.schema.Schema;
+import ecnu.db.schema.column.AbstractColumn;
+import ecnu.db.schema.column.DecimalColumn;
+import ecnu.db.schema.column.IntColumn;
 import ecnu.db.schema.column.bucket.EqBucket;
 
 import java.math.BigDecimal;
@@ -53,8 +56,18 @@ public class ColumnNode extends ArithmeticNode {
     }
 
     @Override
-    public float[] getVector(Schema schema) throws CannotFindColumnException {
-        List<EqBucket> eqBuckets = schema.getColumn(columnName).getEqBuckets();
+    public float[] getVector(Schema schema) throws TouchstoneToolChainException {
+        AbstractColumn column = schema.getColumn(columnName);
+        if (column instanceof IntColumn) {
+            setMinMax((float) ((IntColumn) column).getMin(), (float) ((IntColumn) column).getMax());
+        }
+        else if (column instanceof DecimalColumn) {
+            setMinMax((float) ((DecimalColumn) column).getMin(), (float) ((DecimalColumn) column).getMax());
+        }
+        else {
+            throw new InstantiateParameterException(String.format("计算节点出现非法的column'%s'", column));
+        }
+        List<EqBucket> eqBuckets = column.getEqBuckets();
         eqBuckets.sort(Comparator.comparing(o -> o.leftBorder));
         BigDecimal cumBorder = BigDecimal.ZERO, size = BigDecimal.valueOf(ArithmeticNode.size);
         float[] value = new float[ArithmeticNode.size];
