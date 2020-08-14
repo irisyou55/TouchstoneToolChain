@@ -1,6 +1,8 @@
 package ecnu.db.constraintchain.arithmetic;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import ecnu.db.exception.TouchstoneToolChainException;
+import ecnu.db.schema.Schema;
 
 /**
  * @author wangqingshuai
@@ -18,9 +20,11 @@ public abstract class ArithmeticNode {
     /**
      * 获取当前节点的计算结果
      *
+     * @param schema filter所在的schema，用于查找column
      * @return 返回float类型的计算结果
      */
-    public abstract float[] getVector();
+    @JsonIgnore
+    public abstract float[] getVector(Schema schema) throws TouchstoneToolChainException;
 
     public void setType(ArithmeticNodeType type) {
         this.type = type;

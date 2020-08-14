@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
 import ecnu.db.constraintchain.chain.ConstraintChain;
 import ecnu.db.constraintchain.chain.ConstraintChainFilterNode;
 import ecnu.db.constraintchain.chain.ConstraintChainNode;
@@ -119,5 +120,28 @@ class QueryInstantiationTest {
                         LocalDateTime.parse("1998-12-01 00:00:00", DateTimeColumn.FMT));
         double rate = duration.getSeconds() * 1.0 / wholeDuration.getSeconds();
         assertEquals(rate, 0.267, 0.001);
+    }
+
+    @Test
+    public void computeMultiVarTest() throws Exception {
+        ArithmeticNode.setSize(10_000);
+        ParameterResolver.items.clear();
+        Map<String, List<ConstraintChain>> query2chains = ConstraintChainReader.readConstraintChain("src/test/resources/data/query-instantiation/multi-var-test/constraintChain.json");
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(AbstractColumn.class, new ColumnDeserializer());
+        mapper.registerModule(module);
+        mapper.findAndRegisterModules();
+        Map<String, Schema> schemas = mapper.readValue(
+                FileUtils.readFileToString(new File("src/test/resources/data/query-instantiation/multi-var-test/schema.json"), UTF_8),
+                new TypeReference<HashMap<String, Schema>>() {});
+        QueryInstantiation.compute(query2chains.values().stream().flatMap(Collection::stream).collect(Collectors.toList()), schemas);
+        Map<Integer, Parameter> id2Parameter = new HashMap<>();
+        for (String key : query2chains.keySet()) {
+            List<Parameter> parameters = query2chains.get(key).stream().flatMap((l) -> l.getParameters().stream()).collect(Collectors.toList());
+            parameters.forEach((param) -> {
+                id2Parameter.put(param.getId(), param);
+            });
+        }
     }
 }

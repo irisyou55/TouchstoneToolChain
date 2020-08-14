@@ -9,7 +9,13 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
+import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
+import ecnu.db.constraintchain.arithmetic.ArithmeticNodeDeserializer;
 import ecnu.db.constraintchain.chain.ConstraintChain;
+import ecnu.db.constraintchain.chain.ConstraintChainNode;
+import ecnu.db.constraintchain.chain.ConstraintChainNodeDeserializer;
+import ecnu.db.constraintchain.filter.BoolExprNode;
+import ecnu.db.constraintchain.filter.BoolExprNodeDeserializer;
 import ecnu.db.exception.TouchstoneToolChainException;
 import ecnu.db.schema.Schema;
 import ecnu.db.schema.column.AbstractColumn;
@@ -37,7 +43,17 @@ public class StorageManager {
     private final File loadDir;
     private final File logDir;
     private final File logQueryDir;
-    private final ObjectMapper mapper;
+    public static final ObjectMapper mapper;
+    static {
+        SimpleModule module = new SimpleModule()
+                .addDeserializer(AbstractColumn.class, new ColumnDeserializer())
+                .addDeserializer(ArithmeticNode.class, new ArithmeticNodeDeserializer())
+                .addDeserializer(ConstraintChainNode.class, new ConstraintChainNodeDeserializer())
+                .addDeserializer(BoolExprNode.class, new BoolExprNodeDeserializer());
+        mapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .registerModule(module);
+    }
 
     public StorageManager(String resultDirPath, String dumpDirPath, String loadDirPath, String logPath) {
         retDir = new File(resultDirPath);
@@ -47,9 +63,6 @@ public class StorageManager {
         loadDir = Optional.ofNullable(loadDirPath).map(File::new).orElse(null);
         logDir = new File(logPath);
         logQueryDir = Optional.of(logPath).map((dir) -> (new File(dir, "query"))).orElse(null);
-        mapper = new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .registerModule(new SimpleModule().addDeserializer(AbstractColumn.class, new ColumnDeserializer()));
     }
 
     public void storeSqlResult(File sqlFile, String sql, String dbType) throws IOException {

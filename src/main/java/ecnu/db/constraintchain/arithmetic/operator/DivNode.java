@@ -2,6 +2,8 @@ package ecnu.db.constraintchain.arithmetic.operator;
 
 import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
+import ecnu.db.exception.TouchstoneToolChainException;
+import ecnu.db.schema.Schema;
 
 /**
  * @author wangqingshuai
@@ -11,8 +13,8 @@ public class DivNode extends ArithmeticNode {
         super(ArithmeticNodeType.DIV);
     }
     @Override
-    public float[] getVector() {
-        float[] leftValue = leftNode.getVector(), rightValue = rightNode.getVector();
+    public float[] getVector(Schema schema) throws TouchstoneToolChainException {
+        float[] leftValue = leftNode.getVector(schema), rightValue = rightNode.getVector(schema);
 
         for (int i = 0; i < leftValue.length; i++) {
             leftValue[i] /= rightValue[i];

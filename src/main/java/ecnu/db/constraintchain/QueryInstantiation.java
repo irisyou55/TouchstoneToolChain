@@ -89,7 +89,7 @@ public class QueryInstantiation {
                     .map((f) -> (MultiVarFilterOperation) f)
                     .collect(Collectors.toList());
             for (MultiVarFilterOperation operation : multiVarFilters) {
-                operation.instantiateMultiVarParameter();
+                operation.instantiateMultiVarParameter(schema);
             }
         }
     }

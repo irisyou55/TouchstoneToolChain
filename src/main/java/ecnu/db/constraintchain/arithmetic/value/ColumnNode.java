@@ -3,12 +3,16 @@ package ecnu.db.constraintchain.arithmetic.value;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
 import ecnu.db.constraintchain.filter.Parameter;
+import ecnu.db.exception.CannotFindColumnException;
 import ecnu.db.exception.TouchstoneToolChainException;
-import ecnu.db.schema.column.AbstractColumn;
+import ecnu.db.schema.Schema;
 import ecnu.db.schema.column.bucket.EqBucket;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -16,17 +20,12 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class ColumnNode extends ArithmeticNode {
     private String canonicalTableName;
-    private AbstractColumn column;
+    private String columnName;
     private float min;
     private float max;
 
     public ColumnNode() {
         super(ArithmeticNodeType.COLUMN);
-    }
-
-    public ColumnNode(AbstractColumn column) {
-        super(ArithmeticNodeType.COLUMN);
-        this.column = column;
     }
 
     public void setMinMax(float min, float max) throws TouchstoneToolChainException {
@@ -37,12 +36,12 @@ public class ColumnNode extends ArithmeticNode {
         this.max = max;
     }
 
-    public AbstractColumn getColumn() {
-        return column;
+    public String getColumnName() {
+        return columnName;
     }
 
-    public void setColumn(AbstractColumn column) {
-        this.column = column;
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
     }
 
     public String getCanonicalTableName() {
@@ -54,8 +53,8 @@ public class ColumnNode extends ArithmeticNode {
     }
 
     @Override
-    public float[] getVector() {
-        List<EqBucket> eqBuckets = column.getEqBuckets();
+    public float[] getVector(Schema schema) throws CannotFindColumnException {
+        List<EqBucket> eqBuckets = schema.getColumn(columnName).getEqBuckets();
         eqBuckets.sort(Comparator.comparing(o -> o.leftBorder));
         BigDecimal cumBorder = BigDecimal.ZERO, size = BigDecimal.valueOf(ArithmeticNode.size);
         float[] value = new float[ArithmeticNode.size];
@@ -89,6 +88,6 @@ public class ColumnNode extends ArithmeticNode {
 
     @Override
     public String toString() {
-        return String.format("%s.%s", canonicalTableName, column.getColumnName());
+        return String.format("%s.%s", canonicalTableName, columnName);
     }
 }

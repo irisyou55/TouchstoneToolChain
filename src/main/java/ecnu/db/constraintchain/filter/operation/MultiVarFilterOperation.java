@@ -6,6 +6,8 @@ import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
 import ecnu.db.constraintchain.arithmetic.value.ColumnNode;
 import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
+import ecnu.db.exception.TouchstoneToolChainException;
+import ecnu.db.schema.Schema;
 import ecnu.db.utils.CommonUtils;
 
 import java.math.BigDecimal;
@@ -44,7 +46,7 @@ public class MultiVarFilterOperation extends AbstractFilterOperation {
             return;
         }
         if (node.getType() == ArithmeticNodeType.COLUMN) {
-            colNames.add(String.format("%s.%s", ((ColumnNode) node).getCanonicalTableName(), ((ColumnNode) node).getColumn().getColumnName()));
+            colNames.add(String.format("%s.%s", ((ColumnNode) node).getCanonicalTableName(), ((ColumnNode) node).getColumnName()));
         }
         getColNames(node.getLeftNode(), colNames);
         getColNames(node.getRightNode(), colNames);
@@ -73,8 +75,8 @@ public class MultiVarFilterOperation extends AbstractFilterOperation {
     /**
      * todo 通过计算树计算概率，暂时不考虑其他FilterOperation对于此操作的阈值影响
      */
-    public void instantiateMultiVarParameter() {
-        float[] vector = arithmeticTree.getVector();
+    public void instantiateMultiVarParameter(Schema schema) throws TouchstoneToolChainException {
+        float[] vector = arithmeticTree.getVector(schema);
         int pos = probability.multiply(BigDecimal.valueOf(vector.length)).intValue();
         Arrays.sort(vector);
         parameters.forEach(param -> {

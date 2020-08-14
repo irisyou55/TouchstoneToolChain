@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
+import ecnu.db.constraintchain.arithmetic.ArithmeticNodeDeserializer;
 import ecnu.db.constraintchain.filter.logical.AndNode;
 import ecnu.db.constraintchain.filter.logical.OrNode;
 import ecnu.db.constraintchain.filter.operation.IsNullFilterOperation;
@@ -33,6 +35,7 @@ public class BoolExprNodeDeserializer extends StdDeserializer<BoolExprNode> {
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
         module.addDeserializer(BoolExprNode.class, new BoolExprNodeDeserializer());
+        module.addDeserializer(ArithmeticNode.class, new ArithmeticNodeDeserializer());
         mapper.registerModule(module);
         switch (BoolExprType.valueOf(node.get("type").asText())) {
             case AND:

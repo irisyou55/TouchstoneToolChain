@@ -2,11 +2,7 @@ package ecnu.db.constraintchain.chain;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
-import ecnu.db.constraintchain.arithmetic.ArithmeticNodeDeserializer;
-import ecnu.db.constraintchain.filter.BoolExprNode;
-import ecnu.db.constraintchain.filter.BoolExprNodeDeserializer;
+import ecnu.db.utils.StorageManager;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -28,12 +24,7 @@ public class ConstraintChainReader {
      */
     public static Map<String, List<ConstraintChain>> readConstraintChain(String fileName) throws IOException {
         String content = FileUtils.readFileToString(new File(fileName), UTF_8);
-        ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addDeserializer(ConstraintChainNode.class, new ConstraintChainNodeDeserializer());
-        module.addDeserializer(BoolExprNode.class, new BoolExprNodeDeserializer());
-        module.addDeserializer(ArithmeticNode.class, new ArithmeticNodeDeserializer());
-        mapper.registerModule(module);
+        ObjectMapper mapper = StorageManager.mapper;
         return mapper.readValue(content, new TypeReference<Map<String, List<ConstraintChain>>>() {});
     }
 

@@ -1,7 +1,9 @@
 package ecnu.db.constraintchain.arithmetic.value;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNode;
 import ecnu.db.constraintchain.arithmetic.ArithmeticNodeType;
+import ecnu.db.schema.Schema;
 
 import java.util.Arrays;
 
@@ -22,12 +24,17 @@ public class NumericNode extends ArithmeticNode {
         this.constant = (float) constant;
     }
 
+    @JsonSetter
+    public void setConstant(String constant) {
+        this.constant = Float.parseFloat(constant);
+    }
+
     public Float getConstant() {
         return constant;
     }
 
     @Override
-    public float[] getVector() {
+    public float[] getVector(Schema schema) {
         int size = ArithmeticNode.size;
         float[] value = new float[size];
         Arrays.fill(value, constant);
