@@ -8,10 +8,7 @@ import ecnu.db.schema.column.AbstractColumn;
 import ecnu.db.schema.column.bucket.EqBucket;
 
 import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -60,25 +57,31 @@ public class ColumnNode extends ArithmeticNode {
     public float[] getVector() {
         List<EqBucket> eqBuckets = column.getEqBuckets();
         eqBuckets.sort(Comparator.comparing(o -> o.leftBorder));
-        TreeMap<Double, Float> cumulativeProbability2Param = new TreeMap<>();
-        BigDecimal cumProbability = BigDecimal.ZERO;
+        BigDecimal cumBorder = BigDecimal.ZERO, size = BigDecimal.valueOf(ArithmeticNode.size);
+        float[] value = new float[ArithmeticNode.size];
         for (EqBucket eqBucket : eqBuckets) {
             for (Map.Entry<BigDecimal, Parameter> entry : eqBucket.eqConditions.entries()) {
-                cumProbability = cumProbability.add(entry.getKey());
-                cumulativeProbability2Param.put(cumProbability.doubleValue(), Float.parseFloat(entry.getValue().getData()));
+                BigDecimal newCum = cumBorder.add(entry.getKey()).multiply(size);
+                float eqValue = Float.parseFloat(entry.getValue().getData());
+                for (int j = cumBorder.intValue(); j < newCum.intValue() && j < ArithmeticNode.size; j++) {
+                    value[j] = eqValue;
+                }
+                cumBorder = newCum;
             }
         }
-        int size = ArithmeticNode.size;
-        float[] value = new float[size];
         float bound = max - min;
         ThreadLocalRandom threadLocalRandom = ThreadLocalRandom.current();
-        for (int i = 0; i < size; i++) {
-            double probability = 1 - threadLocalRandom.nextDouble();
-            Map.Entry<Double, Float> entry = cumulativeProbability2Param.ceilingEntry(probability);
-            if (entry != null) {
-                value[i] = entry.getValue();
-            } else {
-                value[i] = threadLocalRandom.nextFloat() * bound + min;
+        for (int i = cumBorder.intValue(); i < ArithmeticNode.size; i++) {
+            value[i] = threadLocalRandom.nextFloat() * bound + min;
+        }
+        if (cumBorder.compareTo(BigDecimal.ZERO) > 0) {
+            Random rand = new Random();
+            float tmp;
+            for (int i = ArithmeticNode.size; i > 1; i--) {
+                int idx = rand.nextInt(i);
+                tmp = value[i - 1];
+                value[i - 1] = value[idx];
+                value[idx] = tmp;
             }
         }
         return value;
