@@ -7,7 +7,6 @@ import ecnu.db.schema.column.AbstractColumn;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author alan
@@ -87,8 +86,6 @@ public class RangeFilterOperation extends UniVarFilterOperation {
 
     public void instantiateBetweenParameter(AbstractColumn absColumn) {
         if (lessParameters.size() > 0 && greaterParameters.size() > 0) {
-            String lessParamStr = lessParameters.stream().map(Parameter::getData).collect(Collectors.joining()),
-                    greaterParamStr = greaterParameters.stream().map(Parameter::getData).collect(Collectors.joining());
             absColumn.insertBetweenProbability(probability, lessOperator, lessParameters, greaterOperator, greaterParameters);
         }
     }

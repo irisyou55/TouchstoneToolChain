@@ -342,9 +342,7 @@ public abstract class AbstractColumn {
         else if (getColumnType() == DATETIME) {
             DateTimeColumn column = (DateTimeColumn) this;
             LocalDateTime newDateTime = column.generateData(probability);
-            DateTimeFormatterBuilder builder;
-            builder = new DateTimeFormatterBuilder()
-                    .appendPattern("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd HH:mm:ss");
             if (column.getPrecision() > 0) {
                 builder.appendFraction(ChronoField.MICRO_OF_SECOND, 0, column.getPrecision(), true);
             }
