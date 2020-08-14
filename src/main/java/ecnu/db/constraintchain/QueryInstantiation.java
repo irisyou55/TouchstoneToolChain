@@ -59,7 +59,7 @@ public class QueryInstantiation {
                 operation.instantiateUniParamCompParameter(column);
             }
             // init eq bucket
-            schema.getColumns().forEach((s2, col) -> {col.initEqProbabilityBucket();});
+            schema.getColumns().forEach((s2, col) -> col.initEqProbabilityBucket());
             // uni-var eq
             uniVarFilters = schema2filters.get(schema).stream()
                     .filter((f) -> f instanceof UniVarFilterOperation)

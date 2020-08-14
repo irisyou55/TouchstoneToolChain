@@ -100,9 +100,7 @@ class QueryInstantiationTest {
         Map<Integer, Parameter> id2Parameter = new HashMap<>();
         for (String key : query2chains.keySet()) {
             List<Parameter> parameters = query2chains.get(key).stream().flatMap((l) -> l.getParameters().stream()).collect(Collectors.toList());
-            parameters.forEach((param) -> {
-                id2Parameter.put(param.getId(), param);
-            });
+            parameters.forEach((param) -> id2Parameter.put(param.getId(), param));
         }
         // 2.sql_1 simple eq
         IntColumn col = (IntColumn) schemas.get("tpch.part").getColumn("p_size");

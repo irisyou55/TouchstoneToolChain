@@ -221,9 +221,7 @@ public abstract class AbstractColumn {
         for (EqBucket eqBucket : eqBuckets) {
             eqBucket.eqConditions.forEach((b, param) -> {
                 String data = generateEqData(eqBucket.leftBorder, eqBucket.rightBorder);
-                metConditions.get(EQ + param.getData()).forEach((p) -> {
-                    p.setData(data);
-                });
+                metConditions.get(EQ + param.getData()).forEach((p) -> p.setData(data));
             });
         }
     }
@@ -276,7 +274,7 @@ public abstract class AbstractColumn {
     public void insertBetweenProbability(BigDecimal probability, CompareOperator lessOperator, List<Parameter> lessParameters, CompareOperator greaterOperator, List<Parameter> greaterParameters) {
         BigDecimal minDeviation = BigDecimal.ONE, deviation;
         eqBuckets.sort(Comparator.comparing(b -> b.leftBorder));
-        int i = 0, minIndex = 0;
+        int i, minIndex = 0;
         for (i = 0; i < eqBuckets.size(); i++) {
             EqBucket eqBucket = eqBuckets.get(i);
             BigDecimal rightBorder = eqBucket.leftBorder.add(probability);

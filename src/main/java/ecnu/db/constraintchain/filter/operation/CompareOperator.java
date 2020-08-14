@@ -52,7 +52,7 @@ public enum CompareOperator {
     public enum TYPE {
         LESS, GREATER, EQUAL, RANGE
     }
-    private CompareOperator(TYPE type) {
+    CompareOperator(TYPE type) {
         this.type = type;
     }
     public TYPE getType() {
