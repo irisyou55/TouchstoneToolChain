@@ -1,51 +1,9 @@
 package ecnu.db.constraintchain.filter;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import ecnu.db.constraintchain.filter.operation.CompareOperator;
-
-import java.util.HashMap;
-import java.util.Map;
-
-class ParameterResolver implements ObjectIdResolver {
-    private static final Map<ObjectIdGenerator.IdKey, Object> items = new HashMap<>();
-
-    @Override
-    public void bindItem(ObjectIdGenerator.IdKey id, Object pojo) {
-        if (items.containsKey(id)) {
-            throw new IllegalStateException("Already had POJO for id (" + id.key.getClass().getName() + ") [" + id
-                    + "]");
-        }
-        items.put(id, pojo);
-    }
-
-    @Override
-    public Object resolveId(ObjectIdGenerator.IdKey id) {
-        Object object = items.get(id);
-        return object == null ? getById(id) : object;
-    }
-
-    protected Object getById(ObjectIdGenerator.IdKey id){
-        Object object;
-        try {
-            object = id.scope.getConstructor().newInstance();
-            id.scope.getMethod("setId", Integer.class).invoke(object, id.key);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-        items.put(id, object);
-        return object;
-    }
-
-    @Override
-    public ObjectIdResolver newForDeserialization(Object context) {
-        return new ParameterResolver();
-    }
-
-    @Override
-    public boolean canUseFor(ObjectIdResolver resolverType) {
-        return resolverType.getClass() == getClass();
-    }
-}
 
 /**
  * @author alan

@@ -36,8 +36,8 @@ public class TidbAnalyzer extends AbstractAnalyzer {
 
 
     private static final Pattern ROW_COUNTS = Pattern.compile("rows:[0-9]+");
-    private static final Pattern INNER_JOIN_OUTER_KEY = Pattern.compile("outer key:.+,");
-    private static final Pattern INNER_JOIN_INNER_KEY = Pattern.compile("inner key:.+");
+    private static final Pattern INNER_JOIN_OUTER_KEY = Pattern.compile("outer key:(.+),");
+    private static final Pattern INNER_JOIN_INNER_KEY = Pattern.compile("inner key:(.+)");
     private static final Pattern JOIN_EQ_OPERATOR = Pattern.compile("equal:\\[.*]");
     private static final Pattern PLAN_ID = Pattern.compile("([a-zA-Z]+_[0-9]+)");
     private static final Pattern EQ_OPERATOR = Pattern.compile("eq\\(([a-zA-Z0-9_$]+\\.[a-zA-Z0-9_$]+\\.[a-zA-Z0-9_$]+), ([a-zA-Z0-9_$]+\\.[a-zA-Z0-9_$]+\\.[a-zA-Z0-9_$]+)\\)");
@@ -307,7 +307,7 @@ public class TidbAnalyzer extends AbstractAnalyzer {
         } else {
             Matcher innerInfo = INNER_JOIN_INNER_KEY.matcher(joinInfo);
             if (innerInfo.find()) {
-                String[] innerInfos = innerInfo.group(0).split("\\.");
+                String[] innerInfos = innerInfo.group(1).split("\\.");
                 result[0] = String.join(".", Arrays.asList(innerInfos[0], innerInfos[1]));
                 result[1] = innerInfos[2];
             } else {
@@ -315,7 +315,7 @@ public class TidbAnalyzer extends AbstractAnalyzer {
             }
             Matcher outerInfo = INNER_JOIN_OUTER_KEY.matcher(joinInfo);
             if (outerInfo.find()) {
-                String[] outerInfos = outerInfo.group(0).split("\\.");
+                String[] outerInfos = outerInfo.group(1).split("\\.");
                 result[2] = String.join(".", Arrays.asList(outerInfos[0], outerInfos[1]));
                 result[3] = outerInfos[2].substring(0, outerInfos[2].length() - 1);
             } else {

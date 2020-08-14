@@ -55,11 +55,47 @@
       },
       "probability" : 0.20126,
       "columns" : [ "tpch.customer.c_mktsegment" ]
+    }, {
+      "tableName" : "tpch.customer",
+      "constraintChainNodeType" : "PK_JOIN",
+      "pkColumns" : [ "c_custkey" ],
+      "pkTag" : 1
+    }, {
+      "tableName" : "tpch.customer",
+      "constraintChainNodeType" : "PK_JOIN",
+      "pkColumns" : [ "c_custkey" ],
+      "pkTag" : 1
     } ]
   }, {
     "tableName" : "tpch.orders",
-    "parameters" : [ ],
-    "nodes" : [ ]
+    "parameters" : [ {
+      "id" : 13,
+      "data" : "1995-03-10",
+      "isDate" : true
+    } ],
+    "nodes" : [ {
+      "tableName" : "tpch.orders",
+      "constraintChainNodeType" : "FILTER",
+      "root" : {
+        "type" : "AND",
+        "children" : [ {
+          "parameters" : [ 13 ],
+          "operator" : "LT",
+          "probability" : null,
+          "columnName" : "tpch.orders.o_orderdate",
+          "hasNot" : false,
+          "type" : "UNI_FILTER_OPERATION"
+        } ]
+      },
+      "probability" : 0.4827473333,
+      "columns" : [ "tpch.orders.o_orderdate" ]
+    }, {
+      "tableName" : "tpch.orders",
+      "constraintChainNodeType" : "FK_JOIN",
+      "refTable" : "tpch.customer",
+      "pkTag" : 1,
+      "probability" : 0.1995716185554624
+    } ]
   }, {
     "tableName" : "tpch.lineitem",
     "parameters" : [ ],
@@ -68,11 +104,11 @@
   "2.sql_1" : [ {
     "tableName" : "tpch.part",
     "parameters" : [ {
-      "id" : 18,
+      "id" : 19,
       "data" : "5",
       "isDate" : false
     }, {
-      "id" : 19,
+      "id" : 20,
       "data" : "%COPPER",
       "isDate" : false
     } ],
@@ -82,14 +118,14 @@
       "root" : {
         "type" : "AND",
         "children" : [ {
-          "parameters" : [ 18 ],
+          "parameters" : [ 19 ],
           "operator" : "EQ",
           "probability" : null,
           "columnName" : "tpch.part.p_size",
           "hasNot" : false,
           "type" : "UNI_FILTER_OPERATION"
         }, {
-          "parameters" : [ 19 ],
+          "parameters" : [ 20 ],
           "operator" : "LIKE",
           "probability" : null,
           "columnName" : "tpch.part.p_type",
@@ -108,7 +144,7 @@
   }, {
     "tableName" : "tpch.region",
     "parameters" : [ {
-      "id" : 20,
+      "id" : 21,
       "data" : "AMERICA",
       "isDate" : false
     } ],
@@ -118,7 +154,7 @@
       "root" : {
         "type" : "AND",
         "children" : [ {
-          "parameters" : [ 20 ],
+          "parameters" : [ 21 ],
           "operator" : "EQ",
           "probability" : null,
           "columnName" : "tpch.region.r_name",
@@ -144,7 +180,7 @@
   }, {
     "tableName" : "tpch.region",
     "parameters" : [ {
-      "id" : 21,
+      "id" : 22,
       "data" : "AMERICA",
       "isDate" : false
     } ],
@@ -154,7 +190,7 @@
       "root" : {
         "type" : "AND",
         "children" : [ {
-          "parameters" : [ 21 ],
+          "parameters" : [ 22 ],
           "operator" : "EQ",
           "probability" : null,
           "columnName" : "tpch.region.r_name",
@@ -271,7 +307,7 @@
   }, {
     "tableName" : "tpch.region",
     "parameters" : [ {
-      "id" : 13,
+      "id" : 14,
       "data" : "ASIA",
       "isDate" : false
     } ],
@@ -281,7 +317,7 @@
       "root" : {
         "type" : "AND",
         "children" : [ {
-          "parameters" : [ 13 ],
+          "parameters" : [ 14 ],
           "operator" : "EQ",
           "probability" : null,
           "columnName" : "tpch.region.r_name",
@@ -311,7 +347,7 @@
   }, {
     "tableName" : "tpch.part",
     "parameters" : [ {
-      "id" : 14,
+      "id" : 15,
       "data" : "STANDARD BURNISHED NICKEL",
       "isDate" : false
     } ],
@@ -321,7 +357,7 @@
       "root" : {
         "type" : "AND",
         "children" : [ {
-          "parameters" : [ 14 ],
+          "parameters" : [ 15 ],
           "operator" : "EQ",
           "probability" : null,
           "columnName" : "tpch.part.p_type",
@@ -329,7 +365,7 @@
           "type" : "UNI_FILTER_OPERATION"
         } ]
       },
-      "probability" : 0.012385,
+      "probability" : 0.01223,
       "columns" : [ "tpch.part.p_type" ]
     } ]
   }, {
@@ -340,23 +376,23 @@
   "6.sql_1" : [ {
     "tableName" : "tpch.lineitem",
     "parameters" : [ {
-      "id" : 24,
+      "id" : 25,
       "data" : "0.02",
       "isDate" : false
     }, {
-      "id" : 25,
+      "id" : 26,
       "data" : "1997-01-01",
       "isDate" : true
     }, {
-      "id" : 26,
+      "id" : 27,
       "data" : "0.04",
       "isDate" : false
     }, {
-      "id" : 27,
+      "id" : 28,
       "data" : "24",
       "isDate" : false
     }, {
-      "id" : 28,
+      "id" : 29,
       "data" : "1998-01-01",
       "isDate" : true
     } ],
@@ -366,35 +402,35 @@
       "root" : {
         "type" : "AND",
         "children" : [ {
-          "parameters" : [ 24 ],
+          "parameters" : [ 25 ],
           "operator" : "GE",
           "probability" : null,
           "columnName" : "tpch.lineitem.l_discount",
           "hasNot" : false,
           "type" : "UNI_FILTER_OPERATION"
         }, {
-          "parameters" : [ 25 ],
+          "parameters" : [ 26 ],
           "operator" : "GE",
           "probability" : null,
           "columnName" : "tpch.lineitem.l_shipdate",
           "hasNot" : false,
           "type" : "UNI_FILTER_OPERATION"
         }, {
-          "parameters" : [ 26 ],
+          "parameters" : [ 27 ],
           "operator" : "LE",
           "probability" : null,
           "columnName" : "tpch.lineitem.l_discount",
           "hasNot" : false,
           "type" : "UNI_FILTER_OPERATION"
         }, {
-          "parameters" : [ 27 ],
+          "parameters" : [ 28 ],
           "operator" : "LT",
           "probability" : null,
           "columnName" : "tpch.lineitem.l_quantity",
           "hasNot" : false,
           "type" : "UNI_FILTER_OPERATION"
         }, {
-          "parameters" : [ 28 ],
+          "parameters" : [ 29 ],
           "operator" : "LT",
           "probability" : null,
           "columnName" : "tpch.lineitem.l_shipdate",
@@ -409,11 +445,11 @@
   "14.sql_1" : [ {
     "tableName" : "tpch.lineitem",
     "parameters" : [ {
-      "id" : 22,
+      "id" : 23,
       "data" : "1994-09-01",
       "isDate" : true
     }, {
-      "id" : 23,
+      "id" : 24,
       "data" : "1994-10-01",
       "isDate" : true
     } ],
@@ -423,14 +459,14 @@
       "root" : {
         "type" : "AND",
         "children" : [ {
-          "parameters" : [ 22 ],
+          "parameters" : [ 23 ],
           "operator" : "GE",
           "probability" : null,
           "columnName" : "tpch.lineitem.l_shipdate",
           "hasNot" : false,
           "type" : "UNI_FILTER_OPERATION"
         }, {
-          "parameters" : [ 23 ],
+          "parameters" : [ 24 ],
           "operator" : "LT",
           "probability" : null,
           "columnName" : "tpch.lineitem.l_shipdate",

@@ -11,6 +11,7 @@ import ecnu.db.constraintchain.chain.ConstraintChainFilterNode;
 import ecnu.db.constraintchain.chain.ConstraintChainNode;
 import ecnu.db.constraintchain.chain.ConstraintChainReader;
 import ecnu.db.constraintchain.filter.Parameter;
+import ecnu.db.constraintchain.filter.ParameterResolver;
 import ecnu.db.constraintchain.filter.operation.AbstractFilterOperation;
 import ecnu.db.schema.Schema;
 import ecnu.db.schema.column.AbstractColumn;
@@ -46,6 +47,7 @@ class Container {
 class QueryInstantiationTest {
     @Test
     public void getOperationsTest() throws Exception {
+        ParameterResolver.items.clear();
         Map<String, List<ConstraintChain>> query2chains = ConstraintChainReader.readConstraintChain("src/test/resources/data/query-instantiation/constraintChain.json");
         Multimap<String, AbstractFilterOperation> query2operations = ArrayListMultimap.create();
         for (String query : query2chains.keySet()) {
@@ -84,6 +86,7 @@ class QueryInstantiationTest {
 
     @Test
     public void computeTest() throws Exception {
+        ParameterResolver.items.clear();
         Map<String, List<ConstraintChain>> query2chains = ConstraintChainReader.readConstraintChain("src/test/resources/data/query-instantiation/constraintChain.json");
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
@@ -100,20 +103,18 @@ class QueryInstantiationTest {
             parameters.forEach((param) -> {
                 id2Parameter.put(param.getId(), param);
             });
-            System.out.println(key);
-            System.out.println(parameters);
         }
         // 2.sql_1 simple eq
         IntColumn col = (IntColumn) schemas.get("tpch.part").getColumn("p_size");
-        assertTrue( Integer.parseInt(id2Parameter.get(18).getData()) >= col.getMin(),
-                String.format("'%s' should be greater than or equal to '%d'", id2Parameter.get(18).getData(), col.getMin()));
-        assertTrue( Integer.parseInt(id2Parameter.get(18).getData()) <= col.getMax(),
-                String.format("'%s' should be less than '%d'", id2Parameter.get(18).getData(), col.getMax()));
-        assertThat(id2Parameter.get(19).getData(), startsWith("%"));
-        assertEquals(id2Parameter.get(20).getData(), id2Parameter.get(21).getData());
+        assertTrue( Integer.parseInt(id2Parameter.get(19).getData()) >= col.getMin(),
+                String.format("'%s' should be greater than or equal to '%d'", id2Parameter.get(19).getData(), col.getMin()));
+        assertTrue( Integer.parseInt(id2Parameter.get(19).getData()) <= col.getMax(),
+                String.format("'%s' should be less than '%d'", id2Parameter.get(19).getData(), col.getMax()));
+        assertThat(id2Parameter.get(20).getData(), startsWith("%"));
+        assertEquals(id2Parameter.get(21).getData(), id2Parameter.get(22).getData());
         // 6.sql_1 between
-        LocalDateTime left = LocalDateTime.parse(id2Parameter.get(28).getData(), DateTimeColumn.FMT),
-                right = LocalDateTime.parse(id2Parameter.get(25).getData(), DateTimeColumn.FMT);
+        LocalDateTime left = LocalDateTime.parse(id2Parameter.get(29).getData(), DateTimeColumn.FMT),
+                right = LocalDateTime.parse(id2Parameter.get(26).getData(), DateTimeColumn.FMT);
         Duration duration = Duration.between(left, right),
                 wholeDuration = Duration.between(
                         LocalDateTime.parse("1992-01-02 00:00:00", DateTimeColumn.FMT),
