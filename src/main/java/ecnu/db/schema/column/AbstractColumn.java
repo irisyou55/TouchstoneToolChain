@@ -2,7 +2,10 @@ package ecnu.db.schema.column;
 
 
 import ch.obermuhlner.math.big.BigDecimalMath;
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import ecnu.db.constraintchain.filter.Parameter;
@@ -67,21 +70,21 @@ public abstract class AbstractColumn {
         return nullPercentage;
     }
 
-    public void setColumnName(String columnName) {
-        this.columnName = columnName;
+    @JsonSetter
+    public void setNullPercentage(float nullPercentage) {
+        this.nullPercentage = nullPercentage;
     }
 
     public String getColumnName() {
         return columnName;
     }
 
-    public ColumnType getColumnType() {
-        return columnType;
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
     }
 
-    @JsonSetter
-    public void setNullPercentage(float nullPercentage) {
-        this.nullPercentage = nullPercentage;
+    public ColumnType getColumnType() {
+        return columnType;
     }
 
     public List<EqBucket> getEqBuckets() {
@@ -90,9 +93,10 @@ public abstract class AbstractColumn {
 
     /**
      * 插入非等值约束概率，按照lt来计算
+     *
      * @param probability 非等值约束概率
-     * @param operator 操作符
-     * @param parameter 参数
+     * @param operator    操作符
+     * @param parameter   参数
      */
     public void insertNonEqProbability(BigDecimal probability, CompareOperator operator, Parameter parameter) {
         // 非等值比较概率无需记录重复的parameter
@@ -121,8 +125,7 @@ public abstract class AbstractColumn {
                 bucket.rightBucket.child.leftBorder = probability;
                 bucket.child = null;
                 eqBuckets.add(bucket.leftBucket.child);
-            }
-            else if (occupiedCapacity.compareTo(toFillCapacity) <= 0) {
+            } else if (occupiedCapacity.compareTo(toFillCapacity) <= 0) {
                 bucket.rightBucket.child = new EqBucket(bucket, bucket.child.capacity.subtract(toFillCapacity.subtract(occupiedCapacity)), bucket.child.leftBorder, probability);
                 bucket.leftBucket.child = bucket.child;
                 bucket.leftBucket.child.capacity = bucket.child.capacity.subtract(toFillCapacity.subtract(occupiedCapacity));
@@ -142,12 +145,10 @@ public abstract class AbstractColumn {
                 BigDecimal eqProbability = eqParamData2Probability.get(EQ + parameter.getData());
                 if (probability.compareTo(eqProbability) < 0) {
                     throw new InstantiateParameterException(String.format("'%s'的in条件与其他eq或in条件存在矛盾", parameters));
-                }
-                else {
+                } else {
                     probability = probability.subtract(eqProbability);
                 }
-            }
-            else {
+            } else {
                 notMetParams.add(parameter);
             }
         }
@@ -229,11 +230,9 @@ public abstract class AbstractColumn {
             EqBucket bucket = eqBuckets.get((low + high) / 2);
             if (bucket.capacity.compareTo(probability) > 0) {
                 high = (low + high) / 2;
-            }
-            else if (bucket.capacity.compareTo(probability) < 0) {
+            } else if (bucket.capacity.compareTo(probability) < 0) {
                 low = (low + 1 + high) / 2;
-            }
-            else {
+            } else {
                 return eqBuckets.get((low + high) / 2);
             }
         }
@@ -242,6 +241,7 @@ public abstract class AbstractColumn {
 
     /**
      * 生成等值参数的数据
+     *
      * @param minProbability 等值参数可以出现的概率区间的左边界
      * @param maxProbability 等值参数可以出现的概率区间的右边界
      * @return 生成的数据
@@ -264,8 +264,9 @@ public abstract class AbstractColumn {
      * *****************************************************
      * 也就是说，我们目前不会考虑a处在eq1和eq2之间这样的情况，或者处在capacity与eq边界的情况。
      * 同时我们假设capacity在between插入前是一体的，不存在形如[capacity1|eq1|capacity2|...]的情况
-     * @param probability between的概率
-     * @param lessParameters 代表between的小于条件的参数
+     *
+     * @param probability       between的概率
+     * @param lessParameters    代表between的小于条件的参数
      * @param greaterParameters 代表between的大于条件的参数
      */
     public void insertBetweenProbability(BigDecimal probability, CompareOperator lessOperator, List<Parameter> lessParameters, CompareOperator greaterOperator, List<Parameter> greaterParameters) {
@@ -319,6 +320,7 @@ public abstract class AbstractColumn {
 
     /**
      * 根据概率生成非等值filter的参数数据
+     *
      * @param probability 分割概率
      * @return 生成的数据
      */
@@ -328,13 +330,11 @@ public abstract class AbstractColumn {
             IntColumn column = (IntColumn) this;
             int value = column.generateData(probability);
             ret = Integer.toString(value);
-        }
-        else if (getColumnType() == DECIMAL) {
+        } else if (getColumnType() == DECIMAL) {
             DecimalColumn column = (DecimalColumn) this;
             BigDecimal value = column.generateData(probability);
             ret = value.toString();
-        }
-        else if (getColumnType() == DATETIME) {
+        } else if (getColumnType() == DATETIME) {
             DateTimeColumn column = (DateTimeColumn) this;
             LocalDateTime newDateTime = column.generateData(probability);
             DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd HH:mm:ss");
@@ -343,14 +343,12 @@ public abstract class AbstractColumn {
             }
             DateTimeFormatter formatter = builder.toFormatter();
             return formatter.format(newDateTime);
-        }
-        else if (getColumnType() == DATE) {
+        } else if (getColumnType() == DATE) {
             DateColumn column = (DateColumn) this;
             LocalDate newDate = column.generateData(probability);
             DateTimeFormatter formatter = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd").toFormatter();
             return formatter.format(newDate);
-        }
-        else {
+        } else {
             throw new UnsupportedOperationException();
         }
 

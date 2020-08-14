@@ -10,11 +10,12 @@ import java.util.List;
  */
 public class ConstraintChain {
 
+    private final List<ConstraintChainNode> nodes = new ArrayList<>();
     private String tableName;
     private List<Parameter> parameters = new ArrayList<>();
-    private final List<ConstraintChainNode> nodes = new ArrayList<>();
 
-    public ConstraintChain() {}
+    public ConstraintChain() {
+    }
 
     public ConstraintChain(String tableName) {
         this.tableName = tableName;
@@ -28,24 +29,24 @@ public class ConstraintChain {
         return nodes;
     }
 
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
-    }
-
     public String getTableName() {
         return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
 
     public void addParameters(List<Parameter> parameters) {
         this.parameters.addAll(parameters);
     }
 
-    public void setParameters(List<Parameter> parameters) {
-        this.parameters = parameters;
-    }
-
     public List<Parameter> getParameters() {
         return parameters;
+    }
+
+    public void setParameters(List<Parameter> parameters) {
+        this.parameters = parameters;
     }
 
     @Override

@@ -13,9 +13,10 @@ import java.util.List;
  */
 public class RangeFilterOperation extends UniVarFilterOperation {
     private final List<Parameter> lessParameters = new ArrayList<>();
-    private CompareOperator lessOperator;
     private final List<Parameter> greaterParameters = new ArrayList<>();
+    private CompareOperator lessOperator;
     private CompareOperator greaterOperator;
+
     public RangeFilterOperation(String columnName) {
         super(columnName, CompareOperator.RANGE);
     }
@@ -23,11 +24,6 @@ public class RangeFilterOperation extends UniVarFilterOperation {
     @Override
     public BoolExprType getType() {
         return BoolExprType.UNI_FILTER_OPERATION;
-    }
-
-    @Override
-    public void setParameters(List<Parameter> parameters) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -40,6 +36,11 @@ public class RangeFilterOperation extends UniVarFilterOperation {
         List<Parameter> parameters = new ArrayList<>(lessParameters);
         parameters.addAll(greaterParameters);
         return parameters;
+    }
+
+    @Override
+    public void setParameters(List<Parameter> parameters) {
+        throw new UnsupportedOperationException();
     }
 
     public List<Parameter> getLessParameters() {
@@ -78,8 +79,7 @@ public class RangeFilterOperation extends UniVarFilterOperation {
     public void instantiateUniParamCompParameter(AbstractColumn absColumn) {
         if (lessParameters.size() == 0 && greaterParameters.size() > 0) {
             instantiateUniParamCompParameter(absColumn, lessOperator, lessParameters);
-        }
-        else if (greaterParameters.size() == 0 && lessParameters.size() > 0) {
+        } else if (greaterParameters.size() == 0 && lessParameters.size() > 0) {
             instantiateUniParamCompParameter(absColumn, lessOperator, lessParameters);
         }
     }

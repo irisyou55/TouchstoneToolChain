@@ -10,15 +10,6 @@ import java.math.BigDecimal;
  * @author alan
  */
 public class EqBucket implements Comparable<EqBucket> {
-    public EqBucket() {}
-
-    public EqBucket(NonEqBucket parent, BigDecimal capacity, BigDecimal leftBorder, BigDecimal rightBorder) {
-        this.parent = parent;
-        this.capacity = capacity;
-        this.leftBorder = leftBorder;
-        this.rightBorder = rightBorder;
-    }
-
     // eq bucket对应的non-eq bucket
     public NonEqBucket parent;
     // eq bucket的容量
@@ -29,6 +20,16 @@ public class EqBucket implements Comparable<EqBucket> {
     public BigDecimal rightBorder;
     // eq bucket中包含的相等条件，概率->参数
     public Multimap<BigDecimal, Parameter> eqConditions = ArrayListMultimap.create();
+
+    public EqBucket() {
+    }
+
+    public EqBucket(NonEqBucket parent, BigDecimal capacity, BigDecimal leftBorder, BigDecimal rightBorder) {
+        this.parent = parent;
+        this.capacity = capacity;
+        this.leftBorder = leftBorder;
+        this.rightBorder = rightBorder;
+    }
 
     @Override
     public int compareTo(EqBucket bucket) {

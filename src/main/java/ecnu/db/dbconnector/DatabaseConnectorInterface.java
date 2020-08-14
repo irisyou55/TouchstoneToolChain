@@ -25,10 +25,10 @@ public interface DatabaseConnectorInterface {
     /**
      * 获取多个col组合的cardinality, 每次查询会被记录到multiColNdvMap
      *
-     * @param canonicalTableName  需要查询的表的标准名
-     * @param columns 需要查询的col组合(','组合)
+     * @param canonicalTableName 需要查询的表的标准名
+     * @param columns            需要查询的col组合(','组合)
      * @return 多个col组合的cardinality
-     * @throws SQLException 无法从数据库连接中获取多列属性的ndv
+     * @throws SQLException                 无法从数据库连接中获取多列属性的ndv
      * @throws TouchstoneToolChainException 无法从文件中获取多列属性的ndv
      */
     int getMultiColNdv(String canonicalTableName, String columns) throws SQLException, TouchstoneToolChainException;

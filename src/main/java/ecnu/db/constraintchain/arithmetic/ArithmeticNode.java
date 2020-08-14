@@ -8,13 +8,21 @@ import ecnu.db.schema.Schema;
  * @author wangqingshuai
  */
 public abstract class ArithmeticNode {
+    protected static int size = -1;
     protected ArithmeticNode leftNode;
     protected ArithmeticNode rightNode;
     protected ArithmeticNodeType type;
-    protected static int size = -1;
 
     public ArithmeticNode(ArithmeticNodeType type) {
         this.type = type;
+    }
+
+    public static void setSize(int size) throws TouchstoneToolChainException {
+        if (ArithmeticNode.size == -1) {
+            ArithmeticNode.size = size;
+        } else {
+            throw new TouchstoneToolChainException("不应该重复设置size");
+        }
     }
 
     /**
@@ -26,12 +34,12 @@ public abstract class ArithmeticNode {
     @JsonIgnore
     public abstract float[] getVector(Schema schema) throws TouchstoneToolChainException;
 
-    public void setType(ArithmeticNodeType type) {
-        this.type = type;
-    }
-
     public ArithmeticNodeType getType() {
         return this.type;
+    }
+
+    public void setType(ArithmeticNodeType type) {
+        this.type = type;
     }
 
     public ArithmeticNode getLeftNode() {
@@ -48,13 +56,5 @@ public abstract class ArithmeticNode {
 
     public void setRightNode(ArithmeticNode rightNode) {
         this.rightNode = rightNode;
-    }
-
-    public static void setSize(int size) throws TouchstoneToolChainException {
-        if (ArithmeticNode.size == -1){
-            ArithmeticNode.size = size;
-        }else{
-             throw new TouchstoneToolChainException("不应该重复设置size");
-        }
     }
 }

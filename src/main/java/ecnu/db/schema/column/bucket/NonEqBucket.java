@@ -14,6 +14,7 @@ public class NonEqBucket {
 
     /**
      * 找到大于{@code probability}的区间
+     *
      * @param probability 需要查询的概率
      * @return 区间
      */
@@ -23,11 +24,9 @@ public class NonEqBucket {
         }
         if (probability.compareTo(this.probability) < 0) {
             return leftBucket.search(probability);
-        }
-        else if (probability.compareTo(this.probability) > 0) {
+        } else if (probability.compareTo(this.probability) > 0) {
             return rightBucket.search(probability);
-        }
-        else {
+        } else {
             throw new UnsupportedOperationException();
         }
     }

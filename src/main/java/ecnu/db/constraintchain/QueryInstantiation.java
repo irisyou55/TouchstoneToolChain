@@ -34,14 +34,11 @@ public class QueryInstantiation {
                 if (node instanceof ConstraintChainFilterNode) {
                     List<AbstractFilterOperation> operations = ((ConstraintChainFilterNode) node).pushDownProbability();
                     schema2filters.putAll(schema, operations);
-                }
-                else if (node instanceof ConstraintChainPkJoinNode) {
+                } else if (node instanceof ConstraintChainPkJoinNode) {
                     assert true;
-                }
-                else if (node instanceof ConstraintChainFkJoinNode) {
+                } else if (node instanceof ConstraintChainFkJoinNode) {
                     assert true;
-                }
-                else {
+                } else {
                     throw new UnsupportedOperationException();
                 }
             }
@@ -85,7 +82,7 @@ public class QueryInstantiation {
             schema.getColumns().values().forEach(AbstractColumn::initEqParameter);
             // multi-var non-eq
             List<MultiVarFilterOperation> multiVarFilters = schema2filters.get(schema).stream()
-                    .filter((f) ->  f instanceof MultiVarFilterOperation)
+                    .filter((f) -> f instanceof MultiVarFilterOperation)
                     .map((f) -> (MultiVarFilterOperation) f)
                     .collect(Collectors.toList());
             for (MultiVarFilterOperation operation : multiVarFilters) {

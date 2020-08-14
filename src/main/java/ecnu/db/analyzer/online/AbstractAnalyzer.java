@@ -34,9 +34,9 @@ import static ecnu.db.utils.CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION;
 public abstract class AbstractAnalyzer {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractAnalyzer.class);
+    protected final QueryAliasParser queryAliasParser = new QueryAliasParser();
     protected DatabaseConnectorInterface dbConnector;
     protected Map<String, String> aliasDic = new HashMap<>();
-    protected final QueryAliasParser queryAliasParser = new QueryAliasParser();
     protected Map<String, Schema> schemas;
     protected int parameterId = 0;
     protected NodeTypeTool nodeTypeRef;
@@ -61,13 +61,12 @@ public abstract class AbstractAnalyzer {
             throw new TouchstoneToolChainException("未制定分析器配置信息");
         } else if (!databaseInfo.getSupportedDatabaseVersions().contains(analyzerSupportedDatabaseVersion)) {
             throw new UnsupportedDBTypeException(config.getDatabaseVersion());
-        } else if (nodeTypeRef==null) {
+        } else if (nodeTypeRef == null) {
             throw new TouchstoneToolChainException("未初始化node映射");
         } else {
             return this;
         }
     }
-
 
 
     /**

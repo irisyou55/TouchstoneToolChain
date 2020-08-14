@@ -14,6 +14,10 @@ public class ExecutionNode {
      */
     private final String info;
     /**
+     * 节点输出的数据量
+     */
+    private final int outputRows;
+    /**
      * 指向右节点
      */
     public ExecutionNode rightNode;
@@ -26,10 +30,6 @@ public class ExecutionNode {
      */
     private String id;
     /**
-     * 节点输出的数据量
-     */
-    private final int outputRows;
-    /**
      * 记录主键的join tag，第一次访问该节点后设置join tag，后续的访问可以找到之前对应的join tag
      */
     private int joinTag = -1;
@@ -40,7 +40,6 @@ public class ExecutionNode {
         this.id = id;
         this.outputRows = outputRows;
     }
-
 
 
     public String getId() {

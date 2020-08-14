@@ -26,26 +26,26 @@ public abstract class AbstractFilterOperation implements BoolExprNode {
      */
     protected BigDecimal probability;
 
+    public AbstractFilterOperation(CompareOperator operator) {
+        this.operator = operator;
+    }
+
     @Override
     public List<AbstractFilterOperation> pushDownProbability(BigDecimal probability, Set<String> columns) {
         this.probability = probability;
         return Lists.newArrayList(this);
     }
 
-    public AbstractFilterOperation(CompareOperator operator) {
-        this.operator = operator;
-    }
-
     public void addParameter(Parameter parameter) {
         parameters.add(parameter);
     }
 
-    public void setParameters(List<Parameter> parameters) {
-        this.parameters = parameters;
-    }
-
     public List<Parameter> getParameters() {
         return this.parameters;
+    }
+
+    public void setParameters(List<Parameter> parameters) {
+        this.parameters = parameters;
     }
 
     public CompareOperator getOperator() {
@@ -56,11 +56,11 @@ public abstract class AbstractFilterOperation implements BoolExprNode {
         this.operator = operator;
     }
 
-    public void setProbability(BigDecimal probability) {
-        this.probability = probability;
-    }
-
     public BigDecimal getProbability() {
         return probability;
+    }
+
+    public void setProbability(BigDecimal probability) {
+        this.probability = probability;
     }
 }

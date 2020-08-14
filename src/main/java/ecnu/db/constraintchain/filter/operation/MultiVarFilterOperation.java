@@ -37,6 +37,7 @@ public class MultiVarFilterOperation extends AbstractFilterOperation {
 
     /**
      * 获取计算树访问的所有列名
+     *
      * @return 计算树访问的所有列名
      */
     public HashSet<String> getColNames() {
@@ -68,12 +69,12 @@ public class MultiVarFilterOperation extends AbstractFilterOperation {
                 parameters.stream().map(Parameter::toString).collect(Collectors.joining(", ")));
     }
 
-    public void setArithmeticTree(ArithmeticNode arithmeticTree) {
-        this.arithmeticTree = arithmeticTree;
-    }
-
     public ArithmeticNode getArithmeticTree() {
         return arithmeticTree;
+    }
+
+    public void setArithmeticTree(ArithmeticNode arithmeticTree) {
+        this.arithmeticTree = arithmeticTree;
     }
 
     /**
@@ -90,8 +91,7 @@ public class MultiVarFilterOperation extends AbstractFilterOperation {
         }
         if (operator.getType() == GREATER) {
             probability = nonNullProbability.subtract(probability);
-        }
-        else if (operator.getType() != LESS){
+        } else if (operator.getType() != LESS) {
             throw new InstantiateParameterException("多变量计算节点仅接受非等值约束");
         }
         float[] vector = arithmeticTree.getVector(schema);

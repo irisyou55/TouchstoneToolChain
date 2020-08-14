@@ -19,6 +19,7 @@ class SqlTemplateHelperTest {
         String modified = SqlTemplateHelper.templatizeSql("q1", sql, JdbcConstants.MYSQL, parameters);
         assertEquals("select * from test where a='0,0'", modified);
     }
+
     @Test
     public void testTemplatizeSqlFloat() {
         String sql = "select * from test where a=1.5";
@@ -27,6 +28,7 @@ class SqlTemplateHelperTest {
         String modified = SqlTemplateHelper.templatizeSql("q2", sql, JdbcConstants.MYSQL, parameters);
         assertEquals("select * from test where a='0,0'", modified);
     }
+
     @Test
     public void testTemplatizeSqlStr() {
         String sql = "select * from test where a='5'";
@@ -35,6 +37,7 @@ class SqlTemplateHelperTest {
         String modified = SqlTemplateHelper.templatizeSql("q3", sql, JdbcConstants.MYSQL, parameters);
         assertEquals("select * from test where a='0,0'", modified);
     }
+
     @Test
     public void testTemplatizeSqlDate() {
         String sql = "select * from test where a='1998-12-12 12:00:00.000000'";
@@ -43,6 +46,7 @@ class SqlTemplateHelperTest {
         String modified = SqlTemplateHelper.templatizeSql("q4", sql, JdbcConstants.MYSQL, parameters);
         assertEquals("select * from test where a='0,1'", modified);
     }
+
     @Test
     public void testTemplatizeSqlConflicts() {
         String sql = "select * from test where a='5' or b='5'";
@@ -52,6 +56,7 @@ class SqlTemplateHelperTest {
         String modified = SqlTemplateHelper.templatizeSql("q5", sql, JdbcConstants.MYSQL, parameters);
         assertEquals("-- conflictArgs:{id:0,data:'5',operator:eq,operand:db.test.a,isDate:0},{id:1,data:'5',operator:eq,operand:db.test.b,isDate:0}\nselect * from test where a='5' or b='5'", modified);
     }
+
     @Test
     public void testTemplatizeSqlCannotFind() {
         String sql = "select * from test where a='5' or b='5'";

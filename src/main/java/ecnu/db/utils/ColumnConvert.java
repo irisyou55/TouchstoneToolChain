@@ -14,7 +14,8 @@ import static ecnu.db.schema.column.ColumnType.*;
 public class ColumnConvert {
 
     private static final Map<String, ColumnType> dataType2ColumnType;
-    static  {
+
+    static {
         dataType2ColumnType = new HashMap<>();
         dataType2ColumnType.put("int", INTEGER);
         dataType2ColumnType.put("date", DATE);

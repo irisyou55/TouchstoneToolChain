@@ -27,7 +27,7 @@ public class ParameterResolver implements ObjectIdResolver {
         return object == null ? getById(id) : object;
     }
 
-    protected Object getById(ObjectIdGenerator.IdKey id){
+    protected Object getById(ObjectIdGenerator.IdKey id) {
         Object object;
         try {
             object = id.scope.getConstructor().newInstance();

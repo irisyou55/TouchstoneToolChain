@@ -11,10 +11,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author qingshuai.wang
  */
 public class StringColumn extends AbstractColumn {
+    private final Set<String> likeCandidates = new HashSet<>();
     private int minLength;
     private int maxLength;
     private int ndv;
-    private final Set<String> likeCandidates = new HashSet<>();
 
     public StringColumn() {
         super(null, ColumnType.VARCHAR);
@@ -45,6 +45,10 @@ public class StringColumn extends AbstractColumn {
         return this.ndv;
     }
 
+    public void setNdv(int ndv) {
+        this.ndv = ndv;
+    }
+
     @Override
     protected String generateEqData(BigDecimal minProbability, BigDecimal maxProbability) {
         String eqCandidate;
@@ -73,9 +77,5 @@ public class StringColumn extends AbstractColumn {
         } while (likeCandidates.contains(likeCandidate));
         likeCandidates.add(likeCandidate);
         return likeCandidate;
-    }
-
-    public void setNdv(int ndv) {
-        this.ndv = ndv;
     }
 }

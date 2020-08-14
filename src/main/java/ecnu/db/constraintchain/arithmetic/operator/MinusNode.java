@@ -12,6 +12,7 @@ public class MinusNode extends ArithmeticNode {
     public MinusNode() {
         super(ArithmeticNodeType.MINUS);
     }
+
     @Override
     public float[] getVector(Schema schema) throws TouchstoneToolChainException {
         float[] leftValue = leftNode.getVector(schema), rightValue = rightNode.getVector(schema);

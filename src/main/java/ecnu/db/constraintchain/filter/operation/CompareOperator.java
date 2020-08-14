@@ -49,13 +49,16 @@ public enum CompareOperator {
     RANGE(TYPE.RANGE);
 
     private final TYPE type;
-    public enum TYPE {
-        LESS, GREATER, EQUAL, RANGE
-    }
+
     CompareOperator(TYPE type) {
         this.type = type;
     }
+
     public TYPE getType() {
         return type;
+    }
+
+    public enum TYPE {
+        LESS, GREATER, EQUAL, RANGE
     }
 }

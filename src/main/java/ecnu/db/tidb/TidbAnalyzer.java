@@ -21,7 +21,7 @@ import ecnu.db.utils.SystemConfig;
 import java_cup.runtime.ComplexSymbolFactory;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.*;
+import java.io.StringReader;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

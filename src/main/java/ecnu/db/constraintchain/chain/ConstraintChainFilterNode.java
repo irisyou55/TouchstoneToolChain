@@ -16,10 +16,6 @@ public class ConstraintChainFilterNode extends ConstraintChainNode {
     private BigDecimal probability;
     private Set<String> columns;
 
-    public List<AbstractFilterOperation> pushDownProbability() throws PushDownProbabilityException {
-        return root.pushDownProbability(probability, columns);
-    }
-
     public ConstraintChainFilterNode() {
         super(null, ConstraintChainNodeType.FILTER);
     }
@@ -31,20 +27,24 @@ public class ConstraintChainFilterNode extends ConstraintChainNode {
         this.columns = columns;
     }
 
-    public void setRoot(AndNode root) {
-        this.root = root;
+    public List<AbstractFilterOperation> pushDownProbability() throws PushDownProbabilityException {
+        return root.pushDownProbability(probability, columns);
     }
 
     public AndNode getRoot() {
         return root;
     }
 
-    public void setProbability(BigDecimal probability) {
-        this.probability = probability;
+    public void setRoot(AndNode root) {
+        this.root = root;
     }
 
     public BigDecimal getProbability() {
         return probability;
+    }
+
+    public void setProbability(BigDecimal probability) {
+        this.probability = probability;
     }
 
     public Set<String> getColumns() {

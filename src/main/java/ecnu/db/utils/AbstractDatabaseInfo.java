@@ -38,12 +38,14 @@ public abstract class AbstractDatabaseInfo {
 
     /**
      * jdbc 连接器需要的类型
+     *
      * @return jdbc连接器类型
      */
     public abstract String getJdbcType();
 
     /**
      * jdbc 连接的properties
+     *
      * @return jdbc properties
      */
     public abstract String getJdbcProperties();

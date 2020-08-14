@@ -11,10 +11,15 @@ import java.util.Arrays;
  * @author wangqingshuai
  */
 public class NumericNode extends ArithmeticNode {
+    private Float constant;
+
     public NumericNode() {
         super(ArithmeticNodeType.CONSTANT);
     }
-    private Float constant;
+
+    public Float getConstant() {
+        return constant;
+    }
 
     public void setConstant(float constant) {
         this.constant = constant;
@@ -27,10 +32,6 @@ public class NumericNode extends ArithmeticNode {
     @JsonSetter
     public void setConstant(String constant) {
         this.constant = Float.parseFloat(constant);
-    }
-
-    public Float getConstant() {
-        return constant;
     }
 
     @Override

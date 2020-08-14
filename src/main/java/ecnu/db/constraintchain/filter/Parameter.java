@@ -36,7 +36,8 @@ public class Parameter {
      */
     private String operand;
 
-    public Parameter() {}
+    public Parameter() {
+    }
 
     public Parameter(Integer id, String data, boolean needQuote, boolean isDate, CompareOperator operator, String operand) {
         this.id = id;
@@ -101,6 +102,6 @@ public class Parameter {
 
     @Override
     public String toString() {
-        return String.format("{id:%d, data:%s}", id, needQuote ? String.format("'%s'", data): data);
+        return String.format("{id:%d, data:%s}", id, needQuote ? String.format("'%s'", data) : data);
     }
 }

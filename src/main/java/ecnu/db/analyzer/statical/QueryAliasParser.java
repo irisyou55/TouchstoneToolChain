@@ -5,8 +5,8 @@ import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.ast.statement.SQLExprTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
 import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlASTVisitorAdapter;
-import ecnu.db.utils.CommonUtils;
 import ecnu.db.exception.TouchstoneToolChainException;
+import ecnu.db.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,12 +32,12 @@ public class QueryAliasParser {
     private static class ExportTableAliasVisitor extends MySqlASTVisitorAdapter {
         private final boolean isCrossMultiDatabase;
         private final String databaseName;
+        private final Map<String, String> aliasMap = new HashMap<>();
+
         ExportTableAliasVisitor(boolean isCrossMultiDatabase, String databaseName) {
             this.isCrossMultiDatabase = isCrossMultiDatabase;
             this.databaseName = databaseName;
         }
-
-        private final Map<String, String> aliasMap = new HashMap<>();
 
         @Override
         public boolean visit(SQLExprTableSource x) {

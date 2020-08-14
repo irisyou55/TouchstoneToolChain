@@ -39,6 +39,10 @@ public class IntColumn extends AbstractColumn {
         return this.ndv;
     }
 
+    public void setNdv(int ndv) {
+        this.ndv = ndv;
+    }
+
     @Override
     protected String generateEqData(BigDecimal minProbability, BigDecimal maxProbability) {
         String data;
@@ -48,10 +52,6 @@ public class IntColumn extends AbstractColumn {
         } while (eqCandidates.contains(data));
         eqCandidates.add(data);
         return data;
-    }
-
-    public void setNdv(int ndv) {
-        this.ndv = ndv;
     }
 
     public int generateData(BigDecimal probability) {

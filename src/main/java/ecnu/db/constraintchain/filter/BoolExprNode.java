@@ -22,6 +22,7 @@ public interface BoolExprNode {
 
     /**
      * 获得当前布尔表达式节点的类型
+     *
      * @return 类型
      */
     BoolExprType getType();

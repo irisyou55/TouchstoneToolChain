@@ -12,6 +12,7 @@ public class MulNode extends ArithmeticNode {
     public MulNode() {
         super(ArithmeticNodeType.MUL);
     }
+
     @Override
     public float[] getVector(Schema schema) throws TouchstoneToolChainException {
         float[] leftValue = leftNode.getVector(schema), rightValue = rightNode.getVector(schema);

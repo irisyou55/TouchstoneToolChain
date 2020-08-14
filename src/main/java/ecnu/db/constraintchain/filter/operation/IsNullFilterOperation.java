@@ -51,12 +51,12 @@ public class IsNullFilterOperation extends AbstractFilterOperation {
         this.hasNot = hasNot;
     }
 
-    public void setColumnName(String columnName) {
-        this.columnName = columnName;
-    }
-
     public String getColumnName() {
         return columnName;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
     }
 
 }

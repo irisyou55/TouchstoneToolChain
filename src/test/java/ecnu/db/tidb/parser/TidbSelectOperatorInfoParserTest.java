@@ -10,8 +10,6 @@ import ecnu.db.schema.column.IntColumn;
 import ecnu.db.schema.column.StringColumn;
 import ecnu.db.tidb.TidbAnalyzer;
 import ecnu.db.tidb.TidbInfo;
-import ecnu.db.tidb.parser.TidbSelectOperatorInfoLexer;
-import ecnu.db.tidb.parser.TidbSelectOperatorInfoParser;
 import ecnu.db.utils.SystemConfig;
 import ecnu.db.utils.TouchstoneSupportedDatabaseVersion;
 import java_cup.runtime.ComplexSymbolFactory;

@@ -4,12 +4,12 @@ package ecnu.db.analyzer.online;
  * @author lianxuechao
  */
 public class RawNode {
-    public RawNode left;
-    public RawNode right;
     public final String nodeType;
     public final String operatorInfo;
     public final int rowCount;
     public final String id;
+    public RawNode left;
+    public RawNode right;
 
     public RawNode(String id, RawNode left, RawNode right, String nodeType, String operatorInfo, int rowCount) {
         this.id = id;

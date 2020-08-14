@@ -36,14 +36,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author alan
  */
 public class StorageManager {
-    private final File retDir;
-    private final File retSqlDir;
-    private final File dumpDir;
-    private final File dumpQueryDir;
-    private final File loadDir;
-    private final File logDir;
-    private final File logQueryDir;
     public static final ObjectMapper mapper;
+
     static {
         SimpleModule module = new SimpleModule()
                 .addDeserializer(AbstractColumn.class, new ColumnDeserializer())
@@ -54,6 +48,14 @@ public class StorageManager {
                 .registerModule(new JavaTimeModule())
                 .registerModule(module);
     }
+
+    private final File retDir;
+    private final File retSqlDir;
+    private final File dumpDir;
+    private final File dumpQueryDir;
+    private final File loadDir;
+    private final File logDir;
+    private final File logQueryDir;
 
     public StorageManager(String resultDirPath, String dumpDirPath, String loadDirPath, String logPath) {
         retDir = new File(resultDirPath);

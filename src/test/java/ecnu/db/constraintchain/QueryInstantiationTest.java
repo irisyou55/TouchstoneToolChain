@@ -39,7 +39,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class Container {
     public List<Parameter> params;
-    public Container() {}
+
+    public Container() {
+    }
+
     public Container(List<Parameter> params) {
         this.params = params;
     }
@@ -53,9 +56,9 @@ class QueryInstantiationTest {
         Multimap<String, AbstractFilterOperation> query2operations = ArrayListMultimap.create();
         for (String query : query2chains.keySet()) {
             List<ConstraintChain> chains = query2chains.get(query);
-            for (ConstraintChain chain: chains) {
+            for (ConstraintChain chain : chains) {
                 String tableName = chain.getTableName();
-                for (ConstraintChainNode node: chain.getNodes()) {
+                for (ConstraintChainNode node : chain.getNodes()) {
                     if (node instanceof ConstraintChainFilterNode) {
                         List<AbstractFilterOperation> operations = ((ConstraintChainFilterNode) node).pushDownProbability();
                         query2operations.putAll(query + "_" + tableName, operations);
@@ -96,7 +99,8 @@ class QueryInstantiationTest {
         mapper.findAndRegisterModules();
         Map<String, Schema> schemas = mapper.readValue(
                 FileUtils.readFileToString(new File("src/test/resources/data/query-instantiation/schema.json"), UTF_8),
-                new TypeReference<HashMap<String, Schema>>() {});
+                new TypeReference<HashMap<String, Schema>>() {
+                });
         QueryInstantiation.compute(query2chains.values().stream().flatMap(Collection::stream).collect(Collectors.toList()), schemas);
         Map<Integer, Parameter> id2Parameter = new HashMap<>();
         for (String key : query2chains.keySet()) {
@@ -105,9 +109,9 @@ class QueryInstantiationTest {
         }
         // 2.sql_1 simple eq
         IntColumn col = (IntColumn) schemas.get("tpch.part").getColumn("p_size");
-        assertTrue( Integer.parseInt(id2Parameter.get(19).getData()) >= col.getMin(),
+        assertTrue(Integer.parseInt(id2Parameter.get(19).getData()) >= col.getMin(),
                 String.format("'%s' should be greater than or equal to '%d'", id2Parameter.get(19).getData(), col.getMin()));
-        assertTrue( Integer.parseInt(id2Parameter.get(19).getData()) <= col.getMax(),
+        assertTrue(Integer.parseInt(id2Parameter.get(19).getData()) <= col.getMax(),
                 String.format("'%s' should be less than '%d'", id2Parameter.get(19).getData(), col.getMax()));
         assertThat(id2Parameter.get(20).getData(), startsWith("%"));
         assertEquals(id2Parameter.get(21).getData(), id2Parameter.get(22).getData());
@@ -134,7 +138,8 @@ class QueryInstantiationTest {
         mapper.findAndRegisterModules();
         Map<String, Schema> schemas = mapper.readValue(
                 FileUtils.readFileToString(new File("src/test/resources/data/query-instantiation/multi-var-test/schema.json"), UTF_8),
-                new TypeReference<HashMap<String, Schema>>() {});
+                new TypeReference<HashMap<String, Schema>>() {
+                });
         QueryInstantiation.compute(query2chains.values().stream().flatMap(Collection::stream).collect(Collectors.toList()), schemas);
         Map<Integer, Parameter> id2Parameter = new HashMap<>();
         for (String key : query2chains.keySet()) {

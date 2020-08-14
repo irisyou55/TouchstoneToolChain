@@ -60,11 +60,9 @@ public class ColumnNode extends ArithmeticNode {
         AbstractColumn column = schema.getColumn(columnName);
         if (column instanceof IntColumn) {
             setMinMax((float) ((IntColumn) column).getMin(), (float) ((IntColumn) column).getMax());
-        }
-        else if (column instanceof DecimalColumn) {
+        } else if (column instanceof DecimalColumn) {
             setMinMax((float) ((DecimalColumn) column).getMin(), (float) ((DecimalColumn) column).getMax());
-        }
-        else {
+        } else {
             throw new InstantiateParameterException(String.format("计算节点出现非法的column'%s'", column));
         }
         List<EqBucket> eqBuckets = column.getEqBuckets();

@@ -12,6 +12,7 @@ public class DivNode extends ArithmeticNode {
     public DivNode() {
         super(ArithmeticNodeType.DIV);
     }
+
     @Override
     public float[] getVector(Schema schema) throws TouchstoneToolChainException {
         float[] leftValue = leftNode.getVector(schema), rightValue = rightNode.getVector(schema);

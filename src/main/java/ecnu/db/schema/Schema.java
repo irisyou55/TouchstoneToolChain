@@ -42,7 +42,7 @@ public class Schema {
      *
      * @param metaData 数据库的元信息
      * @param schemas  需要初始化的表
-     * @throws SQLException 无法从数据库的metadata中获取信息
+     * @throws SQLException                 无法从数据库的metadata中获取信息
      * @throws TouchstoneToolChainException 没有找到主键/外键表，或者外键关系冲突
      */
     public static void initFks(DatabaseMetaData metaData, Map<String, Schema> schemas) throws SQLException, TouchstoneToolChainException {
@@ -107,6 +107,12 @@ public class Schema {
         return tableName;
     }
 
+    @JsonSetter
+    @SuppressWarnings("unused")
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
     public int getTableSize() {
         return tableSize;
     }
@@ -127,22 +133,16 @@ public class Schema {
         return foreignKeys;
     }
 
-    @JsonGetter
-    @SuppressWarnings("unused")
-    public String getPrimaryKeys() {
-        return primaryKeys;
-    }
-
     @JsonSetter
     @SuppressWarnings("unused")
     public void setForeignKeys(Map<String, String> foreignKeys) {
         this.foreignKeys = foreignKeys;
     }
 
-    @JsonSetter
+    @JsonGetter
     @SuppressWarnings("unused")
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
+    public String getPrimaryKeys() {
+        return primaryKeys;
     }
 
     public void setPrimaryKeys(String primaryKeys) throws TouchstoneToolChainException {

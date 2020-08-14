@@ -43,7 +43,7 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
      * merge operation
      */
     public static void merge(List<BoolExprNode> toMergeNodes, Multimap<String, UniVarFilterOperation> col2uniFilters, boolean isAnd) {
-        for (String colName: col2uniFilters.keySet()) {
+        for (String colName : col2uniFilters.keySet()) {
             Collection<UniVarFilterOperation> filters = col2uniFilters.get(colName);
             Multimap<CompareOperator, UniVarFilterOperation> typ2Filter = Multimaps.index(filters, AbstractFilterOperation::getOperator);
             Set<CompareOperator.TYPE> types = typ2Filter.asMap().keySet().stream().map(CompareOperator::getType).collect(Collectors.toSet());
@@ -127,6 +127,7 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
 
     /**
      * 初始化lt,gt,le,ge等比较的filter
+     *
      * @param absColumn 需要用到的column
      */
     public void instantiateUniParamCompParameter(AbstractColumn absColumn) {
@@ -137,8 +138,9 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
      * {@link #instantiateUniParamCompParameter(AbstractColumn) instantiateUniParamCompParameter(AbstractColumn)}的内部方法，与
      * {@linkplain ecnu.db.constraintchain.filter.operation.RangeFilterOperation#instantiateBetweenParameter(AbstractColumn)
      * ecnu.db.constraintchain.filter.operation.RangeFilterOperation#instantiateBetweenParameter(AbstractColumn)}共享逻辑
-     * @param column 需要的column
-     * @param operator 涉及的操作符
+     *
+     * @param column     需要的column
+     * @param operator   涉及的操作符
      * @param parameters 涉及的参数
      */
     protected void instantiateUniParamCompParameter(AbstractColumn column, CompareOperator operator, List<Parameter> parameters) {
@@ -157,6 +159,7 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
 
     /**
      * 初始化等值filter的参数
+     *
      * @param column 涉及的column
      */
     public void instantiateEqualParameter(AbstractColumn column) throws InstantiateParameterException {
@@ -165,18 +168,14 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
         }
         if (operator == EQ) {
             column.insertEqualProbability(probability, parameters.get(0));
-        }
-        else if (operator == NE) {
+        } else if (operator == NE) {
             column.insertEqualProbability(BigDecimal.valueOf(1 - column.getNullPercentage()).subtract(probability), parameters.get(0));
-        }
-        else if (operator == IN) {
+        } else if (operator == IN) {
             column.insertInProbability(probability, parameters);
-        }
-        else if (operator == LIKE) {
+        } else if (operator == LIKE) {
             String value = ((StringColumn) column).generateLikeData(parameters.get(0).getData());
             parameters.get(0).setData(value);
-        }
-        else {
+        } else {
             throw new UnsupportedOperationException();
         }
     }

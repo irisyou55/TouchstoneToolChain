@@ -25,9 +25,9 @@ import static ecnu.db.utils.CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION;
  */
 public class OrNode implements BoolExprNode {
     private final Logger logger = LoggerFactory.getLogger(OrNode.class);
+    private final BoolExprType type = BoolExprType.OR;
     private BoolExprNode leftNode;
     private BoolExprNode rightNode;
-    private final BoolExprType type = BoolExprType.OR;
 
     public BoolExprNode getLeftNode() {
         return leftNode;
@@ -86,7 +86,7 @@ public class OrNode implements BoolExprNode {
                     }
                 } else {
                     BigDecimal nullProbability = ((IsNullFilterOperation) child).getProbability();
-                    BigDecimal toDivide = hasNot ? nullProbability:BigDecimal.ONE.subtract(nullProbability);
+                    BigDecimal toDivide = hasNot ? nullProbability : BigDecimal.ONE.subtract(nullProbability);
                     if (toDivide.compareTo(BigDecimal.ZERO) == 0) {
                         if (probability.compareTo(BigDecimal.ONE) != 0) {
                             throw new PushDownProbabilityException(String.format("'%s'的概率为1而总概率不为1", child.toString()));
