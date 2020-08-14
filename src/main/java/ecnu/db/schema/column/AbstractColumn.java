@@ -112,8 +112,8 @@ public abstract class AbstractColumn {
         bucket.leftBucket = new NonEqBucket();
         bucket.rightBucket = new NonEqBucket();
         if (bucket.child != null) {
-            BigDecimal toFillCapacity = probability.subtract(bucket.child.leftBorder),
-                    occupiedCapacity = bucket.child.rightBorder.subtract(bucket.child.leftBorder).subtract(bucket.child.capacity);
+            BigDecimal toFillCapacity = probability.subtract(bucket.child.leftBorder);
+            BigDecimal occupiedCapacity = bucket.child.rightBorder.subtract(bucket.child.leftBorder).subtract(bucket.child.capacity);
             if (bucket.child.capacity.compareTo(toFillCapacity) < 0 && occupiedCapacity.compareTo(toFillCapacity) > 0) {
                 throw new UnsupportedOperationException();
             }
