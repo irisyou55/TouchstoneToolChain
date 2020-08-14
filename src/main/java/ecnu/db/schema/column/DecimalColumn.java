@@ -45,6 +45,7 @@ public class DecimalColumn extends AbstractColumn {
         do {
             data = Double.toString(BigDecimal.valueOf(Math.random() * (maxP - minP) + minP).doubleValue() * (max - min) + min);
         } while (eqCandidates.contains(data));
+        eqCandidates.add(data);
         return data;
     }
 

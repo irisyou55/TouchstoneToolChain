@@ -74,6 +74,7 @@ public class DateTimeColumn extends AbstractColumn {
             duration = Duration.ofSeconds(seconds.multiply(probability).longValue(), nano.multiply(probability).intValue());
             data = FMT.format(begin.plus(duration));
         } while (eqCandidates.contains(data));
+        eqCandidates.add(data);
         return data;
     }
 

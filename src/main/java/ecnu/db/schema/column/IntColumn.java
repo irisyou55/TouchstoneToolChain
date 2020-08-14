@@ -46,6 +46,7 @@ public class IntColumn extends AbstractColumn {
         do {
             data = Integer.toString((int) (Math.random() * (maxP - minP) * (max - min) + minP * (max - min) + min));
         } while (eqCandidates.contains(data));
+        eqCandidates.add(data);
         return data;
     }
 

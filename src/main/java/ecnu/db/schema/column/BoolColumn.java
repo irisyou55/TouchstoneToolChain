@@ -27,6 +27,7 @@ public class BoolColumn extends AbstractColumn {
         do {
             data = Boolean.toString(BigDecimal.valueOf(Math.random() * (maxProbability.subtract(minProbability).doubleValue())).add(minProbability).doubleValue() > 0.5);
         } while (eqCandidates.contains(data));
+        eqCandidates.add(data);
         return data;
     }
 }

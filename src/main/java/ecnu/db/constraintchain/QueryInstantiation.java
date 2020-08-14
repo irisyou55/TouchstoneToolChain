@@ -34,15 +34,15 @@ public class QueryInstantiation {
                     List<AbstractFilterOperation> operations = ((ConstraintChainFilterNode) node).pushDownProbability();
                     schema2filters.putAll(schema, operations);
                 }
-//                else if (node instanceof ConstraintChainPkJoinNode) {
-//                    throw new UnsupportedOperationException();
-//                }
-//                else if (node instanceof ConstraintChainFkJoinNode) {
-//                    throw new UnsupportedOperationException();
-//                }
-//                else {
-//                    throw new UnsupportedOperationException();
-//                }
+                else if (node instanceof ConstraintChainPkJoinNode) {
+                    assert true;
+                }
+                else if (node instanceof ConstraintChainFkJoinNode) {
+                    assert true;
+                }
+                else {
+                    throw new UnsupportedOperationException();
+                }
             }
         }
         // uni-var non-eq

@@ -58,6 +58,7 @@ public class DateColumn extends AbstractColumn {
             duration = Duration.ofSeconds(seconds.multiply(probability).longValue());
             data = FMT.format(begin.plus(duration));
         } while (eqCandidates.contains(data));
+        eqCandidates.add(data);
         return data;
     }
 

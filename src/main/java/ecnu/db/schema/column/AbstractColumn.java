@@ -1,6 +1,7 @@
 package ecnu.db.schema.column;
 
 
+import ch.obermuhlner.math.big.BigDecimalMath;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -9,6 +10,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import ecnu.db.constraintchain.filter.Parameter;
 import ecnu.db.constraintchain.filter.operation.CompareOperator;
+import ecnu.db.exception.InstantiateParameterException;
 import ecnu.db.schema.column.bucket.EqBucket;
 import ecnu.db.schema.column.bucket.NonEqBucket;
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,6 +28,7 @@ import static ecnu.db.constraintchain.filter.operation.CompareOperator.LT;
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.GREATER;
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.LESS;
 import static ecnu.db.schema.column.ColumnType.*;
+import static ecnu.db.utils.CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION;
 
 
 /**
@@ -40,6 +43,8 @@ public abstract class AbstractColumn {
     protected NonEqBucket bucket;
     // 已经处理过的约束
     protected Multimap<String, Parameter> metConditions = ArrayListMultimap.create();
+    // 已经处理过的等值参数对应的概率, data->probability
+    protected Map<String, BigDecimal> eqParamData2Probability = new HashMap<>();
     // 所有的非等值约束划分而成的等值约束的区间
     @JsonIgnore
     protected List<EqBucket> eqBuckets = new ArrayList<>();
@@ -131,13 +136,46 @@ public abstract class AbstractColumn {
         }
     }
 
-    public void insertEqualProbability(BigDecimal probability, CompareOperator operator, Parameter parameter) {
-        if (metConditions.containsKey(operator + parameter.getData())) {
+    public void insertInProbability(BigDecimal probability, List<Parameter> parameters) throws InstantiateParameterException {
+        List<Parameter> notMetParams = new LinkedList<>();
+        for (Parameter parameter : parameters) {
+            if (metConditions.containsKey(EQ + parameter.getData())) {
+                // 等值的比较需要记录parameter
+                metConditions.put(EQ + parameter.getData(), parameter);
+                BigDecimal eqProbability = eqParamData2Probability.get(EQ + parameter.getData());
+                if (probability.compareTo(eqProbability) < 0) {
+                    throw new InstantiateParameterException(String.format("'%s'的in条件与其他eq或in条件存在矛盾", parameters));
+                }
+                else {
+                    probability = probability.subtract(eqProbability);
+                }
+            }
+            else {
+                notMetParams.add(parameter);
+            }
+        }
+        if (notMetParams.size() == 0) {
+            throw new InstantiateParameterException(String.format("'%s'的in条件与其他eq或in条件存在矛盾", parameters));
+        }
+        BigDecimal size = BigDecimal.valueOf(notMetParams.size());
+        probability = BigDecimalMath.pow(probability, BigDecimal.ONE.divide(size, BIG_DECIMAL_DEFAULT_PRECISION), BIG_DECIMAL_DEFAULT_PRECISION);
+        for (Parameter parameter : notMetParams) {
+            insertEqualProbability(probability, parameter);
+        }
+    }
+
+    public void insertEqualProbability(BigDecimal probability, Parameter parameter) throws InstantiateParameterException {
+        if (metConditions.containsKey(EQ + parameter.getData())) {
             // 等值的比较需要记录parameter
-            metConditions.put(operator + parameter.getData(), parameter);
+            metConditions.put(EQ + parameter.getData(), parameter);
+            if (eqParamData2Probability.get(EQ + parameter.getData()).compareTo(probability) != 0) {
+                throw new InstantiateParameterException(String.format("'%s'的eq条件存在矛盾, '%s'不等于'%s'",
+                        parameter, eqParamData2Probability.get(EQ + parameter.getData()), probability));
+            }
             return;
         }
-        metConditions.put(operator + parameter.getData(), parameter);
+        metConditions.put(EQ + parameter.getData(), parameter);
+        eqParamData2Probability.put(EQ + parameter.getData(), probability);
         EqBucket eqBucket = fitProbability(probability);
         if (eqBucket.capacity.compareTo(probability) >= 0) {
             eqBucket.eqConditions.put(probability, parameter);
@@ -207,6 +245,12 @@ public abstract class AbstractColumn {
         return eqBuckets.get(low);
     }
 
+    /**
+     * 生成等值参数的数据
+     * @param minProbability 等值参数可以出现的概率区间的左边界
+     * @param maxProbability 等值参数可以出现的概率区间的右边界
+     * @return 生成的数据
+     */
     protected abstract String generateEqData(BigDecimal minProbability, BigDecimal maxProbability);
 
     public boolean hasNotMetCondition(String condition) {

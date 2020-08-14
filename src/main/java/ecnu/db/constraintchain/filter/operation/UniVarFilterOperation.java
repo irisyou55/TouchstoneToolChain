@@ -6,6 +6,7 @@ import com.google.common.collect.Multimaps;
 import ecnu.db.constraintchain.filter.BoolExprNode;
 import ecnu.db.constraintchain.filter.BoolExprType;
 import ecnu.db.constraintchain.filter.Parameter;
+import ecnu.db.exception.InstantiateParameterException;
 import ecnu.db.schema.column.AbstractColumn;
 import ecnu.db.schema.column.StringColumn;
 import org.apache.commons.collections.CollectionUtils;
@@ -20,7 +21,6 @@ import java.util.stream.Stream;
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.*;
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.GREATER;
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.LESS;
-import static ecnu.db.utils.CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION;
 
 /**
  * @author wangqingshuai
@@ -159,24 +159,20 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
      * 初始化等值filter的参数
      * @param column 涉及的column
      */
-    public void instantiateEqualParameter(AbstractColumn column) {
-        if (operator == EQ || operator == IN) {
-            if (hasNot) {
-                probability = BigDecimal.valueOf(1 - column.getNullPercentage()).subtract(probability);
-            }
-            probability = probability.divide(BigDecimal.valueOf(parameters.size()), BIG_DECIMAL_DEFAULT_PRECISION);
-            for (Parameter parameter : parameters) {
-                column.insertEqualProbability(probability, EQ, parameter);
-            }
+    public void instantiateEqualParameter(AbstractColumn column) throws InstantiateParameterException {
+        if (hasNot) {
+            probability = BigDecimal.valueOf(1 - column.getNullPercentage()).subtract(probability);
+        }
+        if (operator == EQ) {
+            column.insertEqualProbability(probability, parameters.get(0));
         }
         else if (operator == NE) {
-            column.insertEqualProbability(BigDecimal.valueOf(1 - column.getNullPercentage()).subtract(probability), EQ, parameters.get(0));
+            column.insertEqualProbability(BigDecimal.valueOf(1 - column.getNullPercentage()).subtract(probability), parameters.get(0));
+        }
+        else if (operator == IN) {
+            column.insertInProbability(probability, parameters);
         }
         else if (operator == LIKE) {
-            String identifier = LIKE + parameters.get(0).getData();
-            if (hasNot) {
-                probability = BigDecimal.valueOf(1 - column.getNullPercentage()).subtract(probability);
-            }
             String value = ((StringColumn) column).generateLikeData(parameters.get(0).getData());
             parameters.get(0).setData(value);
         }
