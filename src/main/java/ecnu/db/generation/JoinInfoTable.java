@@ -1,5 +1,7 @@
 package ecnu.db.generation;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import ecnu.db.exception.TouchstoneToolChainException;
 
 import java.io.Externalizable;
@@ -8,6 +10,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class JoinInfoTable implements Externalizable {
     /**
@@ -21,10 +25,13 @@ public class JoinInfoTable implements Externalizable {
     /**
      * join info table，map status -> key list
      */
-    private Map<Long, List<int[]>> joinInfo;
+    private ListMultimap<Long, int[]> joinInfo = ArrayListMultimap.create();
 
-    public JoinInfoTable() {
-    }
+    private final Map<Long, Integer> metCounter = new HashMap<>();
+
+    private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
+
+    public JoinInfoTable() {}
 
     public static void setMaxListSize(int maxListSize) {
         JoinInfoTable.maxListSize = maxListSize;
@@ -32,18 +39,15 @@ public class JoinInfoTable implements Externalizable {
 
     public JoinInfoTable(int primaryKeySize) {
         this.primaryKeySize = primaryKeySize;
-        joinInfo = new HashMap<>();
     }
 
-    public void mergeJoinInfo(JoinInfoTable joinInfoTable) throws TouchstoneToolChainException {
-        if (primaryKeySize != joinInfoTable.primaryKeySize) {
+    public void mergeJoinInfo(JoinInfoTable toMergeTable) throws TouchstoneToolChainException {
+        if (primaryKeySize != toMergeTable.primaryKeySize) {
             throw new TouchstoneToolChainException("复合主键的size不同");
         }
-        joinInfoTable.joinInfo.forEach((key, value) ->
-                joinInfo.merge(key, value, (v1, v2) -> {
-                    v1.addAll(v2);
-                    return v1;
-                }));
+        lock.readLock().lock();
+        joinInfo.putAll(toMergeTable.joinInfo);
+        lock.readLock().unlock();
     }
 
     /**
@@ -53,74 +57,92 @@ public class JoinInfoTable implements Externalizable {
      * @return 一个复合主键
      */
     public int[] getPrimaryKey(long status) {
+        lock.readLock().lock();
         List<int[]> keyList = joinInfo.get(status);
-        return keyList.get(ThreadLocalRandom.current().nextInt(keyList.size()));
+        int[] ret = keyList.get(ThreadLocalRandom.current().nextInt(keyList.size()));
+        lock.readLock().unlock();
+        return ret;
+    }
+
+    /**
+     * 根据join status获取符合条件的主键值
+     * @param status join status
+     * @return 所有复合主键
+     */
+    public List<int[]> getAllKeys(long status) {
+        lock.readLock().lock();
+        List<int[]> keyList = joinInfo.get(status);
+        lock.readLock().unlock();
+        return keyList;
     }
 
     /**
      * 插入符合这一status的一组KeyId
      *
      * @param status join status
-     * @param keyIds 一个复合主键
+     * @param key 一个复合主键
      */
-    public void addJoinInfo(long status, int[] keyIds) {
-        List<int[]> keyList = joinInfo.get(status);
-        if (keyList == null) {
-            joinInfo.put(status, Collections.singletonList(new int[]{1}));
-            joinInfo.put(status, Collections.singletonList(keyIds));
+    public void addJoinInfo(long status, int[] key) {
+        lock.writeLock().lock();
+        List<int[]> keys = joinInfo.get(status);
+        if (keys.size() < maxListSize) {
+            joinInfo.put(status, key);
         } else {
-            keyList.get(0)[0]++;
-            if (keyList.size() > maxListSize) {
-                if (ThreadLocalRandom.current().nextDouble() * keyList.get(0)[0] > 1) {
-                    keyList.remove(ThreadLocalRandom.current().nextInt(keyList.size() - 1) + 1);
-                    keyList.add(keyIds);
-                }
-            } else {
-                keyList.add(keyIds);
+            Integer i = metCounter.getOrDefault(status, maxListSize);
+            i++;
+            metCounter.put(status, i);
+            int j = ThreadLocalRandom.current().nextInt(0, i);
+            if (j < maxListSize) {
+                keys.set(j, key);
             }
         }
+        lock.writeLock().unlock();
     }
 
     /**
      * 清除key list中用于压缩计数的tag
      */
     public void cleanKeyCounter() {
-        for (List<int[]> value : joinInfo.values()) {
-            value.remove(0);
-        }
+        lock.writeLock().lock();
+        metCounter.clear();
+        lock.writeLock().lock();
     }
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
+        lock.readLock().lock();
         out.write(primaryKeySize);
         out.write(joinInfo.size());
-        for (Map.Entry<Long, List<int[]>> entry : joinInfo.entrySet()) {
-            out.writeLong(entry.getKey());
-            out.write(entry.getValue().size());
-            for (int[] keyIds : entry.getValue()) {
+        for (Long bitmap : joinInfo.keySet()) {
+            out.writeLong(bitmap);
+            List<int[]> keys = joinInfo.get(bitmap);
+            out.write(keys.size());
+            for (int[] keyIds : keys) {
                 for (Integer keyId : keyIds) {
                     out.write(keyId);
                 }
             }
         }
+        lock.readLock().lock();
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException {
+        lock.writeLock().lock();
         primaryKeySize = in.read();
         int joinInfoSize = in.read();
-        joinInfo = new HashMap<>(joinInfoSize);
+        joinInfo = ArrayListMultimap.create(joinInfoSize, maxListSize);
         for (int i = 0; i < joinInfoSize; i++) {
-            ArrayList<int[]> keyList = new ArrayList<>();
-            joinInfo.put(in.readLong(), keyList);
+            Long bitmap = in.readLong();
             int keyListSize = in.read();
             for (int j = 0; j < keyListSize; j++) {
                 int[] keyId = new int[primaryKeySize];
                 for (int k = 0; k < primaryKeySize; k++) {
                     keyId[k] = in.read();
                 }
-                keyList.add(keyId);
+                joinInfo.put(bitmap, keyId);
             }
         }
+        lock.writeLock().unlock();
     }
 }
