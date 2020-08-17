@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-message JoinInfo {
-  message KeyList{
-    repeated int32 keyList = 1;
-  }
-  map<int64, KeyList> JoinInfo = 1;
-}
