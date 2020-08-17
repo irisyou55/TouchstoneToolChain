@@ -86,11 +86,19 @@ public class DateTimeColumn extends AbstractColumn {
         this.precision = precision;
     }
 
-    public LocalDateTime generateData(BigDecimal probability) {
+    @Override
+    public String generateNonEqData(BigDecimal probability) {
         Duration duration = Duration.between(getBegin(), getEnd());
         BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
         BigDecimal nano = BigDecimal.valueOf(duration.getNano());
         duration = Duration.ofSeconds(seconds.multiply(probability).longValue(), nano.multiply(probability).intValue());
-        return begin.plus(duration);
+        LocalDateTime newDateTime = begin.plus(duration);
+        DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd HH:mm:ss");
+        if (precision > 0) {
+            builder.appendFraction(ChronoField.MICRO_OF_SECOND, 0, precision, true);
+        }
+        DateTimeFormatter formatter = builder.toFormatter();
+
+        return formatter.format(newDateTime);
     }
 }

@@ -54,7 +54,10 @@ public class IntColumn extends AbstractColumn {
         return data;
     }
 
-    public int generateData(BigDecimal probability) {
-        return BigDecimal.valueOf(getMax() - getMin()).multiply(probability).intValue() + getMin();
+    @Override
+    public String generateNonEqData(BigDecimal probability) {
+        int value = BigDecimal.valueOf(getMax() - getMin()).multiply(probability).intValue() + getMin();
+        return Integer.toString(value);
     }
+
 }

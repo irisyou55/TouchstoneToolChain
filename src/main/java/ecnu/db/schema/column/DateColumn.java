@@ -62,10 +62,13 @@ public class DateColumn extends AbstractColumn {
         return data;
     }
 
-    public LocalDate generateData(BigDecimal probability) {
+    @Override
+    public String generateNonEqData(BigDecimal probability) {
         Duration duration = Duration.between(begin, end);
         BigDecimal seconds = BigDecimal.valueOf(duration.getSeconds());
         duration = Duration.ofSeconds(seconds.multiply(probability).longValue());
-        return begin.plus(duration);
+        LocalDate newDate = begin.plus(duration);
+        DateTimeFormatter formatter = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd").toFormatter();
+        return formatter.format(newDate);
     }
 }

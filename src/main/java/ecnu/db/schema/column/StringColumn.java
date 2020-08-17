@@ -61,6 +61,11 @@ public class StringColumn extends AbstractColumn {
         return eqCandidate;
     }
 
+    @Override
+    public String generateNonEqData(BigDecimal probability) {
+        throw new UnsupportedOperationException();
+    }
+
     public String generateLikeData(String likeStr) {
         String prefix = "", postfix = "";
         if (likeStr.startsWith("%")) {

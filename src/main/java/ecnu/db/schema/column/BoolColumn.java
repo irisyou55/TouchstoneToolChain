@@ -30,4 +30,9 @@ public class BoolColumn extends AbstractColumn {
         eqCandidates.add(data);
         return data;
     }
+
+    @Override
+    public String generateNonEqData(BigDecimal probability) {
+        throw new UnsupportedOperationException();
+    }
 }

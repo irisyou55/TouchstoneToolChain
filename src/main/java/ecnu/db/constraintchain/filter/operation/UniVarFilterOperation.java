@@ -150,7 +150,7 @@ public class UniVarFilterOperation extends AbstractFilterOperation {
         probability = operator.getType() == LESS ? probability : BigDecimal.ONE.subtract(probability);
         // todo currently we are regarding (lt, le) as the lt, same goes for (gt, ge), see <a href="https://youtrack.biui.me/issue/TOUCHSTONE-18">TOUCHSTONE-18</a>
         operator = LT;
-        String data = column.genData(probability);
+        String data = column.generateNonEqData(probability);
         parameters.forEach((param) -> param.setData(data));
         if (column.hasNotMetCondition(operator + data)) { // for uni compare we use operator and generated value as identifier
             column.insertNonEqProbability(probability, operator, parameters.get(0));

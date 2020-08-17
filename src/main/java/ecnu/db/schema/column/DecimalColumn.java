@@ -49,7 +49,9 @@ public class DecimalColumn extends AbstractColumn {
         return data;
     }
 
-    public BigDecimal generateData(BigDecimal probability) {
-        return BigDecimal.valueOf(getMax() - getMin()).multiply(probability).add(BigDecimal.valueOf(getMin()));
+    @Override
+    public String generateNonEqData(BigDecimal probability) {
+        BigDecimal value = BigDecimal.valueOf(getMax() - getMin()).multiply(probability).add(BigDecimal.valueOf(getMin()));
+        return value.toString();
     }
 }

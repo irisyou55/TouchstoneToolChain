@@ -16,18 +16,12 @@ import ecnu.db.schema.column.bucket.NonEqBucket;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
 import java.util.*;
 
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.EQ;
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.LT;
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.GREATER;
 import static ecnu.db.constraintchain.filter.operation.CompareOperator.TYPE.LESS;
-import static ecnu.db.schema.column.ColumnType.*;
 import static ecnu.db.utils.CommonUtils.BIG_DECIMAL_DEFAULT_PRECISION;
 
 
@@ -310,7 +304,7 @@ public abstract class AbstractColumn {
             leftProbability = leftBucket.leftBorder;
             rightProbability = rightBucket.leftBorder.add(rightBucket.capacity);
         }
-        String leftData = genData(leftProbability), rightData = genData(rightProbability);
+        String leftData = generateNonEqData(leftProbability), rightData = generateNonEqData(rightProbability);
         lessParameters.forEach((p) -> p.setData(leftData));
         greaterParameters.forEach((p) -> p.setData(rightData));
         // todo 当前仅使用LT
@@ -324,34 +318,5 @@ public abstract class AbstractColumn {
      * @param probability 分割概率
      * @return 生成的数据
      */
-    public String genData(BigDecimal probability) {
-        String ret;
-        if (getColumnType() == INTEGER) {
-            IntColumn column = (IntColumn) this;
-            int value = column.generateData(probability);
-            ret = Integer.toString(value);
-        } else if (getColumnType() == DECIMAL) {
-            DecimalColumn column = (DecimalColumn) this;
-            BigDecimal value = column.generateData(probability);
-            ret = value.toString();
-        } else if (getColumnType() == DATETIME) {
-            DateTimeColumn column = (DateTimeColumn) this;
-            LocalDateTime newDateTime = column.generateData(probability);
-            DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd HH:mm:ss");
-            if (column.getPrecision() > 0) {
-                builder.appendFraction(ChronoField.MICRO_OF_SECOND, 0, column.getPrecision(), true);
-            }
-            DateTimeFormatter formatter = builder.toFormatter();
-            return formatter.format(newDateTime);
-        } else if (getColumnType() == DATE) {
-            DateColumn column = (DateColumn) this;
-            LocalDate newDate = column.generateData(probability);
-            DateTimeFormatter formatter = new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd").toFormatter();
-            return formatter.format(newDate);
-        } else {
-            throw new UnsupportedOperationException();
-        }
-
-        return ret;
-    }
+    public abstract String generateNonEqData(BigDecimal probability);
 }
