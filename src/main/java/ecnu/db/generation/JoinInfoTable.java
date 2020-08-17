@@ -17,11 +17,11 @@ public class JoinInfoTable implements Externalizable {
     /**
      * 最大可以容纳的链表长度，超过该长度会触发压缩
      */
-    private static int maxListSize;
+    private static int maxListSize = 1000;
     /**
      * join info table，map status -> key list
      */
-    private Map<Integer, List<int[]>> joinInfo;
+    private Map<Long, List<int[]>> joinInfo;
 
     public JoinInfoTable() {
     }
@@ -52,7 +52,7 @@ public class JoinInfoTable implements Externalizable {
      * @param status join status
      * @return 一个复合主键
      */
-    public int[] getPrimaryKey(int status) {
+    public int[] getPrimaryKey(long status) {
         List<int[]> keyList = joinInfo.get(status);
         return keyList.get(ThreadLocalRandom.current().nextInt(keyList.size()));
     }
@@ -63,7 +63,7 @@ public class JoinInfoTable implements Externalizable {
      * @param status join status
      * @param keyIds 一个复合主键
      */
-    public void addJoinInfo(int status, int[] keyIds) {
+    public void addJoinInfo(long status, int[] keyIds) {
         List<int[]> keyList = joinInfo.get(status);
         if (keyList == null) {
             joinInfo.put(status, Collections.singletonList(new int[]{1}));
@@ -80,7 +80,7 @@ public class JoinInfoTable implements Externalizable {
             }
         }
     }
-    
+
     /**
      * 清除key list中用于压缩计数的tag
      */
@@ -94,8 +94,8 @@ public class JoinInfoTable implements Externalizable {
     public void writeExternal(ObjectOutput out) throws IOException {
         out.write(primaryKeySize);
         out.write(joinInfo.size());
-        for (Map.Entry<Integer, List<int[]>> entry : joinInfo.entrySet()) {
-            out.write(entry.getKey());
+        for (Map.Entry<Long, List<int[]>> entry : joinInfo.entrySet()) {
+            out.writeLong(entry.getKey());
             out.write(entry.getValue().size());
             for (int[] keyIds : entry.getValue()) {
                 for (Integer keyId : keyIds) {
@@ -112,7 +112,7 @@ public class JoinInfoTable implements Externalizable {
         joinInfo = new HashMap<>(joinInfoSize);
         for (int i = 0; i < joinInfoSize; i++) {
             ArrayList<int[]> keyList = new ArrayList<>();
-            joinInfo.put(in.read(), keyList);
+            joinInfo.put(in.readLong(), keyList);
             int keyListSize = in.read();
             for (int j = 0; j < keyListSize; j++) {
                 int[] keyId = new int[primaryKeySize];
