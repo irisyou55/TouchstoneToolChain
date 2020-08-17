@@ -1,6 +1,7 @@
 package ecnu.db.generation;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import ecnu.db.exception.TouchstoneToolChainException;
 
@@ -25,7 +26,7 @@ public class JoinInfoTable implements Externalizable {
     /**
      * join info table，map status -> key list
      */
-    private ListMultimap<Long, int[]> joinInfo = ArrayListMultimap.create();
+    private ListMultimap<Long, int[]> joinInfo = LinkedListMultimap.create();
 
     private final Map<Long, Integer> metCounter = new HashMap<>();
 
