@@ -120,8 +120,8 @@ public class JoinInfoTable implements Externalizable {
                    nextIdx = generateNextIdx(paramW, nextIdx);
                    paramW = paramW * exp(logRandom() / maxListSize);
                    paramWs.put(status, paramW);
+                   nextIdxs.put(status, nextIdx);
                }
-               nextIdxs.put(status, nextIdx);
            }
            counts++;
            return counts;
