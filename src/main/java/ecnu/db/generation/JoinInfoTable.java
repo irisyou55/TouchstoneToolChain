@@ -98,7 +98,7 @@ public class JoinInfoTable implements Externalizable {
                 }
         );
         counter[0]++;
-        if (counter[0] < maxListSize) {
+        if (counter[0] <= maxListSize) {
             joinInfo.computeIfAbsent(status, k -> new ArrayList<>(maxListSize)).add(key);
         } else {
             if (counter[0] >= counter[1]) {
