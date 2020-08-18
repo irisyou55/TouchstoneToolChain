@@ -30,7 +30,7 @@ public class JoinInfoTable implements Externalizable {
 
     private final ConcurrentMap<Long, Long> counters = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<Long, Double> weights = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Long, Double> paramWs = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<Long, Long> nextIdxs = new ConcurrentHashMap<>();
 
@@ -98,13 +98,13 @@ public class JoinInfoTable implements Externalizable {
                });
            }
            else {
-               double weight = weights.compute(status, (s2, w) -> {
+               double paramW = paramWs.compute(status, (s2, w) -> {
                    if (w == null) {
                        w = exp(logRandom() / maxListSize);
                    }
                    return w;
                });
-               double finalWeight = weight;
+               double finalWeight = paramW;
                long nextIdx = nextIdxs.compute(status, (s3, idx) -> {
                     if (idx == null) {
                         idx = generateNextIdx(finalWeight, maxListSize);
@@ -117,9 +117,9 @@ public class JoinInfoTable implements Externalizable {
                        keys.set(j, key);
                        return keys;
                    });
-                   nextIdx = generateNextIdx(weight, nextIdx);
-                   weight = weight * exp(logRandom() / maxListSize);
-                   weights.put(status, weight);
+                   nextIdx = generateNextIdx(paramW, nextIdx);
+                   paramW = paramW * exp(logRandom() / maxListSize);
+                   paramWs.put(status, paramW);
                }
                nextIdxs.put(status, nextIdx);
            }
