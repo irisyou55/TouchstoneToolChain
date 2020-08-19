@@ -128,7 +128,8 @@ class QueryInstantiationTest {
 
     @Test
     public void computeMultiVarTest() throws Exception {
-        ArithmeticNode.setSize(10_000);
+        int samplingSize = 100_000;
+        ArithmeticNode.setSize(samplingSize);
         ParameterResolver.items.clear();
         Map<String, List<ConstraintChain>> query2chains = ConstraintChainReader.readConstraintChain("src/test/resources/data/query-instantiation/multi-var-test/constraintChain.json");
         ObjectMapper mapper = new ObjectMapper();
@@ -149,27 +150,26 @@ class QueryInstantiationTest {
             });
         }
         // known distribution c2:[2,23], c3[-3,9], c4[0,10]
-        int test_size = 10_000;
-        Float[] c2 = new Float[test_size], c3 = new Float[test_size], c4 = new Float[test_size];
+        Float[] c2 = new Float[samplingSize], c3 = new Float[samplingSize], c4 = new Float[samplingSize];
         Random random = new Random();
-        initVectorData(test_size, c2, 2, 23, random);
-        initVectorData(test_size, c3, -3, 9, random);
-        initVectorData(test_size, c4, 0, 10, random);
+        initVectorData(samplingSize, c2, 2, 23, random);
+        initVectorData(samplingSize, c3, -3, 9, random);
+        initVectorData(samplingSize, c4, 0, 10, random);
         // ====================== t1.sql_1: c2 + 2 * c3 * c4 > p0 (ratio = 0.3270440252)
-        Float[] v = new Float[test_size];
-        for (int i = 0; i < test_size; i++) {
+        Float[] v = new Float[samplingSize];
+        for (int i = 0; i < samplingSize; i++) {
             v[i] = c2[i] + 2 * c3[i] * c4[i];
         }
         Arrays.sort(v);
-        int target = (int) v[(int) ((1 - 0.3270440252) * 10_000)].floatValue();
-        assertEquals(target, Integer.parseInt(id2Parameter.get(0).getData()), 3);
+        int target = (int) v[(int) ((1 - 0.3270440252) * samplingSize)].floatValue();
+        assertEquals(target, Integer.parseInt(id2Parameter.get(0).getData()));
         // ====================== t1.sql_2: c2 + 2 * c3 + c4 > p1 (ratio = 0.8364779874)
-        for (int i = 0; i < test_size; i++) {
+        for (int i = 0; i < samplingSize; i++) {
             v[i] = c2[i] + 2 * c3[i] + c4[i];
         }
         Arrays.sort(v);
-        target = (int) v[(int) ((1 - 0.8364779874) * 10_000)].floatValue();
-        assertEquals(target, Integer.parseInt(id2Parameter.get(1).getData()), 3);
+        target = (int) v[(int) ((1 - 0.8364779874) * samplingSize)].floatValue();
+        assertEquals(target, Integer.parseInt(id2Parameter.get(1).getData()));
     }
 
     public void initVectorData(int test_size, Float[] c2, int c2_min, int c2_max, Random random) {
