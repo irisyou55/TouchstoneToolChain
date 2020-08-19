@@ -162,14 +162,14 @@ class QueryInstantiationTest {
         }
         Arrays.sort(v);
         int target = (int) v[(int) ((1 - 0.3270440252) * 10_000)].floatValue();
-        assertEquals(target, Integer.parseInt(id2Parameter.get(0).getData()), 1);
+        assertEquals(target, Integer.parseInt(id2Parameter.get(0).getData()), 3);
         // ====================== t1.sql_2: c2 + 2 * c3 + c4 > p1 (ratio = 0.8364779874)
         for (int i = 0; i < test_size; i++) {
             v[i] = c2[i] + 2 * c3[i] + c4[i];
         }
         Arrays.sort(v);
         target = (int) v[(int) ((1 - 0.8364779874) * 10_000)].floatValue();
-        assertEquals(target, Integer.parseInt(id2Parameter.get(1).getData()), 1);
+        assertEquals(target, Integer.parseInt(id2Parameter.get(1).getData()), 3);
     }
 
     public void initVectorData(int test_size, Float[] c2, int c2_min, int c2_max, Random random) {
