@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static java.lang.Math.*;
@@ -139,7 +138,7 @@ public class JoinInfoTable implements Externalizable {
     public void readExternal(ObjectInput in) throws IOException {
         primaryKeySize = in.read();
         int joinInfoSize = in.read();
-        joinInfo = new ConcurrentHashMap<>(joinInfoSize);
+        joinInfo = new HashMap<>(joinInfoSize);
         for (int i = 0; i < joinInfoSize; i++) {
             Long bitmap = in.readLong();
             int keyListSize = in.read();
