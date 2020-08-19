@@ -92,7 +92,7 @@ public class JoinInfoTable implements Externalizable {
     public void addJoinInfo(long status, int[] key) {
         //如果不存在该status，初始化计数器，predict id和权重w
         double[] counter = counters.computeIfAbsent(status, k -> {
-                    double w = exp(log(-ThreadLocalRandom.current().nextDouble(-1, 0)) / maxListSize);
+                    double w = exp(log(1 - ThreadLocalRandom.current().nextDouble()) / maxListSize);
                     return new double[]{0, maxListSize + predictIdOffset(w), w};
                 }
         );
@@ -103,7 +103,7 @@ public class JoinInfoTable implements Externalizable {
             if (counter[0] >= counter[1]) {
                 counter[1] += predictIdOffset(counter[2]);
                 joinInfo.get(status).set(ThreadLocalRandom.current().nextInt(maxListSize), key);
-                counter[2] *= exp(log(-ThreadLocalRandom.current().nextDouble(-1, 0)) / maxListSize);
+                counter[2] *= exp(log(1 - ThreadLocalRandom.current().nextDouble()) / maxListSize);
             }
         }
     }
@@ -115,7 +115,7 @@ public class JoinInfoTable implements Externalizable {
      * @return 下一个可以被加入的index
      */
     private double predictIdOffset(double w) {
-        return floor(log(-ThreadLocalRandom.current().nextDouble(-1, 0)) / log(1 - w)) + 1;
+        return floor(log(1 - ThreadLocalRandom.current().nextDouble()) / log(1 - w)) + 1;
     }
 
     @Override
