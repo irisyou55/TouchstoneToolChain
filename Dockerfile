@@ -1,3 +1,3 @@
 FROM openjdk:latest
-COPY TouchstoneToolchain-0.1.0.jar /TouchstoneToolchain-0.1.0.jar
+COPY target/TouchstoneToolchain-0.1.0.jar /TouchstoneToolchain.jar
 ENTRYPOINT ["java","-jar","/TouchstoneToolchain-0.1.0.jar"]
